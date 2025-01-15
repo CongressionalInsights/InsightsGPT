@@ -9,7 +9,7 @@ search_documents_url = "https://api.regulations.gov/v4/documents"
 search_dockets_url = "https://api.regulations.gov/v4/dockets"
 
 # API key for authentication
-api_key = "ze5djIUrfnCvhpfkzdzwKwuTQD5yghvLeXivkhLS"
+api_key = "API-KEY"
 
 # Headers for the API request
 headers = {
