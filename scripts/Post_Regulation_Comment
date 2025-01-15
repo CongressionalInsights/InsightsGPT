@@ -1,0 +1,189 @@
+import requests
+import time
+from datetime import datetime
+
+# Regulations.gov API endpoints
+submission_key_url = "https://api.regulations.gov/v4/submission-keys"
+post_comment_url = "https://api.regulations.gov/v4/comments"
+search_documents_url = "https://api.regulations.gov/v4/documents"
+search_dockets_url = "https://api.regulations.gov/v4/dockets"
+
+# API key for authentication
+api_key = "ze5djIUrfnCvhpfkzdzwKwuTQD5yghvLeXivkhLS"
+
+# Headers for the API request
+headers = {
+    "X-Api-Key": api_key,
+    "Content-Type": "application/vnd.api+json",
+    "User-Agent": "Regulations.gov API Client/1.0",
+    "Accept": "application/vnd.api+json"
+}
+
+# Debugging utility
+def debug_request_response(request_type, url, payload=None, response=None):
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    print(f"\n[{timestamp}] --- {request_type} Request Details ---")
+    print(f"URL: {url}")
+    if payload:
+        print(f"Payload: {payload}")
+    if response:
+        print(f"Response Status Code: {response.status_code}")
+        print(f"Response Text: {response.text}")
+        print(f"Number of Results Found: {len(response.json().get('data', [])) if response and response.status_code == 200 else 'N/A'}")
+    print(f"[{timestamp}] --- End Debug ---\n")
+
+# Retry mechanism for transient errors
+def retry_request(func, max_retries=3, delay=2):
+    for attempt in range(max_retries):
+        try:
+            return func()
+        except requests.exceptions.RequestException as e:
+            print(f"Attempt {attempt + 1} failed: {e}")
+            if attempt < max_retries - 1:
+                time.sleep(delay)
+            else:
+                print("Max retries reached. Aborting.")
+                raise
+
+# Step 1: Query for a valid docket ID
+def get_valid_docket_id(search_term):
+    params = {
+        "filter[searchTerm]": search_term,  # User-provided search term
+        "page[size]": 50  # Increase page size to fetch more results
+    }
+
+    def make_request():
+        response = requests.get(search_dockets_url, headers=headers, params=params)
+        debug_request_response("GET", search_dockets_url, params, response)
+        response.raise_for_status()
+        return response
+
+    try:
+        print("Querying for a valid docket ID...")
+        response = retry_request(make_request)
+        dockets_data = response.json()
+
+        if dockets_data.get("data"):
+            for docket in dockets_data["data"]:
+                if docket["attributes"].get("openForComment"):
+                    docket_id = docket["id"]
+                    print("Found valid docket ID that is open for commenting:", docket_id)
+                    return docket_id
+            print("No dockets are currently open for commenting.")
+            return None
+        else:
+            print("No dockets found. Try using a different search term.")
+            return None
+    except Exception as e:
+        print("Error querying for docket ID:", e)
+    return None
+
+# Step 2: Query for a valid document ID using docket ID
+def get_valid_document_id(docket_id):
+    params = {
+        "filter[docketId]": docket_id,
+        "page[size]": 5  # Ensure page size meets the API requirements
+    }
+
+    def make_request():
+        response = requests.get(search_documents_url, headers=headers, params=params)
+        debug_request_response("GET", search_documents_url, params, response)
+        response.raise_for_status()
+        return response
+
+    try:
+        print("Querying for a valid document ID...")
+        response = retry_request(make_request)
+        documents_data = response.json()
+        if documents_data.get("data"):
+            for document in documents_data["data"]:
+                if document["attributes"].get("openForComment"):
+                    document_id = document["id"]
+                    print("Found valid document ID for commenting:", document_id)
+                    return document_id
+            print("No documents are currently open for commenting.")
+            return None
+        else:
+            print("No documents found for the provided docket ID.")
+            return None
+    except Exception as e:
+        print("Error querying for document ID:", e)
+    return None
+
+# Step 3: Obtain a submission key
+def get_submission_key():
+    submission_payload = {
+        "data": {
+            "type": "submission-keys"
+        }
+    }
+
+    def make_request():
+        response = requests.post(submission_key_url, json=submission_payload, headers=headers)
+        debug_request_response("POST", submission_key_url, submission_payload, response)
+        response.raise_for_status()
+        return response
+
+    try:
+        print("Requesting submission key...")
+        response = retry_request(make_request)
+        print("Submission key retrieved successfully.")
+        return response.json()["data"]["id"]
+    except Exception as e:
+        print("Error obtaining submission key:", e)
+    return None
+
+# Step 4: Post a comment
+def post_comment(submission_key, document_id, comment_text):
+    comment_payload = {
+        "data": {
+            "type": "comments",
+            "attributes": {
+                "commentOnDocumentId": document_id,
+                "comment": comment_text,  # User-provided comment
+                "submissionType": "API",
+                "submitterType": "INDIVIDUAL",
+                "firstName": "John",
+                "lastName": "Doe",
+                "email": "johndoe@example.com",
+                "address1": "123 Main St",
+                "city": "Washington",
+                "stateProvinceRegion": "DC",
+                "zip": "20001",
+                "country": "USA",
+                "sendEmailReceipt": True,
+                "submissionKey": submission_key
+            }
+        }
+    }
+
+    def make_request():
+        response = requests.post(post_comment_url, json=comment_payload, headers=headers)
+        debug_request_response("POST", post_comment_url, comment_payload, response)
+        response.raise_for_status()
+        return response
+
+    try:
+        print("Posting comment...")
+        response = retry_request(make_request)
+        print("Comment Posted Successfully:", response.json())
+    except Exception as e:
+        print("Error posting comment:", e)
+
+# Main workflow
+search_term = "energy"  # User-provided search term
+comment_text = "This is my feedback on this regulation."  # User-provided comment text
+
+submission_key = get_submission_key()
+if submission_key:
+    docket_id = get_valid_docket_id(search_term)
+    if docket_id:
+        document_id = get_valid_document_id(docket_id)
+        if document_id:
+            post_comment(submission_key, document_id, comment_text)
+        else:
+            print("No valid document ID found. Cannot post comment.")
+    else:
+        print("No valid docket ID found. No dockets are open for commenting.")
+else:
+    print("Failed to obtain submission key. Cannot post comment.")
