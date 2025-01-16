@@ -1,0 +1,630 @@
+openapi: 3.1.0
+info:
+  title: Congress.gov API
+  description: API for accessing legislative data from Congress.gov.
+  version: 1.0.0
+servers:
+  - url: https://api.congress.gov/v3
+    description: Main API server
+security:
+  - apiKeyAuth: []  # Applies API key security globally
+components:
+  securitySchemes:
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
+      description: API key for accessing Congress.gov
+  schemas:
+    BillDetails:
+      type: object
+      properties:
+        congress:
+          type: integer
+          description: The congress number.
+          example: 119
+        title:
+          type: string
+          description: The title of the bill.
+          example: "A bill to amend..."
+        sponsor:
+          type: object
+          properties:
+            fullName:
+              type: string
+              description: Full name of the sponsor.
+              example: "Sen. Markey, Edward J. [D-MA]"
+            party:
+              type: string
+              description: The party of the sponsor.
+              example: "D"
+            state:
+              type: string
+              description: The state of the sponsor.
+              example: "MA"
+        latestAction:
+          type: object
+          properties:
+            actionDate:
+              type: string
+              format: date
+              description: The date of the latest action.
+              example: "2025-01-15"
+            text:
+              type: string
+              description: Description of the latest action.
+              example: "Read twice and referred to the committee."
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: "API key is missing."
+        status:
+          type: integer
+          description: HTTP status code
+          example: 403
+
+paths:
+  /bill:
+    get:
+      operationId: getBills
+      summary: Retrieve a list of bills.
+      description: Get a list of all bills, with options to filter by various parameters.
+      parameters:
+        - name: x-api-key
+          in: header
+          required: true
+          description: Your API key for authenticating requests.
+          schema:
+            type: string
+          example: XrYmu3QcA1yuEazqNBb832abd6x6rnVwde9P5PAC
+        - name: congress
+          in: query
+          required: false
+          description: The Congress number (e.g., 117).
+          schema:
+            type: integer
+        - name: bill-type
+          in: query
+          required: false
+          description: The type of bill (e.g., hr, s, hres).
+          schema:
+            type: string
+        - name: introduced-date
+          in: query
+          required: false
+          description: Date when the bill was introduced (YYYY-MM-DD).
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: A JSON array of bills.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  bills:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        billId:
+                          type: string
+                        billType:
+                          type: string
+                        title:
+                          type: string
+                        introducedDate:
+                          type: string
+                        sponsor:
+                          type: string
+  
+  /bill/{congress}/{billType}/{billNumber}:
+    get:
+      summary: Fetch detailed information for a specified bill
+      description: Retrieve detailed information about a specific bill using the congress number, bill type, and bill number.
+      operationId: GetBillDetails
+      parameters:
+        - name: congress
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 119
+        - name: billType
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [hr, s, hjres, sjres, hconres, sconres, hres, sres]
+            example: s
+        - name: billNumber
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 103
+        - name: format
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [json, xml]
+            example: json
+      responses:
+        '200':
+          description: Successfully retrieved bill details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BillDetails'
+        '400':
+          description: Invalid input parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Bill not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        
+  /committee:
+    get:
+      summary: Retrieve committee data with targeted search options
+      description: Returns committee data filtered by chamber, Congress number, and committee code.
+      operationId: getCommitteeData
+      parameters:
+        - name: chamber
+          in: query
+          required: false
+          description: The chamber of Congress (e.g., house, senate) to filter committees.
+          schema:
+            type: string
+            enum:
+              - house
+              - senate
+        - name: congress
+          in: query
+          required: false
+          description: The Congress number to filter committees by (e.g., 117).
+          schema:
+            type: integer
+        - name: committeeCode
+          in: query
+          required: false
+          description: The specific code for a congressional committee.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response with committee data.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  committees:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        committeeId:
+                          type: string
+                        name:
+                          type: string
+                        chamber:
+                          type: string
+                          enum:
+                            - house
+                            - senate
+                        congress:
+                          type: integer
+                        bills:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              billId:
+                                type: string
+                              title:
+                                type: string
+                        reports:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              reportId:
+                                type: string
+                              title:
+                                type: string
+        '400':
+          description: Invalid input. Check the query parameters.
+        '500':
+          description: Internal server error.
+  
+  /member:
+    get:
+      operationId: getMembers
+      summary: Retrieve member data with targeted search options.
+      description: Get information about congressional members, including filters for Congress, state, district, sponsorship, and cosponsorship of legislation.
+      parameters:
+        - name: x-api-key
+          in: header
+          required: true
+          description: Your API key for authenticating requests.
+          schema:
+            type: string
+          example: XrYmu3QcA1yuEazqNBb832abd6x6rnVwde9P5PAC
+        - name: bioguideId
+          in: query
+          required: false
+          description: The Biographical Directory ID of the member.
+          schema:
+            type: string
+        - name: congress
+          in: query
+          required: false
+          description: The Congress number to filter members by (e.g., 117).
+          schema:
+            type: integer
+        - name: stateCode
+          in: query
+          required: false
+          description: The state abbreviation (e.g., NY, CA) to filter members by state.
+          schema:
+            type: string
+        - name: district
+          in: query
+          required: false
+          description: The congressional district to filter members by state and district.
+          schema:
+            type: integer
+        - name: sponsorship
+          in: query
+          required: false
+          description: Filter to include legislation sponsored by the member.
+          schema:
+            type: boolean
+        - name: cosponsorship
+          in: query
+          required: false
+          description: Filter to include legislation cosponsored by the member.
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: A JSON array of members with detailed information.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  members:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        memberId:
+                          type: string
+                        name:
+                          type: string
+                        party:
+                          type: string
+                        state:
+                          type: string
+                        district:
+                          type: integer
+                        sponsoredLegislation:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              billId:
+                                type: string
+                              title:
+                                type: string
+                        cosponsoredLegislation:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              billId:
+                                type: string
+                              title:
+                                type: string
+  
+  /amendment:
+    get:
+      operationId: getAmendments
+      summary: Retrieve a list of amendments.
+      description: Get a list of all amendments, with options to filter by various parameters.
+      parameters:
+        - name: x-api-key
+          in: header
+          required: true
+          description: Your API key for authenticating requests.
+          schema:
+            type: string
+          example: XrYmu3QcA1yuEazqNBb832abd6x6rnVwde9P5PAC
+        - name: congress
+          in: query
+          required: false
+          description: The Congress number (e.g., 117).
+          schema:
+            type: integer
+        - name: amendment-type
+          in: query
+          required: false
+          description: The type of amendment.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A JSON array of amendments.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  amendments:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        amendmentId:
+                          type: string
+                        title:
+                          type: string
+                        sponsor:
+                          type: string
+  
+  /committee-report:
+    get:
+      operationId: getCommitteeReports
+      summary: Retrieve a list of committee reports.
+      description: Get a list of all committee reports, with options to filter by various parameters.
+      parameters:
+        - name: x-api-key
+          in: header
+          required: true
+          description: Your API key for authenticating requests.
+          schema:
+            type: string
+          example: XrYmu3QcA1yuEazqNBb832abd6x6rnVwde9P5PAC
+        - name: congress
+          in: query
+          required: false
+          description: The Congress number (e.g., 117).
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: A JSON array of committee reports.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reports:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        reportId:
+                          type: string
+                        title:
+                          type: string
+                        issuedDate:
+                          type: string
+                        committee:
+                          type: string
+  
+  /treaty:
+    get:
+      operationId: getTreaties
+      summary: Retrieve a list of treaties.
+      description: Get a list of all treaties, with options to filter by various parameters.
+      parameters:
+        - name: x-api-key
+          in: header
+          required: true
+          description: Your API key for authenticating requests.
+          schema:
+            type: string
+          example: XrYmu3QcA1yuEazqNBb832abd6x6rnVwde9P5PAC
+        - name: congress
+          in: query
+          required: false
+          description: The Congress number (e.g., 117).
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: A JSON array of treaties.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  treaties:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        treatyId:
+                          type: string
+                        title:
+                          type: string
+                        submittedDate:
+                          type: string
+                        status:
+                          type: string
+  
+  /nomination/{congress}:
+    get:
+      operationId: getNominations
+      summary: Retrieve a list of presidential nominations.
+      description: Get details on presidential nominations submitted to the Senate for a specific Congress.
+      parameters:
+        - name: x-api-key
+          in: header
+          required: true
+          description: Your API key for authenticating requests.
+          schema:
+            type: string
+          example: XrYmu3QcA1yuEazqNBb832abd6x6rnVwde9P5PAC
+        - name: congress
+          in: path
+          required: true
+          description: The Congress number (e.g., 117).
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: A JSON array of nominations.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  nominations:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        nominationId:
+                          type: string
+                        title:
+                          type: string
+                        status:
+                          type: string
+  
+  /congressional-record:
+    get:
+      operationId: getCongressionalRecord
+      summary: Retrieve the Congressional Record.
+      description: Access the official record of the proceedings and debates of the U.S. Congress.
+      parameters:
+        - name: x-api-key
+          in: header
+          required: true
+          description: Your API key for authenticating requests.
+          schema:
+            type: string
+          example: XrYmu3QcA1yuEazqNBb832abd6x6rnVwde9P5PAC
+        - name: congress
+          in: query
+          required: false
+          description: The Congress number (e.g., 117).
+          schema:
+            type: integer
+        - name: date
+          in: query
+          required: false
+          description: The date of the record (YYYY-MM-DD).
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Details from the Congressional Record.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  record:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date:
+                          type: string
+                        content:
+                          type: string
+  
+  /senate-communication:
+    get:
+      summary: Retrieve a list of Senate communications.
+      operationId: getSenateCommunications
+      description: >
+        Get a list of Senate communications with flexible filtering options,
+        including Congress number, type, and date range.
+      parameters:
+        - name: congress
+          in: query
+          required: false
+          description: The Congress number (e.g., 117).
+          schema:
+            type: integer
+        - name: type
+          in: query
+          required: false
+          description: >
+            The type of Senate communication. Supported types include:
+            - `ec`: Executive Communication
+            - `pm`: Presidential Message
+          schema:
+            type: string
+            enum:
+              - ec
+              - pm
+        - name: fromDate
+          in: query
+          required: false
+          description: The start date for filtering communications (YYYY-MM-DD).
+          schema:
+            type: string
+            format: date
+        - name: toDate
+          in: query
+          required: false
+          description: The end date for filtering communications (YYYY-MM-DD).
+          schema:
+            type: string
+            format: date
+        - name: x-api-key
+          in: header
+          required: true
+          description: Your API key for authenticating requests.
+          schema:
+            type: string
+          example: XrYmu3QcA1yuEazqNBb832abd6x6rnVwde9P5PAC
+      responses:
+        '200':
+          description: A list of Senate communications matching the criteria.
+          content:
+            application/json:
+              example:
+                communications:
+                  - communicationId: sc123
+                    type: Executive Communication
+                    number: 123
+                    congress: 117
+                    date: '2025-01-10'
+                    sender: Department of Justice
+                    summary: >
+                      Notification regarding regulations under the Clean Air Act.
+                  - communicationId: sc124
+                    type: Presidential Message
+                    number: 124
+                    congress: 117
+                    date: '2025-01-11'
+                    sender: President
+                    summary: >
+                      Transmittal of the annual budget proposal.
+        '404':
+          description: No communications found for the specified criteria.
