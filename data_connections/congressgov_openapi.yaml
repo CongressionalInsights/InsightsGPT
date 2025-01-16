@@ -79,7 +79,7 @@ paths:
           description: Your API key for authenticating requests.
           schema:
             type: string
-          example: XrYmu3QcA1yuEazqNBb832abd6x6rnVwde9P5PAC
+          example: API-KEY
         - name: congress
           in: query
           required: false
@@ -267,7 +267,7 @@ paths:
           description: Your API key for authenticating requests.
           schema:
             type: string
-          example: XrYmu3QcA1yuEazqNBb832abd6x6rnVwde9P5PAC
+          example: API-KEY
         - name: bioguideId
           in: query
           required: false
@@ -358,7 +358,7 @@ paths:
           description: Your API key for authenticating requests.
           schema:
             type: string
-          example: XrYmu3QcA1yuEazqNBb832abd6x6rnVwde9P5PAC
+          example: API-KEY
         - name: congress
           in: query
           required: false
@@ -403,7 +403,7 @@ paths:
           description: Your API key for authenticating requests.
           schema:
             type: string
-          example: XrYmu3QcA1yuEazqNBb832abd6x6rnVwde9P5PAC
+          example: API-KEY
         - name: congress
           in: query
           required: false
@@ -444,7 +444,7 @@ paths:
           description: Your API key for authenticating requests.
           schema:
             type: string
-          example: XrYmu3QcA1yuEazqNBb832abd6x6rnVwde9P5PAC
+          example: API-KEY
         - name: congress
           in: query
           required: false
@@ -485,7 +485,7 @@ paths:
           description: Your API key for authenticating requests.
           schema:
             type: string
-          example: XrYmu3QcA1yuEazqNBb832abd6x6rnVwde9P5PAC
+          example: API-KEY
         - name: congress
           in: path
           required: true
@@ -524,7 +524,7 @@ paths:
           description: Your API key for authenticating requests.
           schema:
             type: string
-          example: XrYmu3QcA1yuEazqNBb832abd6x6rnVwde9P5PAC
+          example: API-KEY
         - name: congress
           in: query
           required: false
@@ -602,7 +602,7 @@ paths:
           description: Your API key for authenticating requests.
           schema:
             type: string
-          example: XrYmu3QcA1yuEazqNBb832abd6x6rnVwde9P5PAC
+          example: API-KEY
       responses:
         '200':
           description: A list of Senate communications matching the criteria.
