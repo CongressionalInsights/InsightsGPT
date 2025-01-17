@@ -1,0 +1,244 @@
+openapi: 3.1.0
+info:
+  title: FEC API
+  description: API schema for interacting with the Federal Election Commission (FEC) data following their acceptable use policy.
+  version: "1.0.0"
+  contact:
+    name: FEC
+    url: https://github.com/fecgov/FEC
+    email: apiinfo@fec.gov
+servers:
+  - url: https://api.open.fec.gov/v1
+    description: Production Server
+paths:
+  /candidates/search:
+    get:
+      operationId: searchCandidates
+      summary: Search Candidates
+      description: Retrieve a list of candidates based on search criteria.
+      parameters:
+        - name: q
+          in: query
+          description: Search term for candidate name or ID.
+          required: true
+          schema:
+            type: string
+        - name: party
+          in: query
+          description: Filter by party affiliation.
+          required: false
+          schema:
+            type: string
+        - name: election_year
+          in: query
+          description: Filter by election year.
+          required: false
+          schema:
+            type: integer
+        - name: api_key
+          in: query
+          description: API key for authentication.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Candidate'
+        '400':
+          description: Invalid request parameters.
+  /schedules/schedule_a:
+    get:
+      operationId: getItemizedReceipts
+      summary: Get Itemized Receipts
+      description: Retrieve itemized receipt records for committees and contributors.
+      parameters:
+        - name: contributor_name
+          in: query
+          description: Filter by contributor name.
+          required: false
+          schema:
+            type: string
+        - name: committee_id
+          in: query
+          description: Filter by committee ID.
+          required: false
+          schema:
+            type: string
+        - name: two_year_transaction_period
+          in: query
+          description: Specify the election cycle (e.g., 2024).
+          required: false
+          schema:
+            type: integer
+        - name: api_key
+          in: query
+          description: API key for authentication.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FinanceRecord'
+        '400':
+          description: Invalid request parameters.
+  /schedules/schedule_b:
+    get:
+      operationId: getItemizedDisbursements
+      summary: Get Itemized Disbursements
+      description: Retrieve itemized disbursement records for committees and recipients.
+      parameters:
+        - name: recipient_name
+          in: query
+          description: Filter by recipient name.
+          required: false
+          schema:
+            type: string
+        - name: committee_id
+          in: query
+          description: Filter by committee ID.
+          required: false
+          schema:
+            type: string
+        - name: two_year_transaction_period
+          in: query
+          description: Specify the election cycle (e.g., 2024).
+          required: false
+          schema:
+            type: integer
+        - name: api_key
+          in: query
+          description: API key for authentication.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FinanceRecord'
+        '400':
+          description: Invalid request parameters.
+  /committees:
+    get:
+      operationId: getCommittees
+      summary: Get Committees
+      description: Retrieve a list of committees based on search criteria.
+      parameters:
+        - name: q
+          in: query
+          description: Search term for committee name or ID.
+          required: false
+          schema:
+            type: string
+        - name: designation
+          in: query
+          description: Filter by committee designation (e.g., PAC, party).
+          required: false
+          schema:
+            type: string
+        - name: organization_type
+          in: query
+          description: Filter by organization type.
+          required: false
+          schema:
+            type: string
+        - name: api_key
+          in: query
+          description: API key for authentication.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Committee'
+        '400':
+          description: Invalid request parameters.
+components:
+  schemas:
+    Candidate:
+      type: object
+      properties:
+        candidate_id:
+          type: string
+          description: Unique identifier for the candidate.
+        name:
+          type: string
+          description: Name of the candidate.
+        party:
+          type: string
+          description: Party affiliation of the candidate.
+        election_year:
+          type: integer
+          description: Year of the election the candidate is participating in.
+    FinanceRecord:
+      type: object
+      properties:
+        record_id:
+          type: string
+          description: Unique identifier for the financial record.
+        candidate_id:
+          type: string
+          description: Candidate ID associated with the record.
+        committee_id:
+          type: string
+          description: Committee ID associated with the record.
+        amount:
+          type: number
+          description: Monetary amount of the record.
+        type:
+          type: string
+          description: Type of record (e.g., receipt, disbursement).
+        date:
+          type: string
+          format: date
+          description: Date of the transaction.
+    Committee:
+      type: object
+      properties:
+        committee_id:
+          type: string
+          description: Unique identifier for the committee.
+        name:
+          type: string
+          description: Name of the committee.
+        designation:
+          type: string
+          description: Designation of the committee (e.g., authorized, unauthorized).
+        organization_type:
+          type: string
+          description: Organization type of the committee.
+security: []
