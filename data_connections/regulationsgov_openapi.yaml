@@ -8,7 +8,7 @@ info:
   version: '1.0.0'
 
 ########################################################
-# Server & Security
+# SERVERS
 ########################################################
 servers:
   - url: https://api.regulations.gov/v4
@@ -34,29 +34,46 @@ components:
       type: object
       properties:
         totalElements:
-          type: integer
-          description: Total number of elements matching the query.
+          type: 
+          examples:
+            - value: 500
+            - value: 1000
         totalPages:
           type: integer
-          description: Total number of pages.
+          examples:
+            - value: 25
+            - value: 50
         pageNumber:
           type: integer
-          description: Current page number.
+          examples:
+            - value: 1
+            - value: 2
         pageSize:
           type: integer
-          description: Number of elements per page.
+          examples:
+            - value: 20
+            - value: 50
         hasNextPage:
           type: boolean
-          description: Indicates if there is a next page of data.
+          examples:
+            - value: true
+            - value: false
         hasPreviousPage:
           type: boolean
-          description: Indicates if there is a previous page of data.
+          examples:
+            - value: false
+            - value: true
         filters:
           type: object
-          description: The applied filters in the query.
         aggregations:
           type: object
-          description: Aggregated data for various fields in the response.
+        # Add these if your API returns them for token-based pagination
+        nextPageToken:
+          type: string
+          description: Token to retrieve the next set of results
+        previousPageToken:
+          type: string
+          description: Token to retrieve the previous set of results (if supported)
 
     # Attachments are often "included" resources, but for completeness:
     Attachment:
@@ -80,69 +97,40 @@ components:
     DocumentAttributes:
       type: object
       properties:
-        objectId:
-          type: string
-          description: >
-            Internal object identifier for a document (used in some filtering, e.g. `filter[commentOnId]`).
         documentId:
           type: string
-          description: The official identifier for the document (e.g. "FDA-2009-N-0501-0012")
-        docketId:
-          type: string
-          description: The docket to which this document belongs (e.g. "FDA-2009-N-0501")
-        agencyId:
-          type: string
-          description: Agency acronym or ID (e.g. "FDA", "EPA")
-        documentType:
-          type: string
-          description: e.g. "Proposed Rule", "Rule", "Supporting & Related", or "Other"
+          description: The official identifier for the document
+          examples:
+            - value: "EPA-HQ-OAR-2021-0001"
+            - value: "FDA-2020-N-2345"
         title:
           type: string
-          description: Title of the document
-        abstract:
-          type: string
-          description: Short description or abstract for the document
+          description: The title of the document
+          examples:
+            - value: "National Ambient Air Quality Standards"
+            - value: "Food Labeling Regulations"
         postedDate:
           type: string
           format: date-time
-          description: Date/time the document was posted
-        commentStartDate:
-          type: string
-          format: date-time
-          description: When the document began receiving public comments
-        commentDueDate:
-          type: string
-          format: date-time
-          description: The due date for public comments
-        openForComment:
-          type: boolean
-          description: Indicates if the document is currently open for commenting
-        allowLateComment:
-          type: boolean
-          description: Whether late comments may be submitted
-        frNumber:
-          type: string
-          description: Federal Register citation number (if applicable)
-        rin:
-          type: string
-          description: Regulation Identifier Number (if applicable)
-        subtype:
-          type: string
-          description: Further sub-classification of the document
-        withdrawn:
-          type: boolean
-          description: True if this document has been withdrawn or removed
-        # Additional fields as needed by your use case…
+          description: The date the document was posted
+          examples:
+            - value: "2023-11-15T10:00:00Z"
+            - value: "2023-10-10T09:30:00Z"
 
     Document:
       type: object
       properties:
         type:
           type: string
-          example: documents
+          examples:
+            - value: "documents"
+            - value: "rules"
         id:
           type: string
           description: Unique resource ID in the system
+          examples:
+            - value: "EPA-HQ-OAR-2021-0001"
+            - value: "FDA-2020-N-2345"
         attributes:
           $ref: '#/components/schemas/DocumentAttributes'
 
@@ -175,50 +163,53 @@ components:
     DocketAttributes:
       type: object
       properties:
-        docketType:
+        docketId:
           type: string
-          description: Type of docket (e.g., Rulemaking, Nonrulemaking).
+          examples:
+            - value: "EPA-HQ-OAR-2021-0001"
+            - value: "FDA-2020-N-2345"
+        title:
+          type: string
+          examples:
+            - value: "Clean Air Act Regulations"
+            - value: "Food Labeling Modernization Act"
+        agencyId:
+          type: string
+          examples:
+            - value: "EPA"
+            - value: "FDA"
         lastModifiedDate:
           type: string
           format: date-time
-          description: Last modified date of the docket.
-        agencyId:
-          type: string
-          description: Agency ID (e.g., EPA, PTO).
-        title:
-          type: string
-          description: Title of the docket.
-        objectId:
-          type: string
-          description: Internal object ID of the docket.
-        abstract:
-          type: string
-          description: Short description or abstract of the docket.
-        postedDate:
-          type: string
-          format: date-time
-          description: Date the docket was posted.
+          examples:
+            - value: "2023-12-01T14:30:00Z"
+            - value: "2023-11-01T10:00:00Z"
         commentStartDate:
           type: string
           format: date-time
-          description: Start date for comments.
-        commentDueDate:
+          examples:
+            - value: "2023-10-01T08:00:00Z"
+            - value: "2023-09-15T09:00:00Z"
+        commentEndDate:
           type: string
           format: date-time
-          description: Due date for comments.
-        openForComment:
-          type: boolean
-          description: Indicates if the docket is open for commenting.
+          examples:
+            - value: "2023-12-31T23:59:00Z"
+            - value: "2023-11-30T23:59:00Z"
 
     Docket:
       type: object
       properties:
         type:
           type: string
-          example: dockets
+          examples:
+            - value: "dockets"
         id:
           type: string
           description: Unique resource ID of the docket
+          examples:
+            - value: "EPA-HQ-OAR-2021-0001"
+            - value: "FDA-2020-N-2345"
         attributes:
           $ref: '#/components/schemas/DocketAttributes'
 
@@ -265,7 +256,6 @@ components:
     # The Regulations.gov docs define a variety of "always public," "agency configurable," 
     # and "never public" fields. We will place them in one schema but note that 
     # certain fields may not appear in GET responses if an agency has disabled them 
-    # or if they’re never publicly viewable.
 
     CommentAttributes:
       type: object
@@ -308,7 +298,9 @@ components:
           description: Reason the comment was withdrawn (if withdrawn)
         title:
           type: string
-          description: Title of the comment
+          description: Title of the comment. Often includes the submitter's name (e.g., "Comment submitted by V. Cook").
+          examples: 
+            - value: "Comment submitted by V. Cook"
         trackingNbr:
           type: string
           description: Tracking number assigned to the comment
@@ -369,7 +361,8 @@ components:
       properties:
         type:
           type: string
-          example: comments
+          examples:
+            - value: "comments"
         id:
           type: string
           description: Unique resource ID of the comment
@@ -417,8 +410,53 @@ components:
 
     CreateCommentRequest:
       type: object
-      required: [ data ]
+      required:
+        - commentOnDocumentId
+        - comment
+        - submissionType
+        - submitterType
       properties:
+        commentOnDocumentId:
+          type: string
+          description: The ID of the document being commented on.
+          examples:
+            - value: "EPA-HQ-OAR-2021-0001"
+        comment:
+          type: string
+          description: The text of the comment (max 5000 characters).
+          maxLength: 5000
+          examples:
+            - value: "I strongly support this regulation to improve air quality."
+        submissionType:
+          type: string
+          description: Must always be `API`.
+          enum: [API]
+          examples:
+            - value: "API"
+        submitterType:
+          type: string
+          description: The type of the submitter.
+          enum: [ANONYMOUS, INDIVIDUAL, ORGANIZATION]
+          examples:
+            - value: "INDIVIDUAL"
+        firstName:
+          type: string
+          description: First name of the submitter (required for `INDIVIDUAL`).
+          maxLength: 25
+          examples:
+            - value: "John"
+        lastName:
+          type: string
+          description: Last name of the submitter (required for `INDIVIDUAL`).
+          maxLength: 25
+          examples:
+            - value: "Doe"
+        organization:
+          type: string
+          description: Organization name (required for `ORGANIZATION`).
+          maxLength: 120
+          examples:
+            - value: "Environmental Advocacy Group"
         data:
           type: object
           required: [ type, attributes ]
@@ -540,10 +578,21 @@ components:
     CreateCommentResponse:
       type: object
       properties:
-        data:
-          $ref: '#/components/schemas/Comment'
-        meta:
-          $ref: '#/components/schemas/Meta'
+        id:
+          type: string
+          description: The unique ID of the created comment.
+          examples:
+            - value: "123456"
+        status:
+          type: string
+          description: The status of the submitted comment.
+          examples:
+            - value: "submitted"
+        trackingNumber:
+          type: string
+          description: The tracking number assigned to the comment.
+          examples:
+            - value: "ABC-123-DEF-456"
 
     ################################################
     # COMMENT SUBMISSION UTILITIES
@@ -560,7 +609,8 @@ components:
           properties:
             type:
               type: string
-              example: submission-keys
+              examples:
+                - value: "submission-keys"
               description: The type of object being created. Must always be `submission-keys`.
 
     SubmissionKeyResponse:
@@ -576,11 +626,13 @@ components:
           properties:
             id:
               type: string
-              example: m5y-6x6f-oja6
+              examples:
+                - value: "m5y-6x6f-oja6"
               description: The unique identifier for the submission key.
             type:
               type: string
-              example: submission-keys
+              examples:
+                - value: "submission-keys"
               description: The type of object returned. Always `submission-keys`.
 
     FileUploadUrlRequest:
@@ -612,7 +664,8 @@ components:
           properties:
             type:
               type: string
-              example: file-upload-urls
+              examples:
+                - value: "file-upload-urls"
             attributes:
               type: object
               properties:
@@ -636,7 +689,8 @@ components:
             properties:
               type:
                 type: string
-                example: agency-categories
+                examples:
+                  - value: "agency-categories"
               id:
                 type: string
               attributes:
@@ -647,12 +701,6 @@ components:
                   category:
                     type: string
                   # Extend with additional fields if available…
-
-########################################################
-# SECURITY
-########################################################
-security:
-  - xApiKeyAuth: []
 
 ########################################################
 # PATHS
@@ -667,48 +715,48 @@ paths:
       summary: List of documents
       operationId: listDocuments
       description: Returns a list of documents with optional filtering and pagination.
+      security:
+        - xApiKeyAuth: []
       parameters:
         - name: filter[searchTerm]
           in: query
           schema:
             type: string
-          description: Full text search for documents
-        - name: filter[postedDate]
-          in: query
-          schema:
-            type: string
-            format: date
-          description: Exact posted date
-        - name: filter[postedDate][ge]
-          in: query
-          schema:
-            type: string
-            format: date
-          description: Posted date >= some date
-        - name: filter[postedDate][le]
-          in: query
-          schema:
-            type: string
-            format: date
-          description: Posted date <= some date
+            examples:
+              - value: "Clean Air Act"
+              - value: "Environmental Protection"
         - name: filter[docketId]
           in: query
           schema:
             type: string
-          description: Filter by docketId
-        - name: sort
+            examples:
+              - value: "EPA-HQ-OAR-2021-0001"
+              - value: "FDA-2020-N-2345"
+        - name: filter[title]
           in: query
           schema:
             type: string
-          description: Sort (e.g. `postedDate`, `-postedDate`)
+            examples:
+              - value: "National Ambient Air Quality Standards"
+              - value: "Food Labeling Regulations"
+          description: Filter documents by their title.
         - name: page[size]
           in: query
           schema:
             type: integer
+            minimum: 1
+            maximum: 100
+            examples:
+              - value: 10
+              - value: 20
         - name: page[number]
           in: query
           schema:
             type: integer
+            minimum: 1
+            examples:
+              - value: 1
+              - value: 2
       responses:
         '200':
           description: A list of documents
@@ -726,6 +774,8 @@ paths:
       summary: Get detailed information for a specific document
       operationId: getDocument
       description: Retrieve details about a single document by its ID.
+      security:
+        - xApiKeyAuth: []
       parameters:
         - name: documentId
           in: path
@@ -755,109 +805,66 @@ paths:
     get:
       summary: List of comments
       operationId: listComments
-      description: Returns a list of comments with optional filtering and pagination.  
-        If the `filter[docketId]` query returns no results, consider removing the filter or using broader filters 
-        like `filter[agencyId]` or `filter[postedDate][ge]`/`filter[postedDate][le]`.
+      description: >
+        Retrieves a list of comments with optional filtering and pagination.
+      security:
+        - xApiKeyAuth: []
       parameters:
         - name: filter[searchTerm]
           in: query
           schema:
             type: string
-          description: Full text search for comments
-        - name: filter[postedDate]
+            examples:
+              - value: "environment"
+              - value: "health regulations"
+        - name: page[size]
           in: query
           schema:
-            type: string
-            format: date
-          description: Exact posted date
-        - name: filter[postedDate][ge]
+            type: integer
+            examples:
+              - value: 10
+              - value: 50
+        - name: page[number]
           in: query
           schema:
-            type: string
-          description: Posted date >= some date
-        - name: filter[postedDate][le]
-          in: query
-          schema:
-            type: string
-          description: Posted date <= some date
-        - name: filter[commentOnId]
-          in: query
-          schema:
-            type: string
-          description: Filter by the underlying document's objectId
-        - name: filter[docketId]
-          in: query
-          schema:
-            type: string
-          description: Filter by docketId.  
-            If no results are returned, consider using broader filters like `filter[agencyId]` or date filters.
-        - name: filter[agencyId]
-          in: query
-          schema:
-            type: string
-          description: Filter by agency ID
+            type: integer
+            examples:
+              - value: 1
+              - value: 2
         - name: sort
           in: query
           schema:
             type: string
             enum: [postedDate, -postedDate]
-          description: Sort comments by `postedDate` (ascending) or `-postedDate` (descending).
-        - name: page[size]
-          in: query
-          schema:
-            type: integer
-            default: 50
-          description: Number of results per page (default- 50).
-        - name: page[number]
-          in: query
-          schema:
-            type: integer
-          description: Page number to retrieve (optional).
+            examples:
+              - value: "-postedDate"
+              - value: "postedDate"
       responses:
         '200':
           description: A list of comments
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CommentFindAllResponse'
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              example:
-                errors:
-                  - status: "400"
-                    title: "Invalid Parameter"
-                    detail: "The specified docket ID does not exist or is invalid."
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Comment'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
         '401':
-          description: Unauthorized
-          content:
-            application/json:
-              example:
-                errors:
-                  - status: "401"
-                    title: "Unauthorized"
-                    detail: "Invalid or missing X-Api-Key."
-        '404':
-          description: Comments Not Found
-          content:
-            application/json:
-              example:
-                errors:
-                  - status: "404"
-                    title: "Not Found"
-                    detail: "No comments were found for the provided docket ID."
-
+          description: Unauthorized - Check your API key
+        '400':
+          description: Bad request - Invalid parameters
     post:
       summary: Creates a new comment
       operationId: createComment
       description: >
         Submit a new comment resource.  
-        Validations:  
-        - `submissionType` must be "API".  
-        - `submitterType` must be one of "ANONYMOUS", "INDIVIDUAL", "ORGANIZATION".  
-        - If attachments, `submissionKey` must be provided.  
-        - `comment` <= 5000 chars; `email` <= 100 chars; `firstName`/`lastName` <= 25, etc.
+        Required fields include `commentOnDocumentId`, `comment`, `submissionType, and `submitterType` (INDIVIDUAL- 'firstName' and 'lastName') (ORGANIZATION- 'organization').
+      security:
+        - xApiKeyAuth: []
       requestBody:
         required: true
         content:
@@ -874,13 +881,15 @@ paths:
         '400':
           description: Bad Request. Possibly missing required fields or invalid data.
         '401':
-          description: Unauthorized. Check your X-Api-Key.
+          description: Unauthorized. Ensure `X-Api-Key` is valid and included in the header.
 
   /comments/{commentId}:
     get:
       summary: Get detailed information for a specific comment
       operationId: getComment
       description: Retrieve a single comment by its unique ID.
+      security:
+        - xApiKeyAuth: []
       parameters:
         - name: commentId
           in: path
@@ -914,6 +923,8 @@ paths:
         Fetches a list of dockets from the system with support for optional filtering and pagination.
         Users can perform full-text searches across docket fields and specify the number of results per page
         and the page number for paginated responses.
+      security:
+        - xApiKeyAuth: []
       parameters:
         - name: filter[searchTerm]
           in: query
@@ -953,14 +964,14 @@ paths:
           description: Invalid request. Check query parameters.
         '401':
           description: Unauthorized. Ensure a valid API key is provided.
-      security:
-        - xApiKeyAuth: []
 
   /dockets/{docketId}:
     get:
       summary: Get detailed information for a specific docket
       operationId: getDocket
       description: Retrieve a single docket by its unique ID.
+      security:
+        - xApiKeyAuth: []
       parameters:
         - name: docketId
           in: path
@@ -983,21 +994,31 @@ paths:
   /v4/submission-keys:
     post:
       summary: Generate a submission key for uploading attachments
-      description: Creates a submission key to be used for uploading files to Regulations.gov.
       operationId: createSubmissionKey
-      tags:
-        - Submission Keys
+      description: Creates a submission key to be used for uploading files to Regulations.gov.
+      security:
+        - xApiKeyAuth: []
       requestBody:
         required: true
         content:
           application/vnd.api+json:
             schema:
               $ref: '#/components/schemas/SubmissionKeyRequest'
+            examples:
+              sampleFileUploadUrlRequest:
+                summary: Example request to get a presigned URL for an attachment
+                value:
+                  data:
+                    type: file-upload-urls
+                    attributes:
+                      fileName: "myAttachment.pdf"
+                      submissionKey: "abc-123-def-456"
+                      contentType: "application/pdf"
       responses:
         '201':
           description: Submission key successfully created.
           content:
-            application/json:
+            application/vnd.api+json:
               schema:
                 $ref: '#/components/schemas/SubmissionKeyResponse'
         '400':
@@ -1012,6 +1033,8 @@ paths:
       description: |
         Request a presigned S3 URL for uploading an attachment.  
         You must include the `submissionKey` obtained from `/submission-keys`.
+      security:
+        - xApiKeyAuth: []
       requestBody:
         required: true
         content:
@@ -1035,6 +1058,8 @@ paths:
       description: |
         Query agency categories by agency acronym or other filters.
         For example: `/agency-categories?filter[acronym]=FDA`.
+      security:
+        - xApiKeyAuth: []
       parameters:
         - name: filter[acronym]
           in: query
