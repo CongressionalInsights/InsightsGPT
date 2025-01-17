@@ -5,7 +5,7 @@ import os
 # API endpoint and parameters for fetching comments
 get_comments_url = "https://api.regulations.gov/v4/comments"
 headers = {
-    "X-Api-Key": os.getenv("REGULATIONS_API_KEY", "ze5djIUrfnCvhpfkzdzwKwuTQD5yghvLeXivkhLS"),
+    "X-Api-Key": os.getenv("REGULATIONS_API_KEY", "API-KEY HERE"),
     "Content-Type": "application/vnd.api+json",
     "User-Agent": "Regulations.gov API Client/1.0",
     "Accept": "application/vnd.api+json"
