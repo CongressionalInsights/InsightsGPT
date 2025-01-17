@@ -20,12 +20,14 @@ paths:
           description: The owner of the repository.
           schema:
             type: string
+            default: CongressionalInsights
         - name: repo
           in: path
           required: true
           description: The name of the repository.
           schema:
             type: string
+            default: InsightsGPT
       requestBody:
         required: true
         content:
@@ -80,12 +82,14 @@ paths:
           description: The owner of the repository.
           schema:
             type: string
+            default: CongressionalInsights
         - name: repo
           in: path
           required: true
           description: The name of the repository.
           schema:
             type: string
+            default: InsightsGPT
         - name: path
           in: path
           required: true
@@ -143,12 +147,14 @@ paths:
           description: The owner of the repository.
           schema:
             type: string
+            default: CongressionalInsights
         - name: repo
           in: path
           required: true
           description: The name of the repository.
           schema:
             type: string
+            default: InsightsGPT
         - name: path
           in: path
           required: true
@@ -248,35 +254,38 @@ paths:
           required: true
           schema:
             type: string
+            default: CongressionalInsights
         - name: repo
           in: path
           required: true
           schema:
             type: string
+            default: InsightsGPT
         - name: path
           in: path
           required: true
           schema:
             type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - message
-                - sha
-              properties:
-                message:
-                  type: string
-                  description: Commit message for the file deletion.
-                sha:
-                  type: string
-                  description: SHA of the file to be deleted.
-                branch:
-                  type: string
-                  description: The branch name.
+        - name: message
+          in: query
+          required: true
+          schema:
+            type: string
+            description: Commit message for the file deletion.
+            example: Deleting file via API
+        - name: sha
+          in: query
+          required: true
+          schema:
+            type: string
+            description: SHA of the file to be deleted.
+            example: 46502afdd655269a587758ad9d60215dc7087769
+        - name: branch
+          in: query
+          required: false
+          schema:
+            type: string
+            description: Branch name. Defaults to the repository's default branch.
       responses:
         '204':
           description: File successfully deleted. No content returned.
@@ -301,12 +310,14 @@ paths:
           description: The owner of the repository.
           schema:
             type: string
+            default: CongressionalInsights
         - name: repo
           in: path
           required: true
           description: The name of the repository.
           schema:
             type: string
+            default: InsightsGPT
         - name: workflow_id
           in: path
           required: true
