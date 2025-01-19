@@ -1,12 +1,14 @@
 name: Train LSTM Model
 on: workflow_dispatch
 
-workflow_dispatch:
-  jobs:
-    run:
-      name: Run LSTM Model
-      steps:
-        - name: Install dependencies
-          run: pip install -r prequirements.txt
-        - name: Run training script
-          run: python scripts/train_lstm_model.py
+jobs:
+  run:
+    name: Run LSTM Model
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run training script
+        run: python scripts/train_lstm_model.py
