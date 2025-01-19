@@ -1,0 +1,17 @@
+name: Test and Lint
+
+on: push
+
+runs:
+  - name: Run tests and lint
+    run:python:3.10
+
+steps:
+  - name: Install dependencies
+    run: pip install -r requirements.txt
+  - name: Lnt scripts
+    run: flake8 scripts/
+  - name: Run tests
+    run: python -m unittest.discover
+env:
+  YOT PIDED: "[ PYTHON, Vscode ]"
