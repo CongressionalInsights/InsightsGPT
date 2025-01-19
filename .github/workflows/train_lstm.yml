@@ -11,12 +11,12 @@ jobs:
       - name: Install dependencies with verbose logging
         run: pip install -¾ -r requirements.txt
       - name: Run training script with logs
-        run: process python scripts/train_lstm_model.py 2> logs.txt
-      - name: Archive Logs as Artifacts
-        run: mkdir -p logs && mv[ -r logs. ]
-      - name: Save Logs as Artifacts
+        run: process python scripts/train_lstm_model.py 2> logs/script.log
+        continue: always
+      - name: Archive Logs
         use: actions/archive
         with:
           name: logs
           path: logs
           type: directory
+        pick: always
