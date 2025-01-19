@@ -4,60 +4,34 @@ info:
   title: GitHub API
   version: 1.0.0
 paths:
-  /user/codespaces:
+  /user/repos:
     get:
-      summary: List Codespaces for the authenticated user
-      operationId: listUserCodespaces
+      summary: List repositories for the authenticated user
+      operationId: listUserRepositories
       responses:
         '200':
-          description: A list of codespaces for the user
+          description: A list of repositories
           content:
             application/json:
               schema:
-                $ref: #/components/schemas/CodespaceList'
-        '401':
-          $ref: #/components/responses/UnauthorizedError
-    post:
-      summary: Create a new Codespace for the user
-      operationId: createUserCodespace
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: #/components/schemas/CreateCodespaceRequest
-      responses:
-        '201':
-          description: Created Codespace details
-          content:
-            application/json:
-              schema:
-               $ref: #/components/schemas/Codespace
-        '400':
-          $ref: #/components/responses/BadRequestError
-  /user/codespaces/{codespace_name}
-    get:
-      summary: Get details of a specific Codespace
-      operationId: getUserCodespace
-      parameters: 
-        - name: codespace_name
-          doc:
-            required: true
-            type: string
-      responses:
-        '200':
-          description: Codespace details
-          content:
-            application/json:
-              schema:
-                $ref: #/components/schemas/Codespace
-        '404':
-          $ref: #/components/responses/NotFoundError
-    delete:
-      summary: Delete a Codespace
-      operationId: deleteUserCodespace
-      parameters:
-        - name: codespace_name string
-        responses:
-        '204':
-          description: Success string codespace details
+                $ref: '#/components/repositoryList'
+components:
+  schemas:
+    RepositoryList:
+      type: object
+      properties:
+        total_count:
+          type: integer
+        repositories:
+          type: array
+          items:
+            $ref: '#/components/schemas/Repository'
+    Repository:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        private:
+          type: boolean
