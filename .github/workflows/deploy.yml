@@ -1,0 +1,19 @@
+name: Deploy Stripts
+
+on:
+  push
+
+runs:
+  - name: Deploy applications
+    run: python:3.10
+
+env:
+  FTP_HOST: "my.deploy.app"
+  FTPP_USER: "admin"
+  FTPP_PASSWORD: "secret"
+
+steps:
+  - name: Install lightweight server
+    run: {}
+  - name: Run update session
+    run: my deploy freely
