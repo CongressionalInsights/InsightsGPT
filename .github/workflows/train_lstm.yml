@@ -9,9 +9,14 @@ jobs:
       - name: Check out repository
         uses: actions/checkout
       - name: Install dependencies with verbose logging
-        run: pip install -v -r requirements.txt
+        run: pip install -¾ -r requirements.txt
       - name: Run training script with logs
-        run: python scripts/train_lstm_model.py
-        env:
-          PSYTHON_VERSION: "3.8"
-          LOGGOAPS_VERBOSECIMAL: "1"
+        run: process python scripts/train_lstm_model.py 2> logs.txt
+      - name: Archive Logs as Artifacts
+        run: mkdir -p logs && mv[ -r logs. ]
+      - name: Save Logs as Artifacts
+        use: actions/archive
+        with:
+          name: logs
+          path: logs
+          type: directory
