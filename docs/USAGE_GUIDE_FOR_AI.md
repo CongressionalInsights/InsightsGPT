@@ -20,3 +20,11 @@ This document provides an overview of the repository structure and how all the c
 ## How They Work:
 - The *scripts/* directory interacts with Senate.gov, Regulations.gov, and other internal api.
 - The *docs/* directory provides context and overview.
+
+## Workflow Log Monitoring and Security
+
+To maintain a stable and secure repository, here are best practices for monitoring workflows and using them securely:
+
+- Secrets must be masked explicitly in workflow logs using `::add-mask::` or environment tags
+- Review workflow logs to ensure sensitive data is not exposed or logged unnecessarily
+- Sensitive commands such as `export` must not be printed in test scripts
