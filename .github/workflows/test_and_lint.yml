@@ -1,10 +1,9 @@
 name: Test and Lint
 
 on:
-  push
-  workflow_dispatch:
+  workflow_dispatch
 
-runs: 
+runs:
   - name: Run tests and lint
     run: python:3.10
 
