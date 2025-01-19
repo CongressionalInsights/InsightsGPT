@@ -1,37 +1,50 @@
 
-openapi: 3.2.0
-info:
-  title: GitHub API
-  version: 1.0.0
 paths:
-  /user/repos:
+  /user/codespaces:
     get:
-      summary: List repositories for the authenticated user
-      operationId: listUserRepositories
+      summary: List Codespaces for the authenticated user
+      operationId: listUserCodespaces
       responses:
         '200':
-          description: A list of repositories
+          description: A list of codespaces for the user
           content:
             application/json:
               schema:
-                $ref: '#/components/repositoryList'
+                $ref: '#/components/schemas/CodespaceList'
+    post:
+      summary: Create a new Codespace for the user
+      operationId: createUserCodespace
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCodespaceRequest'
 components:
   schemas:
-    RepositoryList:
+    CodespaceList:
       type: object
       properties:
         total_count:
           type: integer
-        repositories:
-          type: array
-          items:
-            $ref: '#/components/schemas/Repository'
-    Repository:
+        codespaces:
+        type: array
+        items: 
+          $ref: #/components/schemas/Codespace
+    Codespace:
       type: object
       properties:
         id:
           type: string
         name:
           type: string
-        private:
-          type: boolean
+        state:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        machine:
+          type: string
