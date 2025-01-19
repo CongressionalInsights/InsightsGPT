@@ -8,8 +8,10 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout
-      - name: Install dependencies
+      - name: Install dependencies with verbose logging
         run: pip install -v -r requirements.txt
-        env: { [PHYTON_VERSION] : "3.8" }
-      - name: Run training script
+      - name: Run training script with logs
         run: python scripts/train_lstm_model.py
+        env:
+          PSYTHON_VERSION: "3.8"
+          LOGGOAPS_VERBOSECIMAL: "1"
