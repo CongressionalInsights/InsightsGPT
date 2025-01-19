@@ -1,5 +1,371 @@
+openapi: 3.1.0
+info:
+  title: GitHub API Integration
+  description: Automate interactions with GitHub repositories for issue creation, workflow triggering, and content read/write operations.
+  version: 2.0.0
+
+servers:
+  - url: https://api.github.com
 
 paths:
+  /repos/{owner}/{repo}/issues:
+    post:
+      operationId: createGitHubIssue
+      summary: Create a GitHub Issue
+      description: Create a new issue in the specified repository.
+      parameters:
+        - name: owner
+          in: path
+          required: true
+          description: The owner of the repository.
+          schema:
+            type: string
+            default: CongressionalInsights
+        - name: repo
+          in: path
+          required: true
+          description: The name of the repository.
+          schema:
+            type: string
+            default: InsightsGPT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: The title of the issue.
+                  examples: 
+                    - value: "Bug in committee endpoint"
+                body:
+                  type: string
+                  description: A detailed description of the issue.
+                  examples: 
+                    - value: "When calling the committee endpoint, a 500 error occurs."
+                labels:
+                  type: array
+                  items:
+                    type: string
+                  description: Labels to assign to the issue.
+                  examples: 
+                    - value: "bug" 
+                    - value: "api"
+      responses:
+        '201':
+          description: Issue successfully created.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    description: The ID of the created issue.
+                  url:
+                    type: string
+                    description: The URL of the created issue.
+        '400':
+          description: Invalid request parameters.
+        '401':
+          description: Unauthorized. Check your API token.
+      security:
+        - BearerAuth: []
+
+  /repos/{owner}/{repo}/contents/{path}:
+    get:
+      operationId: getRepositoryContents
+      summary: Get Repository Contents
+      description: Retrieve the contents of a specific path in a repository.
+      parameters:
+        - name: owner
+          in: path
+          required: true
+          description: The owner of the repository.
+          schema:
+            type: string
+            default: CongressionalInsights
+        - name: repo
+          in: path
+          required: true
+          description: The name of the repository.
+          schema:
+            type: string
+            default: InsightsGPT
+        - name: path
+          in: path
+          required: true
+          description: The repository path to fetch.
+          schema:
+            type: string
+            examples: 
+              - value: "README.md"
+      responses:
+        '200':
+          description: Contents successfully retrieved.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          description: The name of the file or directory.
+                        path:
+                          type: string
+                          description: The path of the file or directory.
+                        type:
+                          type: string
+                          description: Whether it is a file or directory.
+                  - type: object
+                    properties:
+                      name:
+                        type: string
+                        description: The name of the file.
+                      path:
+                        type: string
+                        description: The path of the file.
+                      content:
+                        type: string
+                        description: The Base64-encoded file content.
+                      sha:
+                        type: string
+                        description: The file's SHA hash.
+        '404':
+          description: Path not found.
+      security:
+        - BearerAuth: []
+
+    put:
+      operationId: createOrUpdateFile
+      summary: Create or Update a File
+      description: Create a new file or update an existing file in the repository.
+      parameters:
+        - name: owner
+          in: path
+          required: true
+          description: The owner of the repository.
+          schema:
+            type: string
+            default: CongressionalInsights
+        - name: repo
+          in: path
+          required: true
+          description: The name of the repository.
+          schema:
+            type: string
+            default: InsightsGPT
+        - name: path
+          in: path
+          required: true
+          description: The file path in the repository to create or update.
+          schema:
+            type: string
+            examples: 
+              - value: "docs/new-file.md"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - message
+                - content
+              properties:
+                message:
+                  type: string
+                  description: Commit message for the file change.
+                  examples: 
+                    - value: "Create or update new-file.md"
+                content:
+                  type: string
+                  description: Base64-encoded contents of the file.
+                  examples:
+                    - value: "QmFzZSA2NCBlbmNvZGVkIGNvbnRlbnQgZXhhbXBsZQ=="
+                sha:
+                  type: string
+                  description: SHA of the file being updated. Omit if creating a new file.
+                  examples: 
+                    - value: "c5c3b..."
+                branch:
+                  type: string
+                  description: The branch name. Defaults to the repository’s default branch if not specified.
+                  examples: 
+                    - value: "feature-branch"
+      responses:
+        '200':
+          description: File successfully updated.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      path:
+                        type: string
+                      sha:
+                        type: string
+                  commit:
+                    type: object
+                    properties:
+                      sha:
+                        type: string
+                      url:
+                        type: string
+        '201':
+          description: File successfully created.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      path:
+                        type: string
+                      sha:
+                        type: string
+                  commit:
+                    type: object
+                    properties:
+                      sha:
+                        type: string
+                      url:
+                        type: string
+        '400':
+          description: Invalid request.
+        '401':
+          description: Unauthorized.
+        '422':
+          description: Validation error.
+      security:
+        - BearerAuth: []
+
+    delete:
+      operationId: deleteFile
+      summary: Delete a File
+      description: Delete an existing file from the repository.
+      parameters:
+        - name: owner
+          in: path
+          required: true
+          schema:
+            type: string
+            default: CongressionalInsights
+        - name: repo
+          in: path
+          required: true
+          schema:
+            type: string
+            default: InsightsGPT
+        - name: path
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: message
+          in: query
+          required: true
+          schema:
+            type: string
+            description: Commit message for the file deletion.
+            examples: 
+              - value: "Deleting file via API"
+        - name: sha
+          in: query
+          required: true
+          schema:
+            type: string
+            description: SHA of the file to be deleted.
+            examples: 
+              - value: "46502afdd655269a587758ad9d60215dc7087769"
+        - name: branch
+          in: query
+          required: false
+          schema:
+            type: string
+            description: Branch name. Defaults to the repository's default branch.
+      responses:
+        '204':
+          description: File successfully deleted. No content returned.
+        '400':
+          description: Invalid request.
+        '401':
+          description: Unauthorized.
+        '422':
+          description: Validation error.
+      security:
+        - BearerAuth: []
+
+  /repos/{owner}/{repo}/actions/workflows/{workflow_id}/dispatches:
+    post:
+      operationId: triggerGitHubWorkflow
+      summary: Trigger a GitHub Workflow
+      description: Dispatch a GitHub Actions workflow in a repository.
+      parameters:
+        - name: owner
+          in: path
+          required: true
+          description: The owner of the repository.
+          schema:
+            type: string
+            default: CongressionalInsights
+        - name: repo
+          in: path
+          required: true
+          description: The name of the repository.
+          schema:
+            type: string
+            default: InsightsGPT
+        - name: workflow_id
+          in: path
+          required: true
+          description: The ID or filename of the workflow to dispatch.
+          schema:
+            type: string
+            examples: 
+              - value: "main.yml"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - ref
+              properties:
+                ref:
+                  type: string
+                  description: The branch or tag to run the workflow on.
+                  examples: 
+                    - value: "main"
+                inputs:
+                  type: object
+                  additionalProperties:
+                    type: string
+                  description: Input parameters for the workflow.
+      responses:
+        '204':
+          description: Workflow successfully triggered.
+        '404':
+          description: Workflow not found.
+        '422':
+          description: Validation error (e.g., invalid branch or tag).
+      security:
+        - BearerAuth: []
   /user/codespaces:
     get:
       summary: List Codespaces for the authenticated user
@@ -11,6 +377,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CodespaceList'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
     post:
       summary: Create a new Codespace for the user
       operationId: createUserCodespace
@@ -20,6 +388,49 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/CreateCodespaceRequest'
+      responses:
+        '201':
+          description: Created Codespace details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Codespace'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+  /user/codespaces/{codespace_name}:
+    get:
+      summary: Get details of a specific Codespace
+      operationId: getUserCodespace
+      parameters:
+        - name: codespace_name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Codespace details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Codespace'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    delete:
+      summary: Delete a Codespace
+      operationId: deleteUserCodespace
+      parameters:
+        - name: codespace_name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content - Codespace deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
 components:
   schemas:
     CodespaceList:
@@ -28,9 +439,9 @@ components:
         total_count:
           type: integer
         codespaces:
-        type: array
-        items: 
-          $ref: #/components/schemas/Codespace
+          type: array
+          items:
+            $ref: '#/components/schemas/Codespace'
     Codespace:
       type: object
       properties:
@@ -48,3 +459,27 @@ components:
           format: date-time
         machine:
           type: string
+          description: The machine type used for this Codespace
+    CreateCodespaceRequest:
+      type: object
+      properties:
+        repository_id:
+          type: integer
+        branch:
+          type: string
+        machine:
+          type: string
+        devcontainer_path:
+          type: ["string", "null"]
+  responses:
+    UnauthorizedError:
+      description: User is not authenticated
+    BadRequestError:
+      description: Invalid request payload
+    NotFoundError:
+      description: The specified Codespace does not exist
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: "GitHub Personal Access Token"
