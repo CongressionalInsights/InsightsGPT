@@ -1,18 +1,17 @@
 name: Test and Lint
 
-on: push
+on:
+  push
+  workflow_dispatch:
 
-runs:
+runs: 
   - name: Run tests and lint
-    run:python:3.10
+    run: python:3.10
 
 steps:
   - name: Install dependencies
-    run: pip install -r requirements.txt
-    env:
-      REGULATIONS_API_KEY: "$exposed_secret"
-      echo "::add-mask::${REGULATIONS_API_KEY}"
+    run: pip install -r spcip
   - name: Lnt scripts
-    run: flake8 scripts/
+    run: flake8 scripts/  
   - name: Run tests
     run: python -m unittest.discover
