@@ -1,30 +1,22 @@
-
 # AI_USAGE_GUIDE
 
-This file provides guidelines for your specific use with GitHub and other functionalities. Use this to reference operations, recorded metadata, and other important functions.
+This file provides specific instructions for using the ai system with focus on LSTM modeling and its applications. Use this guide to explore and apply the system's features securely.
 
-## BM25 Format Key Points:
-- Maximum metric density and query precision.
-- Top terms include: "Files", "Log", "Commitments", "Recent Start".
-- Rise Unique for index-retripped structure.
+## LSTM System Overview
 
-## Repository Organization Thesis
+The LSTM system is integral to congressional workflow testing and automated learning tasks, including:
 
-This document provides an overview of the repository structure and how all the components fit together so that they work both independently and synergistically.
+- Using the Congress.gov API to fetch data on Bills.
+- Preprocessing data using design and categorical transforms.
+- Training an LSTM model to predict bill progression.
+- Automating workflows to retrain and evaluate the model, updating it when necessary.
+- Saving the model and data for interactive analysis.
 
-## Major Components:
-- *scripts/*: Contains all the core scripts for interacting with congressional and regulational data. Each file provides logics and error handling.
-- *docs/* : Non-code reference files including guides, contributions, and structured metadata to help users and contributors.
-- .github/workflows/* : Specifies and implements for testing, wiring, and deploying code.
+## Step-By-Step Implementation
 
-## How They Work:
-- The *scripts/* directory interacts with Senate.gov, Regulations.gov, and other internal api.
-- The *docs/* directory provides context and overview.
-
-## Workflow Log Monitoring and Security
-
-To maintain a stable and secure repository, here are best practices for monitoring workflows and using them securely:
-
-- Secrets must be masked explicitly in workflow logs using `::add-mask::` or environment tags
-- Review workflow logs to ensure sensitive data is not exposed or logged unnecessarily
-- Sensitive commands such as `export` must not be printed in test scripts
+Following step-by-step concepts, the system can:
+ 1. Collect data using the api.
+ 2. Preprocess and export the data to the *data/* directory.
+ 3. Setup training parameters, define the model, and validate.
+ 4. Run and monitor results automatically using GitHub workflows.
+ 5. Save trained models and generate visualizations for validation.
