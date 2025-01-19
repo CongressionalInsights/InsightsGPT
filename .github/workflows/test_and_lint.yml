@@ -9,9 +9,10 @@ runs:
 steps:
   - name: Install dependencies
     run: pip install -r requirements.txt
+    env:
+      REGULATIONS_API_KEY: "$exposed_secret"
+      echo "::add-mask::${REGULATIONS_API_KEY}"
   - name: Lnt scripts
     run: flake8 scripts/
   - name: Run tests
     run: python -m unittest.discover
-env:
-  YOT PIDED: "[ PYTHON, Vscode ]"
