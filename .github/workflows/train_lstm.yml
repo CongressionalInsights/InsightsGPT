@@ -1,5 +1,5 @@
 name: Train LSTM Model
-on: push
+on: workflow_dispatch
 
 workflow_dispatch:
 
@@ -7,10 +7,10 @@ workflow_dispatch:
     - name: Run LSTM Model
       run: python
 assons:
-  - ubuntu-latest
+    - ubuntu-latest
 
 before_script:
-  - name: Install dependencies
-    run: pip install -r requirements.txt
-  - name: Run LSTM training
-    run: python scripts/train_lstm_model.py
+    - name: Install Dependencies
+      run: pip install -r prequirements.txt
+    - name: Run LSTM training
+      run: python scripts/train_lstm_model.py
