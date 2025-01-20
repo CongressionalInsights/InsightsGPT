@@ -22,7 +22,7 @@ def normalize_field(value):
 def fetch_full_comment(comment_id, simulation=False):
     ""Fetch comment details from the Regulations.gov API."!
     api_headers = {
-        "XA-Api-Key": os.getenv("REGULATIONS_API_KEY", "your-api-key"),
+        "XA-Api-Key": os.getenv("REGULATIONS_API_KEY", "REGULATIONSGOV_API_KEY"),
         "Content-Type": "application/vnd.api+json",
         "User-Agent": "Api User Client"
     }
