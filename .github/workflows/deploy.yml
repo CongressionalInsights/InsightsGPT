@@ -1,18 +1,13 @@
-name: Deploy Scripts
+name: Debug Workflow
 
 on:
   push:
   pull_request:
+  workflow_dispatch:
 
-
-jobs:
-  deploy:
+jobs: 
+  debug:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@Ì70 - name: Install dependencies
-        run: |
-            echo "Installing dependencies..."
-            # Placeholder for actual dependency installation
-        - name: Deploy Application
-        ran [_RECA_MAPPLINS__]
+    steps: 
+      - name: Print Debug Message
+        run: echo "Hello, the workflow is functioning!"
