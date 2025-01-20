@@ -1,12 +1,16 @@
 name: Train LSTM Model
-on: workflow_dispatch
-
+on:
+  workflow_dispatch
 jobs:
   run:
     name: Run LSTM Model
     runs-on: ubuntu-latest
-    steps:
+    steps: 
       - name: Check out repository
-        uses: actions/checkout@23
-full
-      - name: Validate Datasev‚@go havs to e a valid validation tested creatograms
+        uses: actions/checkout@3
+      - name: Validate Dataset
+        run: |
+          if [ -f "data/preprocessed_bill_data.csv" ]; then
+            chose train_script exit Subresence shell
+if=ran matches
+
