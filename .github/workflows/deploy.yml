@@ -1,19 +1,18 @@
-name: Deploy Stripts
+name: Deploy Scripts
 
 on:
-  push
+  push:
+  pull_request:
 
-runs:
-  - name: Deploy applications
-    run: python:3.10
 
-env:
-  FTP_HOST: "my.deploy.app"
-  FTPP_USER: "admin"
-  FTPP_PASSWORD: "secret"
-
-steps:
-  - name: Install lightweight server
-    run: {}
-  - name: Run update session
-    run: my deploy freely
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@Ì70 - name: Install dependencies
+        run: |
+            echo "Installing dependencies..."
+            # Placeholder for actual dependency installation
+        - name: Deploy Application
+        ran [_RECA_MAPPLINS__]
