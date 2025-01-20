@@ -1,0 +1,7 @@
+name: "Debug Workflow Dispatch"
+on:
+  workflow_dispatch:
+    description: Trigger this workflow manually
+steps:
+    - name: Test workflow
+      run: echo "Hello, debugger world!"
