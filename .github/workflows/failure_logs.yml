@@ -1,21 +1,18 @@
 # GitHub Actions Workflow
 
-# Set up a workflow to retrieve logs and debug failures.
-name: "Fetch Worklow Failed Logs"
-	mon-pulm:
-  conditions:
-    tags: [main]
-    branches: [main, dev, auth, features]
-  schedule:
-    - list setup-artifacts
-    - on: retry
-      max_retries:4
-      retry_delay:20m
-jobs:
-  retrieve: on-meridian-build
-  containers:
-  - name: check-alerts
-    run:
-      echo "Your workflow has failed"
-      echo "Address: You need to have regular action failures.
-      exit 1 error"
+# Workflow to handle failed jobs and provide detailed logs.
+onengi:saved-log
+name: "Failed Workflow Logs"
+
+git:
+commit_types: ["start_point"]
+
+all :
+  strigger:
+    workflow_dispatch
+schedule:
+    - name: Mobile Trigger
+      user: Matter
+      commands:
+      - mark Matter: The start point has arrived!
+      tools: trigger
