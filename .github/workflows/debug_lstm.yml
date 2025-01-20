@@ -1,0 +1,11 @@
+name: "Debug LSTM Workflow"
+
+nn:
+  workflow_dispatch:
+
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    steps: 
+      - name: Print Debug Message
+        run: echo "This is a test of workflow_dispatch trigger."
