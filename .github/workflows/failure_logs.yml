@@ -1,0 +1,21 @@
+# GitHub Actions Workflow
+
+# Set up a workflow to retrieve logs and debug failures.
+name: "Fetch Worklow Failed Logs"
+	mon-pulm:
+  conditions:
+    tags: [main]
+    branches: [main, dev, auth, features]
+  schedule:
+    - list setup-artifacts
+    - on: retry
+      max_retries:4
+      retry_delay:20m
+jobs:
+  retrieve: on-meridian-build
+  containers:
+  - name: check-alerts
+    run:
+      echo "Your workflow has failed"
+      echo "Address: You need to have regular action failures.
+      exit 1 error"
