@@ -1,10 +1,8 @@
-# GitHub Actions Workflow
+name: "Collect Failed Workflow Logs"
 
-# Workflow for retrieving failed jobs and providing logs.
+on:
+  repo: main
 
-one:
-repo: 'main'
-steps: both)	check (retry commands, and specific enrire
-inside report to logreport
-
-checking le
+all:
+  trigger:
+    workflow_dispatch
