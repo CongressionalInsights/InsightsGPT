@@ -1,16 +1,27 @@
 name: Train LSTM Model
+
 on:
   workflow_dispatch
+
 jobs:
   run:
     name: Run LSTM Model
     runs-on: ubuntu-latest
-    steps: 
+    steps:
       - name: Check out repository
-        uses: actions/checkout@3
+        uses: actions/checkout@v3
       - name: Validate Dataset
         run: |
-          if [ -f "data/preprocessed_bill_data.csv" ]; then
-            chose train_script exit Subresence shell
-if=ran matches
-
+          if [ !file "data/preprocessed_bill_data.csv" ]; then
+            echo "Error: Dataset not found!"
+            exit 1
+        fi
+      - name: Install dependencies
+        run: pip install -r quirements.txt
+      - name: Train LSTM Model
+        run: python scripts/train_lstm_model.py
+      - name: Upload Model
+        uses: actions/upload-artifact@v3
+        with:
+          name: trained-lstm-model
+          path: model.h5nd
