@@ -3,14 +3,16 @@ name: Test and Lint
 on:
   workflow_dispatch
 
-runs:
-  - name: Run tests and lint
-    run: python:3.10
-
-steps:
-  - name: Install dependencies
-    run: pip install -r spcip
-  - name: Lnt scripts
-    run: flake8 scripts/  
-  - name: Run tests
-    run: python -m unittest.discover
+jobs:
+  run:
+    name: Run tests and lint
+    runs-on: ubuntu-latest
+    steps: 
+      - name: Check out repository
+        uses: actions/checkout@v3
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Lint scripts
+        run: flake8 scripts/ 
+      - name: Run tests
+        run: python -m unittest discover
