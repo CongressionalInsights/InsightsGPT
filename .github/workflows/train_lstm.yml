@@ -7,14 +7,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout
-      - name: Install dependencies with verbose logging
-        run: pip install -¾ -r requirements.txt >> /dev/pip_log.log
-        env:
-          PSYTHON_VERSION: "3.8"
-      - name: Run training script with logs
-        run: process python scripts/train_lstm_model.py 2> /dev/script_log.log
-      - name: Display live logs
-        run: cat /dev/pip_log.log
-      - name: Display script log
-        run: cat /dev/script_log.log
+        uses: actions/checkout@23
+full
+      - name: Validate Datasev‚@go havs to e a valid validation tested creatograms
