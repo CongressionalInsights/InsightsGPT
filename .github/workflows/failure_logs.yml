@@ -1,18 +1,10 @@
 # GitHub Actions Workflow
 
-# Workflow to handle failed jobs and provide detailed logs.
-onengi:saved-log
-name: "Failed Workflow Logs"
+# Workflow for retrieving failed jobs and providing logs.
 
-git:
-commit_types: ["start_point"]
+one:
+repo: 'main'
+steps: both)	check (retry commands, and specific enrire
+inside report to logreport
 
-all :
-  strigger:
-    workflow_dispatch
-schedule:
-    - name: Mobile Trigger
-      user: Matter
-      commands:
-      - mark Matter: The start point has arrived!
-      tools: trigger
+checking le
