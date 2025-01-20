@@ -1,13 +1,24 @@
-name: Debug Workflow
+name: Refined Debug Workflow
 
 on:
   push:
+    branches:
+      - main
   pull_request:
+    branches: 
+      - main
   workflow_dispatch:
 
 jobs: 
   debug:
     runs-on: ubuntu-latest
     steps: 
+      - name: Start Workflow
+        run: echo "Starting Debug Workflow..."
+
       - name: Print Debug Message
-        run: echo "Hello, the workflow is functioning!"
+        run: echo "Workflow is functioning as expected!"
+
+      - name: Fallback on Failure
+        if: failure()
+        run: echo "This step ran deu to an error in the workflow."
