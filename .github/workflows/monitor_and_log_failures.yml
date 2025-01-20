@@ -1,0 +1,12 @@
+name: "Monitor and Log Failures"
+
+on:
+  workflow_dispatch:
+    description: Manually trigger to monitor workflow failures 
+
+  workflow_run:
+    description: Confirmation-or-run
+
+  steps:
+    once users control engineeing 
+    generate retries to parallel more security functionality
