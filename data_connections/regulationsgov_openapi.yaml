@@ -1,136 +1,71 @@
 openapi: 3.1.0
 info:
-  title: Regulations.gov API
+  title: Regulations.gov API (v4) - Inline X-Api-Key
   description: >
-    Comprehensive OpenAPI specification for Regulations.gov (v4).  
-    Allows searching documents, comments, dockets, and submitting comments with optional file uploads.  
-    Aligned with official documentation to make regulatory data freely accessible.
-  version: '1.0.0'
+    This version inlines the X-Api-Key parameter in each endpoint to avoid
+    "missing or non-string name" errors for parameter $ref references.
+  version: '3.0.1'
 
-########################################################
-# SERVERS
-########################################################
 servers:
   - url: https://api.regulations.gov/v4
     description: Production endpoint for Regulations.gov API
 
 components:
-  securitySchemes:
-    xApiKeyAuth:
-      type: apiKey
-      in: header
-      name: X-Api-Key
-      description: Provide your Regulations.gov API key in the `X-Api-Key` header.
-
-  ########################################################
-  # SCHEMAS
-  ########################################################
-
-  ########################################
-  # Common / Shared Schemas
-  ########################################
   schemas:
     Meta:
       type: object
+      description: "Pagination/total metadata"
       properties:
         totalElements:
-          type: 
-          examples:
-            - value: 500
-            - value: 1000
+          type: integer
         totalPages:
           type: integer
-          examples:
-            - value: 25
-            - value: 50
         pageNumber:
           type: integer
-          examples:
-            - value: 1
-            - value: 2
         pageSize:
           type: integer
-          examples:
-            - value: 20
-            - value: 50
         hasNextPage:
           type: boolean
-          examples:
-            - value: true
-            - value: false
         hasPreviousPage:
           type: boolean
-          examples:
-            - value: false
-            - value: true
-        filters:
-          type: object
-        aggregations:
-          type: object
-        # Add these if your API returns them for token-based pagination
         nextPageToken:
           type: string
-          description: Token to retrieve the next set of results
         previousPageToken:
           type: string
-          description: Token to retrieve the previous set of results (if supported)
 
-    # Attachments are often "included" resources, but for completeness:
     Attachment:
       type: object
+      description: "Attachment details"
       properties:
         id:
           type: string
-          description: Attachment identifier
         fileName:
           type: string
         fileFormat:
           type: string
-          description: The MIME type or file format
         url:
           type: string
-          description: Where the attachment can be accessed (if publicly available)
 
-    ########################################
-    # DOCUMENTS
-    ########################################
     DocumentAttributes:
       type: object
+      description: "Attributes for a Document"
       properties:
         documentId:
           type: string
-          description: The official identifier for the document
-          examples:
-            - value: "EPA-HQ-OAR-2021-0001"
-            - value: "FDA-2020-N-2345"
         title:
           type: string
-          description: The title of the document
-          examples:
-            - value: "National Ambient Air Quality Standards"
-            - value: "Food Labeling Regulations"
         postedDate:
           type: string
           format: date-time
-          description: The date the document was posted
-          examples:
-            - value: "2023-11-15T10:00:00Z"
-            - value: "2023-10-10T09:30:00Z"
 
     Document:
       type: object
+      description: "Minimal Document object"
       properties:
         type:
           type: string
-          examples:
-            - value: "documents"
-            - value: "rules"
         id:
           type: string
-          description: Unique resource ID in the system
-          examples:
-            - value: "EPA-HQ-OAR-2021-0001"
-            - value: "FDA-2020-N-2345"
         attributes:
           $ref: '#/components/schemas/DocumentAttributes'
 
@@ -151,65 +86,39 @@ components:
           $ref: '#/components/schemas/Document'
         included:
           type: array
-          description: Optional included resources (e.g. attachments)
           items:
             $ref: '#/components/schemas/Attachment'
         meta:
           $ref: '#/components/schemas/Meta'
 
-    ########################################
-    # DOCKETS
-    ########################################
     DocketAttributes:
       type: object
+      description: "Attributes for a Docket"
       properties:
         docketId:
           type: string
-          examples:
-            - value: "EPA-HQ-OAR-2021-0001"
-            - value: "FDA-2020-N-2345"
         title:
           type: string
-          examples:
-            - value: "Clean Air Act Regulations"
-            - value: "Food Labeling Modernization Act"
         agencyId:
           type: string
-          examples:
-            - value: "EPA"
-            - value: "FDA"
         lastModifiedDate:
           type: string
           format: date-time
-          examples:
-            - value: "2023-12-01T14:30:00Z"
-            - value: "2023-11-01T10:00:00Z"
         commentStartDate:
           type: string
           format: date-time
-          examples:
-            - value: "2023-10-01T08:00:00Z"
-            - value: "2023-09-15T09:00:00Z"
         commentEndDate:
           type: string
           format: date-time
-          examples:
-            - value: "2023-12-31T23:59:00Z"
-            - value: "2023-11-30T23:59:00Z"
 
     Docket:
       type: object
+      description: "Docket object"
       properties:
         type:
           type: string
-          examples:
-            - value: "dockets"
         id:
           type: string
-          description: Unique resource ID of the docket
-          examples:
-            - value: "EPA-HQ-OAR-2021-0001"
-            - value: "FDA-2020-N-2345"
         attributes:
           $ref: '#/components/schemas/DocketAttributes'
 
@@ -221,26 +130,7 @@ components:
           items:
             $ref: '#/components/schemas/Docket'
         meta:
-          type: object
-          properties:
-            totalElements:
-              type: integer
-              description: Total number of matching dockets.
-            totalPages:
-              type: integer
-              description: Total number of pages.
-            pageNumber:
-              type: integer
-              description: Current page number.
-            pageSize:
-              type: integer
-              description: Number of results per page.
-            hasNextPage:
-              type: boolean
-              description: Whether there is a next page.
-            hasPreviousPage:
-              type: boolean
-              description: Whether there is a previous page.
+          $ref: '#/components/schemas/Meta'
 
     DocketFindOneResponse:
       type: object
@@ -250,122 +140,33 @@ components:
         meta:
           $ref: '#/components/schemas/Meta'
 
-    ########################################
-    # COMMENTS
-    ########################################
-    # The Regulations.gov docs define a variety of "always public," "agency configurable," 
-    # and "never public" fields. We will place them in one schema but note that 
-    # certain fields may not appear in GET responses if an agency has disabled them 
-
     CommentAttributes:
       type: object
+      description: "Attributes for a Comment"
       properties:
-        # Always publicly viewable:
-        agencyId:
+        id:
           type: string
-          description: The posting agency's acronym or ID
-        comment:
+        type:
           type: string
-          description: The text of the comment
-        commentOnId:
-          type: string
-          description: The internal objectId of the underlying document (NOT the doc's documentId)
-        docketId:
-          type: string
-          description: The docket ID if applicable
-        documentId:
-          type: string
-          description: The official documentId if applicable
-        documentType:
-          type: string
-          description: Type of the document on which this comment is posted
-        postedDate:
-          type: string
-          format: date-time
-          description: When the comment was posted
-        receiveDate:
-          type: string
-          format: date-time
-          description: When the comment was received by the system
-        restrictReason:
-          type: string
-          description: Reason for restricting comment (if restricted)
-        restrictReasonType:
-          type: string
-          description: Type of restriction (if restricted)
-        reasonWithdrawn:
-          type: string
-          description: Reason the comment was withdrawn (if withdrawn)
-        title:
-          type: string
-          description: Title of the comment. Often includes the submitter's name (e.g., "Comment submitted by V. Cook").
-          examples: 
-            - value: "Comment submitted by V. Cook"
-        trackingNbr:
-          type: string
-          description: Tracking number assigned to the comment
-        withdrawn:
-          type: boolean
-          description: Indicates if the comment was withdrawn
-
-        # Agency-configurable (may or may not appear):
-        city:
-          type: string
-          description: City of the commenter
-        country:
-          type: string
-          description: Country of the commenter
-        docAbstract:
-          type: string
-          description: Summary or abstract for the comment
-        firstName:
-          type: string
-          description: First name of the commenter
-        govAgency:
-          type: string
-          description: Government agency to which the commenter belongs
-        govAgencyType:
-          type: string
-          description: Government agency type
-        lastName:
-          type: string
-          description: Last name of the commenter
-        legacyId:
-          type: string
-          description: Legacy ID from older systems
-        organization:
-          type: string
-          description: Name of the organization if `submitterType` = ORGANIZATION
-        pageCount:
-          type: integer
-          description: Number of pages if an attachment or doc is included
-        postmarkDate:
-          type: string
-          format: date-time
-          description: Postmark date of the comment submission
-        stateProvinceRegion:
-          type: string
-          description: State, province, or region
-        subtype:
-          type: string
-          description: Subtype of the comment
-        zip:
-          type: string
-          description: Zip or postal code
-
-        # Fields never publicly viewable are excluded from GET (or marked writeOnly).
-        # E.g.: originalDocumentId, address1, address2, email, phone, fax, etc.
+        attributes:
+          type: object
+          properties:
+            title:
+              type: string
+            comment:
+              type: string
+            postedDate:
+              type: string
+              format: date-time
 
     Comment:
       type: object
+      description: "Single Comment"
       properties:
         type:
           type: string
-          examples:
-            - value: "comments"
         id:
           type: string
-          description: Unique resource ID of the comment
         attributes:
           $ref: '#/components/schemas/CommentAttributes'
 
@@ -386,217 +187,79 @@ components:
           $ref: '#/components/schemas/Comment'
         included:
           type: array
-          description: Optional attachments if requested
           items:
             $ref: '#/components/schemas/Attachment'
         meta:
           $ref: '#/components/schemas/Meta'
 
-    ################################################
-    # COMMENT CREATION (POST) SCHEMAS
-    ################################################
-    # The official docs have specific validations for creating or posting comments.
-    # - commentOnDocumentId, comment, submissionType, submitterType are required.
-    # - If sendEmailReceipt = true, then email is required.
-    # - comment <= 5000 bytes/characters
-    # - email <= 100 bytes/characters
-    # - firstName, lastName <= 25
-    # - city, stateProvinceRegion, phone, country <= 50
-    # - zip <= 10
-    # - organization <= 120
-    # - submissionType = "API"
-    # - submitterType ∈ {ANONYMOUS, INDIVIDUAL, ORGANIZATION}
-    # - If attaching files, must include submissionKey and array of file names in `files`.
-
     CreateCommentRequest:
       type: object
       required:
-        - commentOnDocumentId
-        - comment
-        - submissionType
-        - submitterType
+        - type
+        - attributes
       properties:
-        commentOnDocumentId:
+        type:
           type: string
-          description: The ID of the document being commented on.
-          examples:
-            - value: "EPA-HQ-OAR-2021-0001"
-        comment:
-          type: string
-          description: The text of the comment (max 5000 characters).
-          maxLength: 5000
-          examples:
-            - value: "I strongly support this regulation to improve air quality."
-        submissionType:
-          type: string
-          description: Must always be `API`.
-          enum: [API]
-          examples:
-            - value: "API"
-        submitterType:
-          type: string
-          description: The type of the submitter.
-          enum: [ANONYMOUS, INDIVIDUAL, ORGANIZATION]
-          examples:
-            - value: "INDIVIDUAL"
-        firstName:
-          type: string
-          description: First name of the submitter (required for `INDIVIDUAL`).
-          maxLength: 25
-          examples:
-            - value: "John"
-        lastName:
-          type: string
-          description: Last name of the submitter (required for `INDIVIDUAL`).
-          maxLength: 25
-          examples:
-            - value: "Doe"
-        organization:
-          type: string
-          description: Organization name (required for `ORGANIZATION`).
-          maxLength: 120
-          examples:
-            - value: "Environmental Advocacy Group"
-        data:
+          description: "Should be 'comments'"
+        attributes:
           type: object
-          required: [ type, attributes ]
+          required:
+            - commentOnDocumentId
+            - comment
+            - submissionType
+            - submitterType
           properties:
-            type:
+            commentOnDocumentId:
               type: string
-              enum: [comments]
-            attributes:
-              type: object
-              required:
-                - commentOnDocumentId
-                - comment
-                - submissionType
-                - submitterType
-              properties:
-                # The main required fields:
-                commentOnDocumentId:
-                  type: string
-                  description: The document's objectId (not the public documentId)
-                comment:
-                  type: string
-                  description: The comment text (max 5000)
-                  maxLength: 5000
-                submissionType:
-                  type: string
-                  enum:
-                    - API
-                  description: Must be "API"
-                submitterType:
-                  type: string
-                  enum:
-                    - ANONYMOUS
-                    - INDIVIDUAL
-                    - ORGANIZATION
-                  description: Type of submitter
-
-                # Additional validations:
-                sendEmailReceipt:
-                  type: boolean
-                  description: If true, the `email` field is required
-                email:
-                  type: string
-                  description: Email address (max 100). Not publicly viewable.
-                  maxLength: 100
-                  writeOnly: true
-
-                # For INDIVIDUAL submitters:
-                firstName:
-                  type: string
-                  maxLength: 25
-                lastName:
-                  type: string
-                  maxLength: 25
-
-                # For ORGANIZATION submitters:
-                organization:
-                  type: string
-                  maxLength: 120
-                organizationType:
-                  type: string
-                  description: Additional classification for the organization
-
-                # Address/Location fields (writeOnly if never public):
-                address1:
-                  type: string
-                  writeOnly: true
-                address2:
-                  type: string
-                  writeOnly: true
-                city:
-                  type: string
-                  maxLength: 50
-                stateProvinceRegion:
-                  type: string
-                  maxLength: 50
-                zip:
-                  type: string
-                  maxLength: 10
-                country:
-                  type: string
-                  maxLength: 50
-
-                # Contact fields (writeOnly if never public):
-                phone:
-                  type: string
-                  maxLength: 50
-                  writeOnly: true
-                fax:
-                  type: string
-                  maxLength: 50
-                  writeOnly: true
-
-                # Attachments & multi-submission:
-                submissionKey:
-                  type: string
-                  description: Required if you're attaching files
-                files:
-                  type: array
-                  description: File names that were uploaded via presigned URLs
-                  items:
-                    type: string
-                numItemsReceived:
-                  type: integer
-                  description: If multiple submissions are included in a single attachment
-
-                # Additional optional fields from the docs:
-                docAbstract:
-                  type: string
-                govAgency:
-                  type: string
-                govAgencyType:
-                  type: string
-                legacyId:
-                  type: string
-                postmarkDate:
-                  type: string
-                  format: date-time
+            comment:
+              type: string
+            submissionType:
+              type: string
+              enum: [API]
+            submitterType:
+              type: string
+              enum: [ANONYMOUS, INDIVIDUAL, ORGANIZATION]
+            firstName:
+              type: string
+            lastName:
+              type: string
+            organization:
+              type: string
+            files:
+              type: array
+              items:
+                type: string
+            sendEmailReceipt:
+              type: boolean
+            email:
+              type: string
+            numItemsReceived:
+              type: integer
+            city:
+              type: string
+            stateProvinceRegion:
+              type: string
+            country:
+              type: string
+            zip:
+              type: string
+            phone:
+              type: string
+            category:
+              type: string
+            submissionKey:
+              type: string
 
     CreateCommentResponse:
       type: object
       properties:
         id:
           type: string
-          description: The unique ID of the created comment.
-          examples:
-            - value: "123456"
         status:
           type: string
-          description: The status of the submitted comment.
-          examples:
-            - value: "submitted"
         trackingNumber:
           type: string
-          description: The tracking number assigned to the comment.
-          examples:
-            - value: "ABC-123-DEF-456"
 
-    ################################################
-    # COMMENT SUBMISSION UTILITIES
-    ################################################
     SubmissionKeyRequest:
       type: object
       required:
@@ -609,9 +272,7 @@ components:
           properties:
             type:
               type: string
-              examples:
-                - value: "submission-keys"
-              description: The type of object being created. Must always be `submission-keys`.
+              description: "Must be 'submission-keys'"
 
     SubmissionKeyResponse:
       type: object
@@ -626,14 +287,8 @@ components:
           properties:
             id:
               type: string
-              examples:
-                - value: "m5y-6x6f-oja6"
-              description: The unique identifier for the submission key.
             type:
               type: string
-              examples:
-                - value: "submission-keys"
-              description: The type of object returned. Always `submission-keys`.
 
     FileUploadUrlRequest:
       type: object
@@ -664,21 +319,14 @@ components:
           properties:
             type:
               type: string
-              examples:
-                - value: "file-upload-urls"
             attributes:
               type: object
               properties:
                 url:
                   type: string
-                  description: The presigned S3 URL to upload a file
                 fields:
                   type: object
-                  description: Key-value form fields required for the S3 upload
 
-    ########################################
-    # AGENCY CATEGORIES
-    ########################################
     AgencyCategoriesResponse:
       type: object
       properties:
@@ -689,8 +337,6 @@ components:
             properties:
               type:
                 type: string
-                examples:
-                  - value: "agency-categories"
               id:
                 type: string
               attributes:
@@ -700,83 +346,63 @@ components:
                     type: string
                   category:
                     type: string
-                  # Extend with additional fields if available…
 
-########################################################
-# PATHS
-########################################################
 paths:
 
-  ########################################
-  # DOCUMENTS
-  ########################################
   /documents:
     get:
-      summary: List of documents
       operationId: listDocuments
-      description: Returns a list of documents with optional filtering and pagination.
-      security:
-        - xApiKeyAuth: []
+      summary: List of documents
+      description: Returns documents with optional filters.
       parameters:
+        - name: X-Api-Key
+          in: header
+          required: true
+          schema:
+            type: string
+          description: "API_KEY_HERE"
         - name: filter[searchTerm]
           in: query
           schema:
             type: string
-            examples:
-              - value: "Clean Air Act"
-              - value: "Environmental Protection"
         - name: filter[docketId]
           in: query
           schema:
             type: string
-            examples:
-              - value: "EPA-HQ-OAR-2021-0001"
-              - value: "FDA-2020-N-2345"
         - name: filter[title]
           in: query
           schema:
             type: string
-            examples:
-              - value: "National Ambient Air Quality Standards"
-              - value: "Food Labeling Regulations"
-          description: Filter documents by their title.
         - name: page[size]
           in: query
           schema:
             type: integer
             minimum: 1
             maximum: 100
-            examples:
-              - value: 10
-              - value: 20
         - name: page[number]
           in: query
           schema:
             type: integer
             minimum: 1
-            examples:
-              - value: 1
-              - value: 2
       responses:
         '200':
           description: A list of documents
           content:
-            application/json:
+            application/vnd.api+json:
               schema:
                 $ref: '#/components/schemas/DocumentFindAllResponse'
-        '400':
-          description: Bad Request
-        '401':
-          description: Unauthorized. Check your X-Api-Key.
 
   /documents/{documentId}:
     get:
-      summary: Get detailed information for a specific document
       operationId: getDocument
-      description: Retrieve details about a single document by its ID.
-      security:
-        - xApiKeyAuth: []
+      summary: Get info for a specific document
       parameters:
+        - name: X-Api-Key
+          in: header
+          required: true
+          schema:
+            type: string
+          description: "API_KEY_HERE"
         - name: documentId
           in: path
           required: true
@@ -784,7 +410,6 @@ paths:
             type: string
         - name: include
           in: query
-          description: Include attachments by specifying "attachments"
           schema:
             type: string
             enum: [attachments]
@@ -792,105 +417,81 @@ paths:
         '200':
           description: A single document resource
           content:
-            application/json:
+            application/vnd.api+json:
               schema:
                 $ref: '#/components/schemas/DocumentFindOneResponse'
         '404':
-          description: Document not found
+          description: Not found
 
-  ########################################
-  # COMMENTS
-  ########################################
   /comments:
     get:
-      summary: List of comments
       operationId: listComments
-      description: >
-        Retrieves a list of comments with optional filtering and pagination.
-      security:
-        - xApiKeyAuth: []
+      summary: Fetch comments
       parameters:
+        - name: X-Api-Key
+          in: header
+          required: true
+          schema:
+            type: string
+          description: "API_KEY_HERE"
         - name: filter[searchTerm]
           in: query
           schema:
             type: string
-            examples:
-              - value: "environment"
-              - value: "health regulations"
         - name: page[size]
           in: query
           schema:
             type: integer
-            examples:
-              - value: 10
-              - value: 50
-        - name: page[number]
-          in: query
-          schema:
-            type: integer
-            examples:
-              - value: 1
-              - value: 2
-        - name: sort
+            minimum: 1
+            maximum: 100
+            default: 10
+        - name: page[after]
           in: query
           schema:
             type: string
-            enum: [postedDate, -postedDate]
-            examples:
-              - value: "-postedDate"
-              - value: "postedDate"
       responses:
         '200':
           description: A list of comments
           content:
-            application/json:
+            application/vnd.api+json:
               schema:
-                type: object
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Comment'
-                  meta:
-                    $ref: '#/components/schemas/Meta'
-        '401':
-          description: Unauthorized - Check your API key
-        '400':
-          description: Bad request - Invalid parameters
+                $ref: '#/components/schemas/CommentFindAllResponse'
+
     post:
-      summary: Creates a new comment
       operationId: createComment
-      description: >
-        Submit a new comment resource.  
-        Required fields include `commentOnDocumentId`, `comment`, `submissionType, and `submitterType` (INDIVIDUAL- 'firstName' and 'lastName') (ORGANIZATION- 'organization').
-      security:
-        - xApiKeyAuth: []
+      summary: Create a new comment
+      parameters:
+        - name: X-Api-Key
+          in: header
+          required: true
+          schema:
+            type: string
+          description: "API_KEY_HERE"
       requestBody:
         required: true
         content:
-          application/json:
+          application/vnd.api+json:
             schema:
               $ref: '#/components/schemas/CreateCommentRequest'
       responses:
         '201':
-          description: The newly created comment
+          description: Created comment
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/CreateCommentResponse'
-        '400':
-          description: Bad Request. Possibly missing required fields or invalid data.
-        '401':
-          description: Unauthorized. Ensure `X-Api-Key` is valid and included in the header.
 
   /comments/{commentId}:
     get:
-      summary: Get detailed information for a specific comment
       operationId: getComment
-      description: Retrieve a single comment by its unique ID.
-      security:
-        - xApiKeyAuth: []
+      summary: Get a specific comment
       parameters:
+        - name: X-Api-Key
+          in: header
+          required: true
+          schema:
+            type: string
+          description: "API_KEY_HERE"
         - name: commentId
           in: path
           required: true
@@ -898,7 +499,6 @@ paths:
             type: string
         - name: include
           in: query
-          description: Include attachments by specifying "attachments"
           schema:
             type: string
             enum: [attachments]
@@ -910,69 +510,53 @@ paths:
               schema:
                 $ref: '#/components/schemas/CommentFindOneResponse'
         '404':
-          description: Comment not found
+          description: Not found
 
-  ########################################
-  # DOCKETS
-  ########################################
   /dockets:
     get:
-      summary: Retrieve a list of dockets
       operationId: listDockets
-      description: |
-        Fetches a list of dockets from the system with support for optional filtering and pagination.
-        Users can perform full-text searches across docket fields and specify the number of results per page
-        and the page number for paginated responses.
-      security:
-        - xApiKeyAuth: []
+      summary: Retrieve a list of dockets
       parameters:
-        - name: filter[searchTerm]
-          in: query
-          required: false
+        - name: X-Api-Key
+          in: header
+          required: true
           schema:
             type: string
-          description: |
-            Perform a full-text search across all docket fields.
-            Example: `environmental protection`.
+          description: "API_KEY_HERE"
+        - name: filter[searchTerm]
+          in: query
+          schema:
+            type: string
         - name: page[size]
           in: query
-          required: false
           schema:
             type: integer
             minimum: 1
             maximum: 250
-          description: |
-            The number of results to retrieve per page.
-            Default is 20. Maximum allowed is 250.
         - name: page[number]
           in: query
-          required: false
           schema:
             type: integer
             minimum: 1
-          description: |
-            The page number to retrieve. 
-            Example: For `page[size]=10`, `page[number]=2` will fetch results 11–20.
       responses:
         '200':
-          description: Successfully retrieved a list of dockets.
+          description: A list of dockets
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/DocketFindAllResponse'
-        '400':
-          description: Invalid request. Check query parameters.
-        '401':
-          description: Unauthorized. Ensure a valid API key is provided.
 
   /dockets/{docketId}:
     get:
-      summary: Get detailed information for a specific docket
       operationId: getDocket
-      description: Retrieve a single docket by its unique ID.
-      security:
-        - xApiKeyAuth: []
+      summary: Get a single docket
       parameters:
+        - name: X-Api-Key
+          in: header
+          required: true
+          schema:
+            type: string
+          description: "API_KEY_HERE"
         - name: docketId
           in: path
           required: true
@@ -980,61 +564,50 @@ paths:
             type: string
       responses:
         '200':
-          description: A single docket resource
+          description: A single docket
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/DocketFindOneResponse'
         '404':
-          description: Docket not found
+          description: Not found
 
-  ########################################
-  # COMMENT SUBMISSION UTILITIES
-  ########################################
-  /v4/submission-keys:
+  /submission-keys:
     post:
-      summary: Generate a submission key for uploading attachments
       operationId: createSubmissionKey
-      description: Creates a submission key to be used for uploading files to Regulations.gov.
-      security:
-        - xApiKeyAuth: []
+      summary: Generate a submission key
+      parameters:
+        - name: X-Api-Key
+          in: header
+          required: true
+          schema:
+            type: string
+          description: "API_KEY_HERE"
       requestBody:
         required: true
         content:
           application/vnd.api+json:
             schema:
               $ref: '#/components/schemas/SubmissionKeyRequest'
-            examples:
-              sampleFileUploadUrlRequest:
-                summary: Example request to get a presigned URL for an attachment
-                value:
-                  data:
-                    type: file-upload-urls
-                    attributes:
-                      fileName: "myAttachment.pdf"
-                      submissionKey: "abc-123-def-456"
-                      contentType: "application/pdf"
       responses:
         '201':
-          description: Submission key successfully created.
+          description: Created submission key
           content:
             application/vnd.api+json:
               schema:
                 $ref: '#/components/schemas/SubmissionKeyResponse'
-        '400':
-          description: Bad Request - Invalid input.
-        '500':
-          description: Internal Server Error - Something went wrong on the server side.
-  
+
   /file-upload-urls:
     post:
-      summary: Creates a presigned URL to upload file
       operationId: createFileUploadUrl
-      description: |
-        Request a presigned S3 URL for uploading an attachment.  
-        You must include the `submissionKey` obtained from `/submission-keys`.
-      security:
-        - xApiKeyAuth: []
+      summary: Create a presigned S3 URL
+      parameters:
+        - name: X-Api-Key
+          in: header
+          required: true
+          schema:
+            type: string
+          description: "API_KEY_HERE"
       requestBody:
         required: true
         content:
@@ -1043,24 +616,23 @@ paths:
               $ref: '#/components/schemas/FileUploadUrlRequest'
       responses:
         '201':
-          description: A newly created presigned URL
+          description: Presigned URL created
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/FileUploadUrlResponse'
-        '401':
-          description: Unauthorized
 
   /agency-categories:
     get:
-      summary: Returns a list of agency categories
       operationId: listAgencyCategories
-      description: |
-        Query agency categories by agency acronym or other filters.
-        For example: `/agency-categories?filter[acronym]=FDA`.
-      security:
-        - xApiKeyAuth: []
+      summary: Returns a list of categories
       parameters:
+        - name: X-Api-Key
+          in: header
+          required: true
+          schema:
+            type: string
+          description: "API_KEY_HERE"
         - name: filter[acronym]
           in: query
           schema:
@@ -1072,5 +644,3 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AgencyCategoriesResponse'
-        '401':
-          description: Unauthorized
