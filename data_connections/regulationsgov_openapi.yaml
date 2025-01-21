@@ -360,7 +360,7 @@ paths:
           required: true
           schema:
             type: string
-          description: "API_KEY_HERE"
+          description: "REGULATIONSGOV_API_KEY"
         - name: filter[searchTerm]
           in: query
           schema:
@@ -402,7 +402,7 @@ paths:
           required: true
           schema:
             type: string
-          description: "API_KEY_HERE"
+          description: "REGULATIONSGOV_API_KEY"
         - name: documentId
           in: path
           required: true
@@ -433,7 +433,7 @@ paths:
           required: true
           schema:
             type: string
-          description: "API_KEY_HERE"
+          description: "REGULATIONSGOV_API_KEY"
         - name: filter[searchTerm]
           in: query
           schema:
@@ -466,7 +466,7 @@ paths:
           required: true
           schema:
             type: string
-          description: "API_KEY_HERE"
+          description: "REGULATIONSGOV_API_KEY"
       requestBody:
         required: true
         content:
@@ -491,7 +491,7 @@ paths:
           required: true
           schema:
             type: string
-          description: "API_KEY_HERE"
+          description: "REGULATIONSGOV_API_KEY"
         - name: commentId
           in: path
           required: true
@@ -522,7 +522,7 @@ paths:
           required: true
           schema:
             type: string
-          description: "API_KEY_HERE"
+          description: "REGULATIONSGOV_API_KEY"
         - name: filter[searchTerm]
           in: query
           schema:
@@ -556,7 +556,7 @@ paths:
           required: true
           schema:
             type: string
-          description: "API_KEY_HERE"
+          description: "REGULATIONSGOV_API_KEY"
         - name: docketId
           in: path
           required: true
@@ -582,7 +582,7 @@ paths:
           required: true
           schema:
             type: string
-          description: "API_KEY_HERE"
+          description: "REGULATIONSGOV_API_KEY"
       requestBody:
         required: true
         content:
@@ -607,7 +607,7 @@ paths:
           required: true
           schema:
             type: string
-          description: "API_KEY_HERE"
+          description: "REGULATIONSGOV_API_KEY"
       requestBody:
         required: true
         content:
@@ -632,7 +632,7 @@ paths:
           required: true
           schema:
             type: string
-          description: "API_KEY_HERE"
+          description: "REGULATIONSGOV_API_KEY"
         - name: filter[acronym]
           in: query
           schema:
