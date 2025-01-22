@@ -1,1 +1,266 @@
-This directory holds data connection configuration files.
+### API Endpoints Summary
+
+#### Congress.gov API
+
+- **Endpoint:** `/members`
+  - **Status:** Functional
+  - **Description:** Retrieves information about congressional members, including biographical details, chamber, district, state, party affiliation, and terms.
+  - **Usage:** Analyze congressional representation and member activities or access metadata for specific members.
+  - **Examples:**
+    1. **Name:** Maggie Goodlander
+       - **Chamber:** House of Representatives
+       - **State:** New Hampshire
+       - **District:** 2
+       - **Party:** Democratic
+       - **Details:** [View JSON](https://api.congress.gov/v3/member/G000604?format=json)
+    2. **Name:** Michael Waltz
+       - **Chamber:** House of Representatives
+       - **State:** Florida
+       - **District:** 6
+       - **Party:** Republican
+       - **Details:** [View JSON](https://api.congress.gov/v3/member/W000823?format=json)
+    3. **Name:** Emily Randall
+       - **Chamber:** House of Representatives
+       - **State:** Washington
+       - **District:** 6
+       - **Party:** Democratic
+       - **Details:** [View JSON](https://api.congress.gov/v3/member/R000621?format=json)
+
+- **Endpoint:** `/committee-reports`
+
+  - **Status:** Functional
+  - **Description:** Retrieves reports from congressional committees, providing citations, report numbers, and links for further details.
+  - **Usage:** Analyze committee activities, track legislative progress, or access detailed reports by chamber.
+  - **Examples:**
+    1. **House Report (H. Rept. 118-817):**
+       - **Congress:** 118
+       - **Type:** House Report (HRPT)
+       - **Citation:** H. Rept. 118-817
+       - **Details:** [View JSON](https://api.congress.gov/v3/committee-report/118/HRPT/817?format=json)
+    2. **Senate Report (S. Rept. 118-261):**
+       - **Congress:** 118
+       - **Type:** Senate Report (SRPT)
+       - **Citation:** S. Rept. 118-261
+       - **Details:** [View JSON](https://api.congress.gov/v3/committee-report/118/SRPT/261?format=json)
+    3. **House Report (H. Rept. 118-545, Part 2):**
+       - **Congress:** 118
+       - **Type:** House Report (HRPT)
+       - **Citation:** H. Rept. 118-545, Part 2
+       - **Details:** [View JSON](https://api.congress.gov/v3/committee-report/118/HRPT/545?format=json)
+
+- **Endpoint:** `/bill`
+
+  - **Status:** Functional
+  - **Description:** Retrieves a list of the most recent bills.
+  - **Usage:** Fetch latest bills with basic metadata for analysis or linking.
+  - **Example:** Title: *Postal Service Reform Act of 2022*, Congress: 117, Latest Action: Became Public Law No: 117-108.
+
+- **Endpoint:** `/bill/{congress}/{billType}/{billNumber}`
+
+  - **Status:** Functional
+  - **Description:** Provides detailed information about a specific bill.
+  - **Usage:** Retrieve comprehensive details including actions and amendments.
+  - **Example:** Title: *Postal Service Reform Act of 2022*, Introduced Date: 2021-05-11.
+
+- **Endpoint:** `/bill/{congress}/{billType}/{billNumber}/actions`
+
+  - **Status:** Functional
+  - **Description:** Lists all actions taken on a specific bill.
+  - **Usage:** Track legislative progress including votes and amendments.
+  - **Example:** Action: Became Public Law No: 117-108, Date: 2022-04-06.
+
+- **Endpoint:** `/bill/{congress}/{billType}/{billNumber}/amendments`
+
+  - **Status:** Functional
+  - **Description:** Lists all amendments proposed for a specific bill and provides details about each amendment, including purpose and legislative action.
+  - **Usage:** Identify changes, their purposes, and outcomes.
+  - **Example:**
+    1. **Amendment SA 8**:
+       - **Congress:** 119
+       - **Purpose:** To include crimes resulting in death or serious bodily injury in the list of offenses requiring mandatory detention for inadmissible aliens.
+       - **Latest Action:** Agreed to in Senate by Yea-Nay Vote (75 - 24). Record Vote Number: 6 on 2025-01-20.
+       - **Details:** [View JSON](https://api.congress.gov/v3/amendment/119/samdt/8?format=json)
+    2. **Amendment SA 14**:
+       - **Congress:** 119
+       - **Purpose:** To expand the list of criminal offenses subjecting inadmissible aliens to mandatory detention.
+       - **Latest Action:** Agreed to in Senate by Yea-Nay Vote (70 - 25). Record Vote Number: 3 on 2025-01-15.
+       - **Details:** [View JSON](https://api.congress.gov/v3/amendment/119/samdt/14?format=json)
+    3. **Amendment SA 23**:
+       - **Congress:** 119
+       - **Purpose:** To strike a section allowing State attorneys general to sue Federal immigration authorities for alleged violations related to detention.
+       - **Latest Action:** Not agreed to in Senate by Yea-Nay Vote (46 - 49). Record Vote Number: 4 on 2025-01-15.
+       - **Details:** [View JSON](https://api.congress.gov/v3/amendment/119/samdt/23?format=json)
+
+- **Endpoint:** `/bill/{congress}/{billType}/{billNumber}/cosponsors`
+
+  - **Status:** Functional
+  - **Description:** Lists all cosponsors of a specific bill.
+  - **Usage:** Determine bipartisan or partisan support for a bill.
+  - **Example:** Name: Carolyn Maloney, Party: D, State: NY.
+
+- **Endpoint:** `/bill/{congress}/{billType}/{billNumber}/subjects`
+
+  - **Status:** Functional
+  - **Description:** Lists policy areas and legislative subjects associated with a bill.
+  - **Usage:** Analyze focus areas and potential impact of a bill.
+  - **Example:** Subject: Administrative law and regulatory procedures.
+
+- **Endpoint:** `/bill/{congress}/{billType}/{billNumber}/summaries`
+
+  - **Status:** Functional
+  - **Description:** Provides summaries of the bill's contents.
+  - **Usage:** Quickly understand the bill's purpose and key provisions.
+  - **Example:** Summary: Establishes procedures for postal employees to enroll in Medicare Part B.
+
+- **Endpoint:** `/bill/{congress}/{billType}/{billNumber}/text`
+
+  - **Status:** Functional
+  - **Description:** Lists text versions of the bill in different formats (e.g., PDF, HTML).
+  - **Usage:** Access and analyze the official text of the bill at various stages.
+  - **Example:** Format: PDF, Type: Introduced in House.
+
+- **Endpoint:** `/bill/{congress}/{billType}/{billNumber}/relatedbills`
+
+  - **Status:** Functional
+  - **Description:** Lists bills related by subject, text, or legislative intent.
+  - **Usage:** Explore companion bills or overlapping legislation.
+  - **Example:** Number: 3075, Relationship: Companion measure.
+
+- **Endpoint:** `/bill/{congress}/{billType}/{billNumber}/titles`
+
+  - **Status:** Functional
+  - **Description:** Lists various titles assigned to a bill (official, short, popular).
+  - **Usage:** Understand how the bill is identified in different contexts.
+  - **Example:** Title Type: Short Title, Title: Postal Service Reform Act of 2022.
+
+- **Endpoint:** `/committee`
+
+  - **Status:** Known Issue
+  - **Description:** Retrieves a list of congressional committees. Currently unreliable based on recent logs.
+  - **Usage:** List committees and subcommittees in both chambers.
+  - **Example:** N/A.
+
+- **Endpoint:** `/committee/{congress}/{chamber}`
+
+  - **Status:** Known Issue
+  - **Description:** Lists committees filtered by Congress and chamber. Known ongoing issues per changelog.
+  - **Usage:** Identify active committees for a specific Congress.
+  - **Example:** N/A.
+
+- **Endpoint:** `/nomination`
+
+  - **Status:** Functional
+  - **Description:** Retrieves a list of presidential nominations submitted to the Senate for a specific Congress.
+  - **Usage:** Track nominations, their status, and actions taken.
+  - **Example:** Nomination ID: PN1234, Title: Nomination of John Doe to be Ambassador to France, Status: Confirmed by Senate.
+
+- **Endpoint:** `/nomination/{nominationId}`
+
+  - **Status:** Functional
+  - **Description:** Provides detailed information about a specific nomination.
+  - **Usage:** Analyze a nomination's progress and history.
+  - **Example:** Title: Nomination of John Doe to be Ambassador to France, Actions: Confirmed by Senate.
+
+- **Endpoint:** `/treaty`
+
+  - **Status:** Functional
+  - **Description:** Retrieves a list of treaties submitted to the Senate for ratification.
+  - **Usage:** Access treaties with metadata like topics, transmission dates, and associated congress numbers.
+  - **Example:** Treaty Number: 1, Topic: Mutual Legal Assistance, Congress Received: 119, Transmitted Date: 2025-01-14.
+
+- **Endpoint:** `/congressionalRecord`
+
+  - **Status:** Functional
+  - **Description:** Accesses records of the proceedings and debates of the U.S. Congress.
+  - **Usage:** Retrieve comprehensive congressional records, including daily digests and detailed reports for both chambers.
+  - **Example:** Record Issue: 11, Congress: 119, Volume: 171, Publish Date: 2025-01-20, [Daily Digest PDF](https://www.congress.gov/119/crec/2025/01/20/171/11/CREC-2025-01-20-dailydigest.pdf), [Entire Issue PDF](https://www.congress.gov/119/crec/2025/01/20/171/11/CREC-2025-01-20.pdf).
+
+    Additional Example Digests:
+    - Issue: 10, Date: 2025-01-17, [Daily Digest PDF](https://www.congress.gov/119/crec/2025/01/17/171/10/CREC-2025-01-17-dailydigest.pdf)
+    - Issue: 9, Date: 2025-01-16, [Daily Digest PDF](https://www.congress.gov/119/crec/2025/01/16/171/9/CREC-2025-01-16-dailydigest.pdf)
+
+#### FEC API
+
+- **Endpoint:** `/candidates`
+
+  - **Status:** Functional
+  - **Description:** Searches for candidates based on name or other criteria.
+  - **Usage:** Find information about candidates, their committees, and election history.
+  - **Example:** Candidate: Hamilton Allen Smith Bartlett, Office: Senate, Party: Republican.
+
+- **Endpoint:** `/getItemizedReceipts`
+
+  - **Status:** Functional
+  - **Description:** Retrieves itemized receipt records, including contributions to committees and from individuals.
+  - **Usage:** Filter data by contributor name, committee ID, and election cycle for detailed insights.
+  - **Example:**
+    - **Contributor:** Joseph Werner, Santa Clara, CA; **Amount:** \$57.69 via payroll deduction.
+    - **Document:** [View PDF](https://docquery.fec.gov/cgi-bin/fecimg/?202411269720049014)
+
+- **Endpoint:** `/getItemizedDisbursements`
+
+  - **Status:** Functional
+  - **Description:** Provides detailed expenditure data for committees, including payee details and disbursement purposes.
+  - **Usage:** Analyze committee spending trends with filters for reporting cycles and expenditure purposes.
+  - **Examples:**
+    1. **Committee:** MARSHA FOR SENATE (C00376939)
+       - **Recipient:** Apollo Management Holdings LP, New York, NY
+       - **Amount:** \$31.90
+       - **Purpose:** Hosting Services
+       - **Document:** [View PDF](https://docquery.fec.gov/cgi-bin/fecimg/?202410249710572641)
+    2. **Committee:** TRUMP BILIRAKIS VICTORY FUND (C00828541)
+       - **Recipient:** Uber, San Francisco, CA
+       - **Amount:** \$24.17
+       - **Purpose:** Reimbursement: Travel - Ground Transportation
+       - **Document:** [View PDF](https://docquery.fec.gov/cgi-bin/fecimg/?202307159583710908)
+    3. **Committee:** DEFEND TEXAS FUND (C00718593)
+       - **Recipient:** RightSide Compliance, Austin, TX
+       - **Amount:** \$540.00
+       - **Purpose:** Compliance Consulting
+       - **Document:** [View PDF](https://docquery.fec.gov/cgi-bin/fecimg/?202410229710075565)
+
+- **Endpoint:** `/getItemizedDisbursements`
+
+  - **Status:** Functional
+  - **Description:** Retrieves itemized disbursement records for committees and recipients.
+  - **Usage:** Analyze committee spending, including recipients and amounts.
+  - **Example:** Recipient: James Johnson, Amount: \$5,000, Description: Media Buy.
+
+- **Endpoint:** `/getCommittees`
+
+  - **Status:** Functional
+  - **Description:** Retrieves a list of political committees based on search criteria.
+  - **Usage:** Explore party affiliations, treasurers, and committee types.
+  - **Example:** Committee: 12TH DISTRICT VOTERS EDUCATION COMMITTEE, State: NC, Treasurer: Doris W. Mack.
+
+#### Regulations.gov API
+
+- **Endpoint:** `/listDockets`
+  - **Status:** Functional
+  - **Description:** Retrieves a list of dockets, including rulemaking and nonrulemaking dockets from various federal agencies.
+  - **Usage:** Use to identify regulatory actions or nonrulemaking dockets by different agencies.
+  - **Example:** Title: Withdrawal of Compliance Policy Guide; Agency: FDA; Docket ID: FDA-2019-N-4611; Type: Nonrulemaking; Last Modified: 2019-10-25; [View Docket](https://www.regulations.gov/docket/FDA-2019-N-4611).
+
+- **Endpoint:** `/listDocuments`
+  - **Status:** Functional
+  - **Description:** Retrieves specific documents associated with dockets, such as notices or rulings from various federal agencies.
+  - **Usage:** Analyze the content and metadata of regulatory actions or rulings.
+  - **Example:** Title: HUD; Docket ID: HUD-2020-0099; Document Type: Notice; [View Document](https://www.regulations.gov/document/HUD-2020-0099).
+
+- **Endpoint:** `/getDocument`
+  - **Status:** Functional
+  - **Description:** Retrieves metadata and file formats for a specific document within a docket.
+  - **Usage:** Access in-depth details and download document files.
+  - **Example:** Title: Compliance Policy Guide Sec. 400.400 Conditions Under Which Homeopathic Drugs May Be Marketed; Agency: FDA; Document Type: Notice; Effective Date: 2019-10-25; [View PDF](https://www.regulations.gov/document/FDA-2019-N-4611-0001).
+
+- **Endpoint:** `/listComments`
+  - **Status:** Functional
+  - **Description:** Retrieves a list of comments submitted for public review, including metadata and links to individual comments.
+  - **Usage:** Analyze public feedback and sentiment on regulatory actions.
+  - **Example:** Title: Comment submitted by J. Grimble; Agency: EPA; Document Type: Public Submission; [View Comment](https://www.regulations.gov/comment/EPA-R10-OW-2017-0369-0001).
+
+- **Endpoint:** `/getComment`
+  - **Status:** Functional
+  - **Description:** Retrieves detailed metadata for a specific comment, including tracking numbers and related documents.
+  - **Usage:** Analyze individual public feedback or access attachments.
+  - **Example:** Title: Comment submitted by J. Grimble; Docket ID: EPA-R10-OW-2017-0369; Comment Content: "See attached"; Attachments.
