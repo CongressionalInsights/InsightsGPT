@@ -1,5 +1,5 @@
 
-name: Code Quality and Security Scan
+name: Code Quality, Security Scan, and Coverage
 
 on:
   push:
@@ -11,7 +11,7 @@ on:
 
 jobs:
   scan:
-    name: Lint and Security Scan
+    name: Lint, Security Scan, and Coverage
     runs-on: ubuntu-latest
 
     steps:
@@ -26,10 +26,16 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install flake8 bandit
+        pip install flake8 bandit pytest pytest-cov black
 
     - name: Run Flake8 Linter
       run: flake8 .
 
     - name: Run Bandit Security Scan
       run: bandit -r .
+
+    - name: Run tests with coverage
+      run: pytest --cov=.
+
+    - name: Check code formatting with Black
+      run: black --check .
