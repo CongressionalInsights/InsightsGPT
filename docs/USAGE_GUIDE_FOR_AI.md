@@ -1,22 +1,24 @@
+
 # AI_USAGE_GUIDE
 
-This file provides specific instructions for using the ai system with focus on LSTM modeling and its applications. Use this guide to explore and apply the system's features securely.
+This file provides specific instructions for using the AI system with focus on tasks and workflows for code quality and security. Use this guide to explore and apply the system's features accurately.
 
-## LSTM System Overview
+## Toolchain System Overview
 
-The LSTM system is integral to congressional workflow testing and automated learning tasks, including:
+This system employs GitHub Actions workflows to streamline tasks related to code quality and security. This section details:
 
-- Using the Congress.gov API to fetch data on Bills.
-- Preprocessing data using design and categorical transforms.
-- Training an LSTM model to predict bill progression.
-- Automating workflows to retrain and evaluate the model, updating it when necessary.
-- Saving the model and data for interactive analysis.
+- **Code Quality Assurance**: The workflow ensures that all pushes and pull requests automatically validate the code before merging.
+- **Security Scanning**: This is achieved using `bandit`. It identifies potential security risks in the code.
+- **Code Formatting**: Using `black` ensures style consistency across the repository.
+- **Test Coverage**: With `pytest-cov`, the system measures test coverage and validates functionality.
 
-## Step-By-Step Implementation
+### Workflow Execution
 
-Following step-by-step concepts, the system can:
- 1. Collect data using the api.
- 2. Preprocess and export the data to the *data/* directory.
- 3. Setup training parameters, define the model, and validate.
- 4. Run and monitor results automatically using GitHub workflows.
- 5. Save trained models and generate visualizations for validation.
+1. Navigate to the **Actions** tab in the repository.
+2. Select the workflow titled **Code Quality, Security Scan, and Coverage**.
+3. Click **Run workflow** to execute it manually, or wait for it to trigger on new pushes or pull requests.
+
+## Key Features
+
+- **Dependabot Enabled**: Automatic updates to dependencies are managed to ensure the repository stays current and secure.
+- **LSTM Model Enhancements**: Apply AI insights into tasks like preprocessing data, validating workflows, and analyzing codebase trends.
