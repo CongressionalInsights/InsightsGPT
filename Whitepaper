@@ -1,7 +1,12 @@
 The Congressional Insights White Paper: Unlocking Legislative Analysis, Policy Insights, and Stakeholder Empowerment
 
+Congressional Insights GPT (InsightsGPT) is an open-source project designed to revolutionize how individuals access and analyze U.S. government data. By integrating legislative, regulatory, and campaign finance information, InsightsGPT enables users to explore, understand, and act on public data with unprecedented ease. Our mission is to empower citizens, researchers, and policymakers by enhancing transparency and promoting civic engagement.
+
 The democratic process relies on informed engagement. Yet, navigating the complexities of legislative data has traditionally required significant time, resources, technical expertise, or corporate-level paid tools. We aim to transform this paradigm by offering a powerful, free tool that integrates legislative, financial, and socio-economic data—and leverages generative AI for real-time analysis.
-While providing access to government data was an important step forward, integrating it with generative AI turns raw data into actionable insights almost instantaneously. By combining generative AI with government data sources like Congress.gov, OpenFEC filings, and socio-economic indicators, users can move beyond simply retrieving information to understanding, and applying it in meaningful ways.
+While providing access to government data was an important step forward, integrating it with generative AI turns raw data into actionable insights almost instantaneously. 
+
+By combining generative AI with government data sources like Congress.gov, OpenFEC filings, and socio-economic indicators, users can move beyond simply retrieving information to understanding, and applying it in meaningful ways.
+
 This white paper introduces an AI-driven legislative analytics agent—Congressional Insights GPT—that can revolutionize how citizens, organizations, researchers, and businesses engage with public policy. With the power of generative AI—stakeholders can uncover insights and make near real-time decisions across diverse areas like advocacy, research, compliance, and everyday life.
 
 Key Benefits
