@@ -1,8 +1,0 @@
-name: "Collect Failed Workflow Logs"
-
-on:
-  repo: main
-
-all:
-  trigger:
-    workflow_dispatch
