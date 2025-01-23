@@ -1,5 +1,5 @@
 requests
 flake8
 pytest
-tensorflow==2.10.0
+tensorflow==2.12.1
 bandit
