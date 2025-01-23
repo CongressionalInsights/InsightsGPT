@@ -1,13 +1,28 @@
-name: Fetch Federal Register Data
+name: Fetch Federal Register Documents
 
 on:
-  # Trigger manually from GitHub UI
   workflow_dispatch:
+    inputs:
+      publication_date_year:
+        description: "Publication date year filter (YYYY)"
+        required: false
+      search_term:
+        description: "Full text search term"
+        required: false
+      agency_slug:
+        description: "Agency slug"
+        required: false
+      doc_type:
+        description: "Document type (RULE, PRORULE, NOTICE, PRESDOCU)"
+        required: false
+      per_page:
+        description: "Documents per page (max 1000)"
+        required: false
+        default: "20"
 
 jobs:
   fetch-fr-data:
     runs-on: ubuntu-latest
-
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
@@ -15,7 +30,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v3
         with:
-          python-version: '3.9'
+          python-version: "3.9"
 
       - name: Install dependencies
         run: |
@@ -23,8 +38,13 @@ jobs:
 
       - name: Fetch data from Federal Register
         run: |
-          python scripts/fetch_federal_register.py
-
+          python scripts/fetch_fr_docs.py \
+            --publication_date_year "${{ github.event.inputs.publication_date_year || '' }}" \
+            --search_term "${{ github.event.inputs.search_term || '' }}" \
+            --agency_slug "${{ github.event.inputs.agency_slug || '' }}" \
+            --doc_type "${{ github.event.inputs.doc_type || '' }}" \
+            --per_page "${{ github.event.inputs.per_page }}"
+            
       - name: Commit changes
         run: |
           git config user.name "github-actions[bot]"
