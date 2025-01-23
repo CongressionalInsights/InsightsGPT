@@ -29,6 +29,11 @@ jobs:
           mkdir -p data  # Ensure the data folder exists
           python scripts/fetch_federal_register_data.py
 
+      - name: Debug Data Folder
+        run: |
+          echo "Checking contents of data folder:" 
+          ls -l data
+
       - name: Commit and Push Results
         run: |
           if [ "$(ls -A data)" ]; then
