@@ -4,7 +4,7 @@ name: Fetch Federal Register Data
 on:
   schedule:
     - cron: "0 12 * * *"  # Run daily at 12:00 UTC
-  workflow_dispatch:  # Manual trigger
+  workflow_dispatch:  # Allow manual trigger
 
 jobs:
   fetch_data:
@@ -31,8 +31,11 @@ jobs:
 
       - name: Commit and Push Results
         run: |
-          git config user.name "GitHub Action"
-          git config user.email "actions@github.com"
-          git add data/*
-          git commit -m "Update executive orders data"
-          git push
+          if [ "$(ls -A data)" ]; then
+            git config user.name "GitHub Action"
+            git config user.email "actions@github.com"
+            git add data/*
+            git commit -m "Update executive orders data"
+            git push
+          else
+            echo "No data files to commit."
