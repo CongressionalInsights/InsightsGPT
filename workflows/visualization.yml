@@ -1,0 +1,36 @@
+name: Visualization Generation
+
+on:
+  push:
+    paths:
+      - "datasets/**"
+  workflow_dispatch:
+
+jobs:
+  generate-visualizations:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.9"
+
+      - name: Install dependencies
+        run: |
+          pip install matplotlib
+
+      - name: Run Visualization Script
+        run: |
+          python scripts/generate_visualizations.py \
+            --input_folder datasets/ \
+            --output_folder visualizations/
+
+      - name: Upload Visualizations
+        uses: actions/upload-artifact@v3
+        with:
+          name: visualizations
+          path: visualizations/
