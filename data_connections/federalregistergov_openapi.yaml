@@ -1,0 +1,1566 @@
+
+"openapi": "3.1.0"
+"info":
+  "title": "Federal Register API"
+  "version": "1.0.0"
+  "description": "OpenAPI description of the Federal Register's public API.   No API key required.   Endpoints and parameters follow official documentation from federalregister.gov.\n"
+"servers":
+  -
+    "url": "https://www.federalregister.gov/api/v1"
+"paths":
+  "/documents/{document_number}.{format}":
+    "get":
+      "operationId": "getSingleDocument"
+      "summary": "Fetch a single Federal Register document"
+      "description": "Retrieve details for a single Federal Register document by document number."
+      "parameters":
+        -
+          "name": "document_number"
+          "in": "path"
+          "required": true
+          "description": "Federal Register document number (e.g. 2023-12345)"
+          "schema":
+            "type": "string"
+        -
+          "name": "format"
+          "in": "path"
+          "required": true
+          "description": "Response format"
+          "schema":
+            "type": "string"
+            "enum":
+              - "json"
+        -
+          "name": "fields[]"
+          "in": "query"
+          "required": false
+          "description": "Array of document fields to be returned. By default, a subset is returned.   Pass any combination to retrieve exactly what you need.\n"
+          "schema":
+            "type": "array"
+            "items":
+              "type": "string"
+              "description": "Valid field name in a Federal Register document   (e.g., `abstract`, `agencies`, `title`, etc.).\n"
+              "enum":
+                - "abstract"
+                - "action"
+                - "agencies"
+                - "agency_names"
+                - "body_html_url"
+                - "cfr_references"
+                - "citation"
+                - "comment_url"
+                - "comments_close_on"
+                - "correction_of"
+                - "corrections"
+                - "dates"
+                - "disposition_notes"
+                - "docket_id"
+                - "docket_ids"
+                - "dockets"
+                - "document_number"
+                - "effective_on"
+                - "end_page"
+                - "excerpts"
+                - "executive_order_notes"
+                - "executive_order_number"
+                - "explanation"
+                - "full_text_xml_url"
+                - "html_url"
+                - "images"
+                - "images_metadata"
+                - "json_url"
+                - "mods_url"
+                - "not_received_for_publication"
+                - "page_length"
+                - "page_views"
+                - "pdf_url"
+                - "president"
+                - "presidential_document_number"
+                - "proclamation_number"
+                - "public_inspection_pdf_url"
+                - "publication_date"
+                - "raw_text_url"
+                - "regulation_id_number_info"
+                - "regulation_id_numbers"
+                - "regulations_dot_gov_info"
+                - "regulations_dot_gov_url"
+                - "significant"
+                - "signing_date"
+                - "start_page"
+                - "subtype"
+                - "title"
+                - "toc_doc"
+                - "toc_subject"
+                - "topics"
+                - "type"
+                - "volume"
+      "responses":
+        "200":
+          "description": "Successful response"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "document_number":
+                    "type": "string"
+                  "title":
+                    "type": "string"
+                  "abstract":
+                    "type": "string"
+                  "publication_date":
+                    "type": "string"
+                  "type":
+                    "type": "string"
+                "description": "A single Federal Register document"
+  "/documents/{document_numbers}.{format}":
+    "get":
+      "operationId": "getMultipleDocuments"
+      "summary": "Fetch multiple Federal Register documents"
+      "description": "Retrieve multiple Federal Register documents by specifying multiple doc numbers (comma-separated)."
+      "parameters":
+        -
+          "name": "document_numbers"
+          "in": "path"
+          "required": true
+          "description": "Comma-separated list of Federal Register document numbers (e.g. 2023-12345,2023-12346)"
+          "schema":
+            "type": "string"
+        -
+          "name": "format"
+          "in": "path"
+          "required": true
+          "description": "Response format"
+          "schema":
+            "type": "string"
+            "enum":
+              - "json"
+        -
+          "name": "fields[]"
+          "in": "query"
+          "required": false
+          "description": "Array of document fields to be returned. By default, a core subset is returned.\n"
+          "schema":
+            "type": "array"
+            "items":
+              "type": "string"
+              "description": "Valid field name in a Federal Register document   (e.g., `abstract`, `agencies`, `title`, etc.).\n"
+              "enum":
+                - "abstract"
+                - "action"
+                - "agencies"
+                - "agency_names"
+                - "body_html_url"
+                - "cfr_references"
+                - "citation"
+                - "comment_url"
+                - "comments_close_on"
+                - "correction_of"
+                - "corrections"
+                - "dates"
+                - "disposition_notes"
+                - "docket_id"
+                - "docket_ids"
+                - "dockets"
+                - "document_number"
+                - "effective_on"
+                - "end_page"
+                - "excerpts"
+                - "executive_order_notes"
+                - "executive_order_number"
+                - "explanation"
+                - "full_text_xml_url"
+                - "html_url"
+                - "images"
+                - "images_metadata"
+                - "json_url"
+                - "mods_url"
+                - "not_received_for_publication"
+                - "page_length"
+                - "page_views"
+                - "pdf_url"
+                - "president"
+                - "presidential_document_number"
+                - "proclamation_number"
+                - "public_inspection_pdf_url"
+                - "publication_date"
+                - "raw_text_url"
+                - "regulation_id_number_info"
+                - "regulation_id_numbers"
+                - "regulations_dot_gov_info"
+                - "regulations_dot_gov_url"
+                - "significant"
+                - "signing_date"
+                - "start_page"
+                - "subtype"
+                - "title"
+                - "toc_doc"
+                - "toc_subject"
+                - "topics"
+                - "type"
+                - "volume"
+      "responses":
+        "200":
+          "description": "Successful response"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "results":
+                    "type": "array"
+                    "items":
+                      "type": "object"
+                      "properties":
+                        "document_number":
+                          "type": "string"
+                        "title":
+                          "type": "string"
+                        "abstract":
+                          "type": "string"
+                        "publication_date":
+                          "type": "string"
+                        "type":
+                          "type": "string"
+                      "description": "A single Federal Register document"
+                  "count":
+                    "type": "integer"
+                  "total_pages":
+                    "type": "integer"
+                "description": "A list of Federal Register documents with paging info"
+  "/documents.{format}":
+    "get":
+      "operationId": "searchDocuments"
+      "summary": "Search Federal Register documents"
+      "description": "Search across all Federal Register documents published since 1994."
+      "parameters":
+        -
+          "name": "format"
+          "in": "path"
+          "required": true
+          "description": "Response format"
+          "schema":
+            "type": "string"
+            "enum":
+              - "json"
+        -
+          "name": "fields[]"
+          "in": "query"
+          "required": false
+          "description": "Array of document fields to be returned. By default, a core subset is returned.\n"
+          "schema":
+            "type": "array"
+            "items":
+              "type": "string"
+              "description": "Valid field name in a Federal Register document   (e.g., `abstract`, `agencies`, `title`, etc.).\n"
+              "enum":
+                - "abstract"
+                - "action"
+                - "agencies"
+                - "agency_names"
+                - "body_html_url"
+                - "cfr_references"
+                - "citation"
+                - "comment_url"
+                - "comments_close_on"
+                - "correction_of"
+                - "corrections"
+                - "dates"
+                - "disposition_notes"
+                - "docket_id"
+                - "docket_ids"
+                - "dockets"
+                - "document_number"
+                - "effective_on"
+                - "end_page"
+                - "excerpts"
+                - "executive_order_notes"
+                - "executive_order_number"
+                - "explanation"
+                - "full_text_xml_url"
+                - "html_url"
+                - "images"
+                - "images_metadata"
+                - "json_url"
+                - "mods_url"
+                - "not_received_for_publication"
+                - "page_length"
+                - "page_views"
+                - "pdf_url"
+                - "president"
+                - "presidential_document_number"
+                - "proclamation_number"
+                - "public_inspection_pdf_url"
+                - "publication_date"
+                - "raw_text_url"
+                - "regulation_id_number_info"
+                - "regulation_id_numbers"
+                - "regulations_dot_gov_info"
+                - "regulations_dot_gov_url"
+                - "significant"
+                - "signing_date"
+                - "start_page"
+                - "subtype"
+                - "title"
+                - "toc_doc"
+                - "toc_subject"
+                - "topics"
+                - "type"
+                - "volume"
+        -
+          "name": "per_page"
+          "in": "query"
+          "required": false
+          "description": "Number of documents per page (max 1000, default 20)"
+          "schema":
+            "type": "integer"
+        -
+          "name": "page"
+          "in": "query"
+          "required": false
+          "description": "Which page of results to return"
+          "schema":
+            "type": "integer"
+        -
+          "name": "order"
+          "in": "query"
+          "required": false
+          "description": "Order results by relevance/newest/oldest/executive_order_number"
+          "schema":
+            "type": "string"
+            "enum":
+              - "relevance"
+              - "newest"
+              - "oldest"
+              - "executive_order_number"
+        -
+          "name": "conditions[term]"
+          "in": "query"
+          "required": false
+          "description": "Full text search term"
+          "schema":
+            "type": "string"
+        -
+          "name": "conditions[publication_date][is]"
+          "in": "query"
+          "required": false
+          "description": "Exact publication date match (YYYY-MM-DD)"
+          "schema":
+            "type": "string"
+        -
+          "name": "conditions[publication_date][year]"
+          "in": "query"
+          "required": false
+          "description": "Publication year match (YYYY)"
+          "schema":
+            "type": "string"
+        -
+          "name": "conditions[publication_date][gte]"
+          "in": "query"
+          "required": false
+          "description": "Published on or after YYYY-MM-DD"
+          "schema":
+            "type": "string"
+        -
+          "name": "conditions[publication_date][lte]"
+          "in": "query"
+          "required": false
+          "description": "Published on or before YYYY-MM-DD"
+          "schema":
+            "type": "string"
+        -
+          "name": "conditions[effective_date][is]"
+          "in": "query"
+          "required": false
+          "description": "Exact effective date match (YYYY-MM-DD)"
+          "schema":
+            "type": "string"
+        -
+          "name": "conditions[effective_date][year]"
+          "in": "query"
+          "required": false
+          "description": "Effective date year (YYYY)"
+          "schema":
+            "type": "string"
+        -
+          "name": "conditions[effective_date][gte]"
+          "in": "query"
+          "required": false
+          "description": "Effective on or after (YYYY-MM-DD)"
+          "schema":
+            "type": "string"
+        -
+          "name": "conditions[effective_date][lte]"
+          "in": "query"
+          "required": false
+          "description": "Effective on or before (YYYY-MM-DD)"
+          "schema":
+            "type": "string"
+        -
+          "name": "conditions[agencies][]"
+          "in": "query"
+          "required": false
+          "description": "Publishing agency slug(s)"
+          "schema":
+            "type": "array"
+            "items":
+              "type": "string"
+              "description": "Agency “slug” identifier (from Federal Register).   E.g., `agriculture-department`, `commerce-department`, etc.\n"
+        -
+          "name": "conditions[type][]"
+          "in": "query"
+          "required": false
+          "description": "Document Type"
+          "schema":
+            "type": "array"
+            "items":
+              "type": "string"
+              "enum":
+                - "RULE"
+                - "PRORULE"
+                - "NOTICE"
+                - "PRESDOCU"
+              "description": "Document types:   - RULE: Final Rule   - PRORULE: Proposed Rule   - NOTICE   - PRESDOCU: Presidential Document\n"
+        -
+          "name": "conditions[presidential_document_type][]"
+          "in": "query"
+          "required": false
+          "description": "Presidential document type"
+          "schema":
+            "type": "array"
+            "items":
+              "type": "string"
+              "enum":
+                - "determination"
+                - "executive_order"
+                - "memorandum"
+                - "notice"
+                - "proclamation"
+                - "presidential_order"
+                - "other"
+        -
+          "name": "conditions[president][]"
+          "in": "query"
+          "required": false
+          "description": "Signing President (only for presidential docs)"
+          "schema":
+            "type": "array"
+            "items":
+              "type": "string"
+              "enum":
+                - "william-j-clinton"
+                - "george-w-bush"
+                - "barack-obama"
+                - "donald-trump"
+                - "joe-biden"
+        -
+          "name": "conditions[docket_id]"
+          "in": "query"
+          "required": false
+          "description": "Agency docket number"
+          "schema":
+            "type": "string"
+        -
+          "name": "conditions[regulation_id_number]"
+          "in": "query"
+          "required": false
+          "description": "Regulation ID Number (RIN)"
+          "schema":
+            "type": "string"
+        -
+          "name": "conditions[sections][]"
+          "in": "query"
+          "required": false
+          "description": "Federal Register section(s)"
+          "schema":
+            "type": "array"
+            "items":
+              "type": "string"
+              "enum":
+                - "business-and-industry"
+                - "environment"
+                - "health-and-public-welfare"
+                - "money"
+                - "science-and-technology"
+                - "world"
+        -
+          "name": "conditions[topics][]"
+          "in": "query"
+          "required": false
+          "description": "CFR indexing terms"
+          "schema":
+            "type": "array"
+            "items":
+              "type": "string"
+        -
+          "name": "conditions[significant]"
+          "in": "query"
+          "required": false
+          "description": "Deemed Significant under EO 12866? \"0\"=No, \"1\"=Yes"
+          "schema":
+            "type": "string"
+            "enum":
+              - "0"
+              - "1"
+        -
+          "name": "conditions[cfr][title]"
+          "in": "query"
+          "required": false
+          "description": "CFR title number"
+          "schema":
+            "type": "integer"
+        -
+          "name": "conditions[cfr][part]"
+          "in": "query"
+          "required": false
+          "description": "Part or range (requires the CFR title). Ex `17` or `1-50`"
+          "schema":
+            "type": "string"
+        -
+          "name": "conditions[near][location]"
+          "in": "query"
+          "required": false
+          "description": "Location-based search (zip code, or City, State)"
+          "schema":
+            "type": "string"
+        -
+          "name": "conditions[near][within]"
+          "in": "query"
+          "required": false
+          "description": "Miles from location (max 200)"
+          "schema":
+            "type": "integer"
+      "responses":
+        "200":
+          "description": "Successful response"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "results":
+                    "type": "array"
+                    "items":
+                      "type": "object"
+                      "properties":
+                        "document_number":
+                          "type": "string"
+                        "title":
+                          "type": "string"
+                        "abstract":
+                          "type": "string"
+                        "publication_date":
+                          "type": "string"
+                        "type":
+                          "type": "string"
+                      "description": "A single Federal Register document"
+                  "count":
+                    "type": "integer"
+                  "total_pages":
+                    "type": "integer"
+                "description": "A list of Federal Register documents with paging info"
+  "/documents/facets/{facet}":
+    "get":
+      "operationId": "getDocumentFacets"
+      "summary": "Fetch grouped counts of Federal Register Documents"
+      "description": "Returns counts of matching Federal Register documents, grouped by the specified facet."
+      "parameters":
+        -
+          "name": "facet"
+          "in": "path"
+          "required": true
+          "description": "Which facet to group by (e.g. daily, agency, topic, section, etc.)"
+          "schema":
+            "type": "string"
+            "enum":
+              - "daily"
+              - "weekly"
+              - "monthly"
+              - "quarterly"
+              - "yearly"
+              - "agency"
+              - "topic"
+              - "section"
+              - "type"
+              - "subtype"
+        -
+          "name": "conditions[term]"
+          "in": "query"
+          "required": false
+          "schema":
+            "type": "string"
+        -
+          "name": "conditions[publication_date][is]"
+          "in": "query"
+          "required": false
+          "schema":
+            "type": "string"
+        -
+          "name": "conditions[publication_date][year]"
+          "in": "query"
+          "required": false
+          "schema":
+            "type": "string"
+        -
+          "name": "conditions[publication_date][gte]"
+          "in": "query"
+          "required": false
+          "schema":
+            "type": "string"
+        -
+          "name": "conditions[publication_date][lte]"
+          "in": "query"
+          "required": false
+          "schema":
+            "type": "string"
+        -
+          "name": "conditions[effective_date][is]"
+          "in": "query"
+          "required": false
+          "schema":
+            "type": "string"
+        -
+          "name": "conditions[effective_date][year]"
+          "in": "query"
+          "required": false
+          "schema":
+            "type": "string"
+        -
+          "name": "conditions[effective_date][gte]"
+          "in": "query"
+          "required": false
+          "schema":
+            "type": "string"
+        -
+          "name": "conditions[effective_date][lte]"
+          "in": "query"
+          "required": false
+          "schema":
+            "type": "string"
+        -
+          "name": "conditions[agencies][]"
+          "in": "query"
+          "required": false
+          "schema":
+            "type": "array"
+            "items":
+              "type": "string"
+              "description": "Agency “slug” identifier (from Federal Register).   E.g., `agriculture-department`, `commerce-department`, etc.\n"
+        -
+          "name": "conditions[type][]"
+          "in": "query"
+          "required": false
+          "schema":
+            "type": "array"
+            "items":
+              "type": "string"
+              "enum":
+                - "RULE"
+                - "PRORULE"
+                - "NOTICE"
+                - "PRESDOCU"
+              "description": "Document types:   - RULE: Final Rule   - PRORULE: Proposed Rule   - NOTICE   - PRESDOCU: Presidential Document\n"
+        -
+          "name": "conditions[presidential_document_type][]"
+          "in": "query"
+          "required": false
+          "schema":
+            "type": "array"
+            "items":
+              "type": "string"
+              "enum":
+                - "determination"
+                - "executive_order"
+                - "memorandum"
+                - "notice"
+                - "proclamation"
+                - "presidential_order"
+                - "other"
+        -
+          "name": "conditions[president][]"
+          "in": "query"
+          "required": false
+          "schema":
+            "type": "array"
+            "items":
+              "type": "string"
+              "enum":
+                - "william-j-clinton"
+                - "george-w-bush"
+                - "barack-obama"
+                - "donald-trump"
+                - "joe-biden"
+        -
+          "name": "conditions[docket_id]"
+          "in": "query"
+          "required": false
+          "schema":
+            "type": "string"
+        -
+          "name": "conditions[regulation_id_number]"
+          "in": "query"
+          "required": false
+          "schema":
+            "type": "string"
+        -
+          "name": "conditions[sections][]"
+          "in": "query"
+          "required": false
+          "schema":
+            "type": "array"
+            "items":
+              "type": "string"
+              "enum":
+                - "business-and-industry"
+                - "environment"
+                - "health-and-public-welfare"
+                - "money"
+                - "science-and-technology"
+                - "world"
+        -
+          "name": "conditions[significant]"
+          "in": "query"
+          "required": false
+          "schema":
+            "type": "string"
+            "enum":
+              - "0"
+              - "1"
+        -
+          "name": "conditions[cfr][title]"
+          "in": "query"
+          "required": false
+          "schema":
+            "type": "integer"
+        -
+          "name": "conditions[cfr][part]"
+          "in": "query"
+          "required": false
+          "schema":
+            "type": "string"
+        -
+          "name": "conditions[near][location]"
+          "in": "query"
+          "required": false
+          "schema":
+            "type": "string"
+        -
+          "name": "conditions[near][within]"
+          "in": "query"
+          "required": false
+          "schema":
+            "type": "integer"
+      "responses":
+        "200":
+          "description": "Successful response"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "facet":
+                    "type": "string"
+                    "description": "The facet grouping (daily, agency, etc.)"
+                  "counts":
+                    "type": "array"
+                    "items":
+                      "type": "object"
+                      "properties":
+                        "key":
+                          "type": "string"
+                          "description": "The facet group key"
+                        "count":
+                          "type": "integer"
+                          "description": "Number of items in that facet bucket"
+                "description": "Grouped facet counts for documents"
+  "/issues/{publication_date}.{format}":
+    "get":
+      "operationId": "getIssueTableOfContents"
+      "summary": "Fetch document table of contents based on the print edition"
+      "description": "Retrieve a Federal Register issue’s table of contents by publication date."
+      "parameters":
+        -
+          "name": "publication_date"
+          "in": "path"
+          "required": true
+          "description": "The issue date (YYYY-MM-DD)"
+          "schema":
+            "type": "string"
+        -
+          "name": "format"
+          "in": "path"
+          "required": true
+          "description": "Response format"
+          "schema":
+            "type": "string"
+            "enum":
+              - "json"
+      "responses":
+        "200":
+          "description": "Successful response"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "publication_date":
+                    "type": "string"
+                  "documents":
+                    "type": "array"
+                    "items":
+                      "type": "object"
+                      "properties":
+                        "document_number":
+                          "type": "string"
+                        "title":
+                          "type": "string"
+                        "abstract":
+                          "type": "string"
+                        "publication_date":
+                          "type": "string"
+                        "type":
+                          "type": "string"
+                      "description": "A single Federal Register document"
+                "description": "Represents the table of contents for a print edition issue"
+  "/public-inspection-documents/{document_number}.{format}":
+    "get":
+      "operationId": "getSinglePublicInspectionDocument"
+      "summary": "Fetch a single public inspection document"
+      "description": "Retrieve details for a single public inspection document by document number."
+      "parameters":
+        -
+          "name": "document_number"
+          "in": "path"
+          "required": true
+          "description": "Federal Register document number"
+          "schema":
+            "type": "string"
+        -
+          "name": "format"
+          "in": "path"
+          "required": true
+          "description": "Response format"
+          "schema":
+            "type": "string"
+            "enum":
+              - "json"
+      "responses":
+        "200":
+          "description": "Successful response"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "document_number":
+                    "type": "string"
+                  "title":
+                    "type": "string"
+                  "filing_type":
+                    "type": "string"
+                  "publication_date":
+                    "type": "string"
+                "description": "A single public inspection document"
+  "/public-inspection-documents/{document_numbers}.{format}":
+    "get":
+      "operationId": "getMultiplePublicInspectionDocuments"
+      "summary": "Fetch multiple public inspection documents"
+      "description": "Retrieve multiple public inspection documents by specifying multiple doc numbers (comma-separated)."
+      "parameters":
+        -
+          "name": "document_numbers"
+          "in": "path"
+          "required": true
+          "description": "Comma-separated list of Federal Register document numbers"
+          "schema":
+            "type": "string"
+        -
+          "name": "format"
+          "in": "path"
+          "required": true
+          "description": "Response format"
+          "schema":
+            "type": "string"
+            "enum":
+              - "json"
+      "responses":
+        "200":
+          "description": "Successful response"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "results":
+                    "type": "array"
+                    "items":
+                      "type": "object"
+                      "properties":
+                        "document_number":
+                          "type": "string"
+                        "title":
+                          "type": "string"
+                        "filing_type":
+                          "type": "string"
+                        "publication_date":
+                          "type": "string"
+                      "description": "A single public inspection document"
+                  "count":
+                    "type": "integer"
+                  "total_pages":
+                    "type": "integer"
+                "description": "List of public inspection documents with paging info"
+  "/public-inspection-documents/current.{format}":
+    "get":
+      "operationId": "getCurrentPublicInspectionDocuments"
+      "summary": "Fetch all public inspection documents currently on inspection"
+      "description": "Returns all documents currently on public inspection."
+      "parameters":
+        -
+          "name": "format"
+          "in": "path"
+          "required": true
+          "schema":
+            "type": "string"
+            "enum":
+              - "json"
+      "responses":
+        "200":
+          "description": "Successful response"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "results":
+                    "type": "array"
+                    "items":
+                      "type": "object"
+                      "properties":
+                        "document_number":
+                          "type": "string"
+                        "title":
+                          "type": "string"
+                        "filing_type":
+                          "type": "string"
+                        "publication_date":
+                          "type": "string"
+                      "description": "A single public inspection document"
+                  "count":
+                    "type": "integer"
+                  "total_pages":
+                    "type": "integer"
+                "description": "List of public inspection documents with paging info"
+  "/public-inspection-documents.{format}":
+    "get":
+      "operationId": "searchPublicInspectionDocuments"
+      "summary": "Search public inspection documents"
+      "description": "Search across public inspection documents.   (Use `/documents` endpoints for published docs.)\n"
+      "parameters":
+        -
+          "name": "format"
+          "in": "path"
+          "required": true
+          "schema":
+            "type": "string"
+            "enum":
+              - "json"
+        -
+          "name": "fields[]"
+          "in": "query"
+          "required": false
+          "description": "Array of public inspection doc fields to be returned. Defaults to a subset.\n"
+          "schema":
+            "type": "array"
+            "items":
+              "type": "string"
+              "description": "Valid fields for public inspection documents only"
+              "enum":
+                - "agencies"
+                - "agency_letters"
+                - "agency_names"
+                - "docket_numbers"
+                - "document_number"
+                - "editorial_note"
+                - "excerpts"
+                - "filed_at"
+                - "filing_type"
+                - "html_url"
+                - "json_url"
+                - "last_public_inspection_issue"
+                - "num_pages"
+                - "page_views"
+                - "pdf_file_name"
+                - "pdf_file_size"
+                - "pdf_updated_at"
+                - "pdf_url"
+                - "publication_date"
+                - "raw_text_url"
+                - "subject_1"
+                - "subject_2"
+                - "subject_3"
+                - "title"
+                - "toc_doc"
+                - "toc_subject"
+                - "type"
+        -
+          "name": "per_page"
+          "in": "query"
+          "required": false
+          "description": "Number of docs per page (max 1000, default 20)"
+          "schema":
+            "type": "integer"
+        -
+          "name": "page"
+          "in": "query"
+          "required": false
+          "description": "Page of results"
+          "schema":
+            "type": "integer"
+        -
+          "name": "conditions[available_on]"
+          "in": "query"
+          "required": false
+          "description": "Public Inspection issue date (YYYY-MM-DD)"
+          "schema":
+            "type": "string"
+        -
+          "name": "conditions[term]"
+          "in": "query"
+          "required": false
+          "description": "Full text search"
+          "schema":
+            "type": "string"
+        -
+          "name": "conditions[agencies][]"
+          "in": "query"
+          "required": false
+          "description": "Publishing agency slug(s)"
+          "schema":
+            "type": "array"
+            "items":
+              "type": "string"
+              "description": "Agency “slug” identifier (from Federal Register).   E.g., `agriculture-department`, `commerce-department`, etc.\n"
+        -
+          "name": "conditions[type][]"
+          "in": "query"
+          "required": false
+          "description": "Document type (RULE, PRORULE, NOTICE, PRESDOCU)"
+          "schema":
+            "type": "array"
+            "items":
+              "type": "string"
+              "enum":
+                - "RULE"
+                - "PRORULE"
+                - "NOTICE"
+                - "PRESDOCU"
+              "description": "Document types:   - RULE: Final Rule   - PRORULE: Proposed Rule   - NOTICE   - PRESDOCU: Presidential Document\n"
+        -
+          "name": "conditions[special_filing]"
+          "in": "query"
+          "required": false
+          "description": "0=Regular, 1=Special"
+          "schema":
+            "type": "string"
+            "enum":
+              - "0"
+              - "1"
+        -
+          "name": "conditions[docket_id]"
+          "in": "query"
+          "required": false
+          "schema":
+            "type": "string"
+      "responses":
+        "200":
+          "description": "Successful response"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "results":
+                    "type": "array"
+                    "items":
+                      "type": "object"
+                      "properties":
+                        "document_number":
+                          "type": "string"
+                        "title":
+                          "type": "string"
+                        "filing_type":
+                          "type": "string"
+                        "publication_date":
+                          "type": "string"
+                      "description": "A single public inspection document"
+                  "count":
+                    "type": "integer"
+                  "total_pages":
+                    "type": "integer"
+                "description": "List of public inspection documents with paging info"
+  "/agencies":
+    "get":
+      "operationId": "listAgencies"
+      "summary": "Fetch all agency details"
+      "description": "Retrieve details for all Federal Register agencies"
+      "responses":
+        "200":
+          "description": "Successful response"
+          "content":
+            "application/json":
+              "schema":
+                "type": "array"
+                "items":
+                  "type": "object"
+                  "properties":
+                    "slug":
+                      "type": "string"
+                    "name":
+                      "type": "string"
+                    "url":
+                      "type": "string"
+                  "description": "Detailed info about a single agency"
+                  "examples":
+                    -
+                      "value": "slug- \"agriculture-department\""
+                    -
+                      "value": "name- \"Agriculture Department\""
+                    -
+                      "value": "url- \"https://www.federalregister.gov/agencies/agriculture-department\""
+  "/agencies/{slug}":
+    "get":
+      "operationId": "getAgency"
+      "summary": "Fetch a particular agency"
+      "description": "Retrieve data about a single agency by its slug.\n"
+      "parameters":
+        -
+          "name": "slug"
+          "in": "path"
+          "required": true
+          "schema":
+            "type": "string"
+            "description": "Agency “slug” identifier (from Federal Register).   E.g., `agriculture-department`, `commerce-department`, etc.\n"
+      "responses":
+        "200":
+          "description": "Successful response"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "slug":
+                    "type": "string"
+                  "name":
+                    "type": "string"
+                  "url":
+                    "type": "string"
+                "description": "Detailed info about a single agency"
+                "examples":
+                  -
+                    "value": "slug- \"agriculture-department\""
+                  -
+                    "value": "name- \"Agriculture Department\""
+                  -
+                    "value": "url- \"https://www.federalregister.gov/agencies/agriculture-department\""
+  "/images/{identifier}":
+    "get":
+      "operationId": "getImage"
+      "summary": "Fetch image metadata"
+      "description": "Retrieve the available image variants and metadata for a single image identifier."
+      "parameters":
+        -
+          "name": "identifier"
+          "in": "path"
+          "required": true
+          "description": "Federal Register image identifier"
+          "schema":
+            "type": "string"
+      "responses":
+        "200":
+          "description": "Successfully retrieved the image metadata"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "identifier":
+                    "type": "string"
+                  "variants":
+                    "type": "array"
+                    "items":
+                      "type": "object"
+                      "properties":
+                        "variant":
+                          "type": "string"
+                        "width":
+                          "type": "integer"
+                        "height":
+                          "type": "integer"
+                "description": "Basic metadata about an image and its variants"
+        "404":
+          "description": "Image not found"
+  "/suggested_searches":
+    "get":
+      "operationId": "listSuggestedSearches"
+      "summary": "Fetch all suggested searches"
+      "description": "Retrieve suggested searches or limit by FR section"
+      "parameters":
+        -
+          "name": "conditions[sections]"
+          "in": "query"
+          "required": false
+          "description": "Federal Register slug for the section"
+          "schema":
+            "type": "array"
+            "items":
+              "type": "string"
+              "enum":
+                - "business-and-industry"
+                - "environment"
+                - "health-and-public-welfare"
+                - "money"
+                - "science-and-technology"
+                - "world"
+      "responses":
+        "200":
+          "description": "Successful response"
+          "content":
+            "application/json":
+              "schema":
+                "type": "array"
+                "items":
+                  "type": "object"
+                  "properties":
+                    "slug":
+                      "type": "string"
+                    "name":
+                      "type": "string"
+                    "search_url":
+                      "type": "string"
+                  "description": "Represents a single suggested search entry"
+  "/suggested_searches/{slug}":
+    "get":
+      "operationId": "getSuggestedSearch"
+      "summary": "Fetch a single suggested search"
+      "description": "Retrieve a particular suggested search by its slug"
+      "parameters":
+        -
+          "name": "slug"
+          "in": "path"
+          "required": true
+          "description": "Slug identifying the suggested search"
+          "schema":
+            "type": "string"
+      "responses":
+        "200":
+          "description": "Successful response"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "slug":
+                    "type": "string"
+                  "name":
+                    "type": "string"
+                  "search_url":
+                    "type": "string"
+                "description": "Represents a single suggested search entry"
+"components":
+  "schemas":
+    "AgencySlug":
+      "type": "string"
+      "description": "Agency “slug” identifier (from Federal Register).   E.g., `agriculture-department`, `commerce-department`, etc.\n"
+    "DocumentField":
+      "type": "string"
+      "description": "Valid field name in a Federal Register document   (e.g., `abstract`, `agencies`, `title`, etc.).\n"
+      "enum":
+        - "abstract"
+        - "action"
+        - "agencies"
+        - "agency_names"
+        - "body_html_url"
+        - "cfr_references"
+        - "citation"
+        - "comment_url"
+        - "comments_close_on"
+        - "correction_of"
+        - "corrections"
+        - "dates"
+        - "disposition_notes"
+        - "docket_id"
+        - "docket_ids"
+        - "dockets"
+        - "document_number"
+        - "effective_on"
+        - "end_page"
+        - "excerpts"
+        - "executive_order_notes"
+        - "executive_order_number"
+        - "explanation"
+        - "full_text_xml_url"
+        - "html_url"
+        - "images"
+        - "images_metadata"
+        - "json_url"
+        - "mods_url"
+        - "not_received_for_publication"
+        - "page_length"
+        - "page_views"
+        - "pdf_url"
+        - "president"
+        - "presidential_document_number"
+        - "proclamation_number"
+        - "public_inspection_pdf_url"
+        - "publication_date"
+        - "raw_text_url"
+        - "regulation_id_number_info"
+        - "regulation_id_numbers"
+        - "regulations_dot_gov_info"
+        - "regulations_dot_gov_url"
+        - "significant"
+        - "signing_date"
+        - "start_page"
+        - "subtype"
+        - "title"
+        - "toc_doc"
+        - "toc_subject"
+        - "topics"
+        - "type"
+        - "volume"
+    "DocumentType":
+      "type": "string"
+      "enum":
+        - "RULE"
+        - "PRORULE"
+        - "NOTICE"
+        - "PRESDOCU"
+      "description": "Document types:   - RULE: Final Rule   - PRORULE: Proposed Rule   - NOTICE   - PRESDOCU: Presidential Document\n"
+    "PresidentialDocumentType":
+      "type": "string"
+      "enum":
+        - "determination"
+        - "executive_order"
+        - "memorandum"
+        - "notice"
+        - "proclamation"
+        - "presidential_order"
+        - "other"
+    "President":
+      "type": "string"
+      "enum":
+        - "william-j-clinton"
+        - "george-w-bush"
+        - "barack-obama"
+        - "donald-trump"
+        - "joe-biden"
+    "Section":
+      "type": "string"
+      "enum":
+        - "business-and-industry"
+        - "environment"
+        - "health-and-public-welfare"
+        - "money"
+        - "science-and-technology"
+        - "world"
+    "Facet":
+      "type": "string"
+      "enum":
+        - "daily"
+        - "weekly"
+        - "monthly"
+        - "quarterly"
+        - "yearly"
+        - "agency"
+        - "topic"
+        - "section"
+        - "type"
+        - "subtype"
+    "PublicInspectionDocumentField":
+      "type": "string"
+      "description": "Valid fields for public inspection documents only"
+      "enum":
+        - "agencies"
+        - "agency_letters"
+        - "agency_names"
+        - "docket_numbers"
+        - "document_number"
+        - "editorial_note"
+        - "excerpts"
+        - "filed_at"
+        - "filing_type"
+        - "html_url"
+        - "json_url"
+        - "last_public_inspection_issue"
+        - "num_pages"
+        - "page_views"
+        - "pdf_file_name"
+        - "pdf_file_size"
+        - "pdf_updated_at"
+        - "pdf_url"
+        - "publication_date"
+        - "raw_text_url"
+        - "subject_1"
+        - "subject_2"
+        - "subject_3"
+        - "title"
+        - "toc_doc"
+        - "toc_subject"
+        - "type"
+    "Document":
+      "type": "object"
+      "properties":
+        "document_number":
+          "type": "string"
+        "title":
+          "type": "string"
+        "abstract":
+          "type": "string"
+        "publication_date":
+          "type": "string"
+        "type":
+          "type": "string"
+      "description": "A single Federal Register document"
+    "DocumentList":
+      "type": "object"
+      "properties":
+        "results":
+          "type": "array"
+          "items":
+            "type": "object"
+            "properties":
+              "document_number":
+                "type": "string"
+              "title":
+                "type": "string"
+              "abstract":
+                "type": "string"
+              "publication_date":
+                "type": "string"
+              "type":
+                "type": "string"
+            "description": "A single Federal Register document"
+        "count":
+          "type": "integer"
+        "total_pages":
+          "type": "integer"
+      "description": "A list of Federal Register documents with paging info"
+    "FacetResponse":
+      "type": "object"
+      "properties":
+        "facet":
+          "type": "string"
+          "description": "The facet grouping (daily, agency, etc.)"
+        "counts":
+          "type": "array"
+          "items":
+            "type": "object"
+            "properties":
+              "key":
+                "type": "string"
+                "description": "The facet group key"
+              "count":
+                "type": "integer"
+                "description": "Number of items in that facet bucket"
+      "description": "Grouped facet counts for documents"
+    "IssueTableOfContents":
+      "type": "object"
+      "properties":
+        "publication_date":
+          "type": "string"
+        "documents":
+          "type": "array"
+          "items":
+            "type": "object"
+            "properties":
+              "document_number":
+                "type": "string"
+              "title":
+                "type": "string"
+              "abstract":
+                "type": "string"
+              "publication_date":
+                "type": "string"
+              "type":
+                "type": "string"
+            "description": "A single Federal Register document"
+      "description": "Represents the table of contents for a print edition issue"
+    "PublicInspectionDocument":
+      "type": "object"
+      "properties":
+        "document_number":
+          "type": "string"
+        "title":
+          "type": "string"
+        "filing_type":
+          "type": "string"
+        "publication_date":
+          "type": "string"
+      "description": "A single public inspection document"
+    "PublicInspectionDocumentList":
+      "type": "object"
+      "properties":
+        "results":
+          "type": "array"
+          "items":
+            "type": "object"
+            "properties":
+              "document_number":
+                "type": "string"
+              "title":
+                "type": "string"
+              "filing_type":
+                "type": "string"
+              "publication_date":
+                "type": "string"
+            "description": "A single public inspection document"
+        "count":
+          "type": "integer"
+        "total_pages":
+          "type": "integer"
+      "description": "List of public inspection documents with paging info"
+    "Agency":
+      "type": "object"
+      "properties":
+        "slug":
+          "type": "string"
+        "name":
+          "type": "string"
+        "url":
+          "type": "string"
+      "description": "Detailed info about a single agency"
+      "examples":
+        -
+          "value": "slug- \"agriculture-department\""
+        -
+          "value": "name- \"Agriculture Department\""
+        -
+          "value": "url- \"https://www.federalregister.gov/agencies/agriculture-department\""
+    "ImageResponse":
+      "type": "object"
+      "properties":
+        "identifier":
+          "type": "string"
+        "variants":
+          "type": "array"
+          "items":
+            "type": "object"
+            "properties":
+              "variant":
+                "type": "string"
+              "width":
+                "type": "integer"
+              "height":
+                "type": "integer"
+      "description": "Basic metadata about an image and its variants"
+    "SuggestedSearch":
+      "type": "object"
+      "properties":
+        "slug":
+          "type": "string"
+        "name":
+          "type": "string"
+        "search_url":
+          "type": "string"
+      "description": "Represents a single suggested search entry"
