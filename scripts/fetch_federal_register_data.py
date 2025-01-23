@@ -15,13 +15,18 @@ def fetch_executive_orders(date):
 
     try:
         response = requests.get(BASE_URL, params=params)
-        response.raise_for_status()
+
+        # Enhanced logging for debugging
+        print(f"Request URL: {response.url}")
+        print(f"Status Code: {response.status_code}")
+
+        response.raise_for_status()  # Raise an error for bad responses
         data = response.json()
 
-        # Log API response for debugging
-        print("API Response:", data)
+        # Log the full response for debugging
+        print("API Response:", json.dumps(data, indent=2))
 
-        # Save to data folder if results exist
+        # Save data to file if results are found
         if data.get("results"):
             os.makedirs("data", exist_ok=True)
             file_name = f"data/executive_orders_{date}.json"
@@ -35,5 +40,5 @@ def fetch_executive_orders(date):
         print(f"API error: {e}")
 
 if __name__ == "__main__":
-    test_date = "2023-01-01"  # Example test date
+    test_date = "2023-01-01"  # Replace with a relevant test date
     fetch_executive_orders(test_date)
