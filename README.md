@@ -17,7 +17,37 @@ InsightsGPT employs robust GitHub Actions workflows to maintain high code qualit
 - **Test Coverage** with `pytest-cov`.
 - **Federal Register Data Fetching** via custom scripts.
 
+- #### **Data Validation Workflow**
+- **Purpose**: Ensures the integrity of JSON files in `data/`.
+- **Trigger**: Runs on new commits to `data/`.
+- **Script Used**: `validate_data.py`
+- **Output**: Logs validation results and flags issues.
+
+#### **Visualization Workflow**
+- **Purpose**: Automatically generates charts and visual summaries from datasets.
+- **Trigger**: Runs on new commits to `datasets/`.
+- **Script Used**: `generate_visualizations.py`
+- **Output**: Saves visualizations to `visualizations/`.
+
+#### **Keyword Monitoring Workflow**
+- **Purpose**: Flags documents containing specific keywords.
+- **Trigger**: Runs daily (schedule: midnight UTC).
+- **Script Used**: `monitor_keywords.py`
+- **Output**: Saves flagged results to `alerts/`.
+
 The workflows are triggered automatically on code pushes and pull requests to the `main` branch, ensuring every change is thoroughly validated.
+
+---
+
+## **Scripts**
+
+### **1. `validate_data.py`**
+- **Purpose**: Validates JSON data for structure and required fields.
+- **Usage**:
+  ```bash
+  python scripts/validate_data.py --folder data
+
+  ---
 
 ### **Dependencies**
 
@@ -95,3 +125,5 @@ The **"Fetch Federal Register Data"** workflow fetches data from the Federal Reg
 - **`.github/workflows/`**: Workflow files for testing, deploying, and data fetching.
 
 This repository combines automation, generative AI, and open-source collaboration to make U.S. government data accessible and actionable for everyone.
+
+
