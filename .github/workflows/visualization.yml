@@ -1,0 +1,38 @@
+name: Generate Visualizations
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'datasets/**'
+
+jobs:
+  generate-visualizations:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install matplotlib pandas seaborn
+
+    - name: Generate visualizations
+      run: |
+        mkdir -p visualizations
+        python scripts/generate_visualizations.py
+      env:
+        OUTPUT_DIR: visualizations
+
+    - name: Upload visualizations
+      uses: actions/upload-artifact@v3
+      with:
+        name: visualizations
+        path: visualizations/
