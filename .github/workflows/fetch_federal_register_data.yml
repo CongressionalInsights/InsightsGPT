@@ -1,13 +1,13 @@
 name: Fetch Federal Register Data
 
 on:
-workflow_dispatch:
+  workflow_dispatch:
 
 jobs:
   fetch_data:
     runs-on: ubuntu-latest
 
-    steps:
+    steps: 
     - name: Checkout repository
       uses: actions/checkout@v3
 
