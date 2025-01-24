@@ -1,46 +1,53 @@
-
 name: Fetch Federal Register Data
 
 on:
-  schedule:
-    - cron: "0 12 * * *"  # Run daily at 12:00 UTC
-  workflow_dispatch:  # Allow manual trigger
+workflow_dispatch:
 
 jobs:
   fetch_data:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.x"
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install requests
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests
 
-      - name: Fetch Executive Orders
-        run: |
-          mkdir -p data  # Ensure the data folder exists
-          python scripts/fetch_federal_register_data.py
-
-      - name: Debug Data Folder
-        run: |
-          echo "Checking contents of data folder:" 
+    - name: Fetch Data from Federal Register
+      run: |
+        mkdir -p data  # Ensure the data folder exists
+        python - <<EOF
+      import requests
+      url = "https://www.federalregister.gov/api/v1/documents"
+      params = {
+          "conditions[term]": "education",
+          "conditions[publication_date][gte]": "2023-01-01",
+          "per_page": 100,
+          "order": "relevance",
+          "fields[]": ["title", "document_number", "url", "publication_date"]
+      }
+        response = requests.get(url, params=params)
+        if response.status_code == 200:
+          with open("data/federal_register_education.json", "w+") as f:
+            f.write(response.text)
+        else:
+          print(f "API error: {r.status_code} {r.reason'}")
+      EOF
+ 
+    - name: Check contents of data folder
+      run: |
+        echo "Checking contents of data folder:"
+        if [ "$(ls -A data)" ]; then
+          echo "Data folder is not empty. Contents:"
           ls -l data
-
-      - name: Commit and Push Results
-        run: |
-          if [ "$(ls -A data)" ]; then
-            git config user.name "GitHub Action"
-            git config user.email "actions@github.com"
-            git add data/*
-            git commit -m "Update executive orders data"
-            git push
-          else
-            echo "No data files to commit."
+        else
+          echo "Data folder is empty."
+        fi
