@@ -1,4 +1,4 @@
-requests
+requests==2.31.0
 flake8
 pytest
 tensorflow==2.12.1
