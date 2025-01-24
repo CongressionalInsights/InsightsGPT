@@ -1,0 +1,25 @@
+name: Keyword Monitoring
+
+on:
+  schedule:
+    - cron: "0 0 * * *" # Runs daily at midnight UTC
+
+jobs:
+  keyword-monitor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.9"
+
+      - name: Install dependencies
+        run: |
+          pip install
+
+      - name: Monitor keywords
+        run: |
+          python scripts/monitor_keywords.py --keywords docs/keywords.json --input_folder data --output_folder alerts
