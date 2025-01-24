@@ -1,5 +1,14 @@
+# HTTP requests library
 requests==2.31.0
+
+# Code linting tool
 flake8
+
+# Testing framework
 pytest
-tensorflow==2.12.1
+
+# Security analysis tool
 bandit
+
+# Machine learning library
+tensorflow==2.12.1
