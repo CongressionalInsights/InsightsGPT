@@ -22,6 +22,11 @@ This system employs GitHub Actions workflows to streamline tasks related to code
 
 - **Dependabot Enabled**: Automatic updates to dependencies are managed to ensure the repository stays current and secure.
 - **LSTM Model Enhancements**: Apply AI insights into tasks like preprocessing data, validating workflows, and analyzing codebase trends.
+- **Federal Register API Integration**: Query documents, agencies, and other data dynamically.
+- **Automated Data Validation**: Ensures JSON files adhere to required schema and field standards.
+- **Visualization Generation**: Produces charts and summaries from datasets.
+- **Keyword Monitoring**: Flags documents containing predefined terms.
+- **CI/CD Workflows**: Automates data quality checks, visualization creation, and keyword alerts.
 
 ---
 
@@ -77,6 +82,45 @@ Ensure the following dependencies are installed:
 - `argparse`
 
 These tools support querying and automation for workflows.
+
+---
+
+## Workflows
+
+### 1. **Data Validation Workflow**
+- **Purpose**: Validates JSON data for structure, completeness, and schema compliance.
+- **Trigger**: Runs automatically when files are added or updated in the `data/` folder.
+- **Script Used**: `validate_data.py`
+- **Output**: Logs validation results and highlights errors.
+
+### 2. **Visualization Workflow**
+- **Purpose**: Generates visual charts from datasets.
+- **Trigger**: Runs on changes to the `datasets/` folder.
+- **Script Used**: `generate_visualizations.py`
+- **Output**: Saves visualizations to `visualizations/`.
+
+### 3. **Keyword Monitoring Workflow**
+- **Purpose**: Flags documents containing specified terms.
+- **Trigger**: Runs daily on a scheduled basis.
+- **Script Used**: `monitor_keywords.py`
+- **Output**: Saves flagged results to `alerts/`.
+
+---
+
+## Scripts Overview
+
+### `fetch_fr.py`
+- **Purpose**: Fetches data from the Federal Register API.
+- **Key Subcommands**:
+  - `documents-search`: Searches documents based on terms, agencies, or dates.
+  - `documents-single`: Fetches a specific document by its ID.
+  - `agencies`: Lists all agencies.
+
+### `validate_data.py`
+- **Purpose**: Validates JSON data for structural integrity and required fields.
+- **Usage**:
+  ```bash
+  python scripts/validate_data.py --folder data
 
 ---
 
