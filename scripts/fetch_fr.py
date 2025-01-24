@@ -328,4 +328,4 @@ def main():
 
     # Images
     p_images = sub.add_parser("images", help="Fetch available image variants by identifier.")
-    p_images.add_argument("--identifi
+    p_images.add_argument("--identifier", required=True, help="Identifier for the image, e.g., '12345'")
