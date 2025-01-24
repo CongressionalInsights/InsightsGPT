@@ -24,30 +24,19 @@ jobs:
     - name: Fetch Data from Federal Register
       run: |
         mkdir -p data  # Ensure the data folder exists
-        python - <<EOF
-      import requests
-      url = "https://www.federalregister.gov/api/v1/documents"
-      params = {
-          "conditions[term]": "education",
-          "conditions[publication_date][gte]": "2023-01-01",
-          "per_page": 100,
-          "order": "relevance",
-          "fields[]": ["title", "document_number", "url", "publication_date"]
-      }
-        response = requests.get(url, params=params)
-        if response.status_code == 200:
-          with open("data/federal_register_education.json", "w+") as f:
-            f.write(response.text)
-        else:
-          print(f "API error: {r.status_code} {r.reason'}")
-      EOF
- 
-    - name: Check contents of data folder
-      run: |
-        echo "Checking contents of data folder:"
-        if [ "$(ls -A data)" ]; then
-          echo "Data folder is not empty. Contents:"
-          ls -l data
-        else
-          echo "Data folder is empty."
-        fi
+        python - |
+            import requests
+            url = "https://www.federalregister.gov/api/v1/documents"
+            params = {
+                "conditions[term]": "education",
+                "conditions[publication_date][gte]": "2023-01-01",
+                "per_page": 100,
+                "order": "relevance",
+                "fields]": ["title", "document_number", "url", "publication_date"]
+            }
+            response = requests.get(url, params=params)
+            if response.status_code == 200:
+              with open("data/federal_register_education.json", "ws") as f:
+                f.write(response.text)
+            else:
+                print(f "API error: {r.status_code} {r.reason}")
