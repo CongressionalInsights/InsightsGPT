@@ -1,6 +1,6 @@
 # InsightsGPT
 
-### Making Government Data Accessible and Actionable
+## Making Government Data Accessible and Actionable
 
 **InsightsGPT** is an open-source project designed to provide transparent, easy-to-access insights into U.S. legislative, regulatory, and campaign finance activities. By leveraging the power of generative AI, InsightsGPT bridges the gap between complex datasets and the people who need them most. Whether you're a journalist, researcher, activist, or curious citizen, InsightsGPT empowers you to explore government data with ease.
 
@@ -8,40 +8,43 @@
 
 ## **Key Features**
 
-### **GitHub Actions Workflow**
+### **GitHub Actions Workflows**
 
 InsightsGPT employs robust GitHub Actions workflows to maintain high code quality, data accessibility, and security. The workflows include:
+
 - **Linting** with `flake8`.
 - **Security Scanning** with `bandit`.
 - **Code Formatting** with `black`.
 - **Test Coverage** with `pytest-cov`.
-- **Federal Register Data Fetching** via custom scripts.
+- **Fetch Federal Register Data Fetching** via embedded Python script.
 
-- #### **Data Validation Workflow**
-- **Purpose**: Ensures the integrity of JSON files in `data/`.
+---
+
+### **Data Validation Workflow**
+- **Purpose**: Ensures the integrity of JSON files in the `data/`.
 - **Trigger**: Runs on new commits to `data/`.
 - **Script Used**: `validate_data.py`
 - **Output**: Logs validation results and flags issues.
 
-#### **Visualization Workflow**
+### **Visualization Workflow**
 - **Purpose**: Automatically generates charts and visual summaries from datasets.
 - **Trigger**: Runs on new commits to `datasets/`.
 - **Script Used**: `generate_visualizations.py`
 - **Output**: Saves visualizations to `visualizations/`.
 
-#### **Keyword Monitoring Workflow**
+### **Keyword Monitoring Workflow**
 - **Purpose**: Flags documents containing specific keywords.
 - **Trigger**: Runs daily (schedule: midnight UTC).
 - **Script Used**: `monitor_keywords.py`
 - **Output**: Saves flagged results to `alerts/`.
 
-The workflows are triggered automatically on code pushes and pull requests to the `main` branch, ensuring every change is thoroughly validated.
+The workflows are triggered automatically on code pushes, pull requests, and now also manually via `workflow_dispatch` events, ensuring every change is thoroughly validated.
 
 ---
 
-## **Scripts**
+### **Scripts**
 
-### **1. `validate_data.py`**
+#### 1. `validate_data.py`
 - **Purpose**: Validates JSON data for structure and required fields.
 - **Usage**:
   ```bash
@@ -52,6 +55,7 @@ The workflows are triggered automatically on code pushes and pull requests to th
 ### **Dependencies**
 
 The `requirements.txt` file includes the following tools to support the workflows:
+
 - `requests`
 - `flake8`
 - `pytest`
@@ -59,48 +63,36 @@ The `requirements.txt` file includes the following tools to support the workflow
 - `bandit`
 - `black`
 
-### **Dependabot Enabled**
-
-Dependabot is enabled for this repository, ensuring that all dependencies are automatically kept up-to-date to minimize vulnerabilities.
-
 ---
 
-## **Federal Register Workflow**
+### **Fetch Federal Register Workflow**
 
-### Overview
-The **"Fetch Federal Register Data"** workflow fetches data from the Federal Register API using the `fetch_fr.py` script. This workflow supports dynamic querying of all major Federal Register endpoints (e.g., documents, agencies, public inspection).
+#### Overview
 
-### How to Run the Workflow
+The **"Fetch Federal Register Data"** workflow fetches data from the Federal Register API using an embedded Python script. This workflow dynamically queries Federal Register endpoints (e.g., documents, agencies, public inspection).
+
+#### How to Run the Workflow
 
 1. Navigate to the **Actions** tab in the GitHub repository.
 2. Select the workflow titled **"Fetch Federal Register Data"**.
-3. Provide the necessary inputs:
-   - `subcommand`: The desired action (e.g., `documents-search`, `agency-single`, `issues`).
-   - Additional parameters as required by the subcommand.
-4. Click **Run workflow** to execute the workflow manually.
+3. Click **Run workflow** to execute the workflow manually via `workflow_dispatch`.
 
-### Supported Subcommands
+#### Embedded Logic
 
-| Subcommand                 | Description                                | Parameters                                                                 |
-|----------------------------|--------------------------------------------|---------------------------------------------------------------------------|
-| `documents-search`         | Search published FR documents             | `--term`, `--per_page`, `--pub_date_year`, `--agency_slug`, `--doc_type`  |
-| `documents-single`         | Fetch a single document by number         | `--doc_number`                                                           |
-| `public-inspection-search` | Search public inspection documents         | `--term`, `--per_page`                                                   |
-| `public-inspection-current`| Fetch all currently available inspection docs | None                                                                 |
-| `agencies`                 | List all agencies                         | None                                                                     |
-| `agency-single`            | Fetch a single agency by slug             | `--slug`                                                                 |
-| `issues`                   | Fetch a Federal Register issue's table of contents | `--publication_date` (YYYY-MM-DD)                                 |
-| `suggested-searches`       | List all suggested searches               | Optional: `--section`                                                   |
-| `suggested-search`         | Fetch a single suggested search by slug   | `--slug`                                                                 |
+The embedded Python script fetches data using pre-configured parameters:
 
-### Output
+- **Search Term**: `education`
+- **Publication Date**: From `2023-01-01` onwards.
+- **Result Fields**: `title`, `document_number`, `url`, `publication_date`
 
-- All results are saved as JSON files in the `data/` folder.
-- Filenames include the subcommand and parameters (e.g., `documents_search_term_climate.json`).
+#### Output
+
+- Results are saved as JSON files in the `data/` folder.
+- Example file name: `federal_register_education.json`
 
 ---
 
-## **How to Run the Code Quality Workflow**
+### **How to Run the Code Quality Workflow**
 
 1. Navigate to the **Actions** tab in the GitHub repository.
 2. Select the workflow titled **"Code Quality, Security Scan, and Coverage"**.
@@ -108,22 +100,27 @@ The **"Fetch Federal Register Data"** workflow fetches data from the Federal Reg
 
 ---
 
-## **Changelog**
+### **ChangeLog**
 
-### Version 1.0.1
+#### Version 1.0.2
+
+- Replaced `fetch_fr.py` logic with embedded Python script in the Federal Register workflow.
+- Enabled `workflow_dispatch` for manual workflow triggering.
+- Updated README to reflect new workflows and triggers.
+
+#### Version 1.0.1
+
 - Added GitHub Actions workflows for code quality, data fetching, and automation.
 - Unified `fetch_fr.py` script to handle all Federal Register endpoints.
 - Enhanced README with workflow instructions and examples.
-- Implemented Dependabot for automated dependency updates.
+- Implemented Dependabot for automatic dependency updates.
 
 ---
 
-## **Repository Structure**
+### **Repository Structure**
 
-- **`scripts/`**: Contains Python scripts for interacting with government APIs, including `fetch_fr.py` for Federal Register data.
+- **`scripts/`**: Contains Python scripts for interacting with government APIs, including `validate_data.py` and `monitor_keywords.py`.
 - **`docs/`**: Reference files, guides, and structured metadata to help users and contributors.
 - **`.github/workflows/`**: Workflow files for testing, deploying, and data fetching.
 
 This repository combines automation, generative AI, and open-source collaboration to make U.S. government data accessible and actionable for everyone.
-
-
