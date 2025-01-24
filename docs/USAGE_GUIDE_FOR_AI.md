@@ -32,7 +32,7 @@ This system employs GitHub Actions workflows to streamline tasks related to code
 
 ## Federal Register Data Integration
 
-### Supported Subcommands
+#### Supported Subcommands
 The `fetch_fr.py` script interacts with Federal Register API endpoints. Available subcommands include:
 
 - **`documents-search`**: Query published documents with filters like `--term`, `--pub_date_year`, and `--doc_type`.
@@ -41,8 +41,6 @@ The `fetch_fr.py` script interacts with Federal Register API endpoints. Availabl
 - **`issues`**: Fetch an issue's table of contents (`--publication_date`).
 - **`agencies`**: List all agencies.
 - **`agency-single`**: Retrieve details of a single agency (`--slug`).
-- **`suggested-searches`**: Fetch all suggested searches (optional `--section`).
-- **`suggested-search`**: Retrieve a specific suggested search by slug (`--slug`).
 
 ---
 
@@ -61,16 +59,20 @@ The `fetch_fr.py` script interacts with Federal Register API endpoints. Availabl
 
 ---
 
-## Example Queries
+### Example Queries
 
-### Search Documents About Climate Policy
+#### Search Documents About Climate Policy
 - **Workflow**: `documents-search`
-- **Parameters**: `--term="climate policy"`, `--pub_date_year=2025`
+- **Parameters**: 
+  - `--term="climate policy"`
+  - `--pub_date_year=2025`
 - **Output**: `data/documents_search_term_climate_policy.json`
 
-### Fetch Public Inspection Documents
+#### Fetch Public Inspection Documents
 - **Workflow**: `public-inspection-search`
-- **Parameters**: `--term="solar energy"`, `--per_page=10`
+- **Parameters**:
+  - `--term="solar energy"`
+  - `--per_page=10`
 - **Output**: `data/public_inspection_search_term_solar_energy.json`
 
 ---
@@ -85,25 +87,25 @@ These tools support querying and automation for workflows.
 
 ---
 
-## Workflows
+### Workflows
 
-### 1. **Data Validation Workflow**
+#### 1. **Data Validation Workflow**
 - **Purpose**: Validates JSON data for structure, completeness, and schema compliance.
-- **Trigger**: Runs automatically when files are added or updated in the `data/` folder.
+- **Trigger**: Automatically runs when files are added or updated in the `data/` folder.
 - **Script Used**: `validate_data.py`
 - **Output**: Logs validation results and highlights errors.
 
-### 2. **Visualization Workflow**
+#### 2. **Visualization Workflow**
 - **Purpose**: Generates visual charts from datasets.
 - **Trigger**: Runs on changes to the `datasets/` folder.
 - **Script Used**: `generate_visualizations.py`
-- **Output**: Saves visualizations to `visualizations/`.
+- **Output**: Saves visualizations to the `visualizations/` folder.
 
-### 3. **Keyword Monitoring Workflow**
-- **Purpose**: Flags documents containing specified terms.
-- **Trigger**: Runs daily on a scheduled basis.
+#### 3. **Keyword Monitoring Workflow**
+- **Purpose**: Flags documents containing specific terms.
+- **Trigger**: Runs on a scheduled basis (daily).
 - **Script Used**: `monitor_keywords.py`
-- **Output**: Saves flagged results to `alerts/`.
+- **Output**: Saves flagged results to the `alerts/` folder.
 
 ---
 
