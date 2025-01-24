@@ -56,7 +56,7 @@ This guide provides a framework for adding new functionality (scripts, workflows
      - **Inputs**: Command-line arguments.
      - **Outputs**: Generated files or logs.
      ```
-
+     
 3. **Update Workflow Documentation**:
    - Include new workflows in `docs/USAGE_GUIDE_FOR_AI.md`.
    - Document triggers, expected outputs, and usage examples.
@@ -113,17 +113,17 @@ This guide provides a framework for adding new functionality (scripts, workflows
 
 ## Example Workflow for Adding New Functionality
 
-### 1. Add a Script
+#### 1. Add a Script
 - File: `scripts/new_script.py`
 - Description: Describe the purpose of the script.
 - Inputs: List required arguments (e.g., `--input_folder`, `--output_folder`).
 
-### 2. Add a Workflow
+#### 2. Add a Workflow
 - File: `.github/workflows/new-workflow.yml`
 - Trigger: Define triggers (e.g., on push, schedule).
 - Steps: Include setup, script execution, and output handling.
 
-### 3. Update Documentation
+#### 3. Update Documentation
 - `README.md`: Briefly describe the new functionality.
 - `docs/scripts_overview.md`: Provide a detailed explanation of the script.
 - `docs/USAGE_GUIDE_FOR_AI.md`: Document workflow details and usage examples.
