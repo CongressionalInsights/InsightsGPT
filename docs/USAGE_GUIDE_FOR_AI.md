@@ -126,4 +126,46 @@ These tools support querying and automation for workflows.
 
 ---
 
+## House-to-Guide for Senate Lobbying Disclosure Act (LDA) Data
+
+Below is a structured guide to **understand** and **work** with the Senate LDA REST API. By following these steps, Congressional Insights GPT (or any LLM-based agent) can reliably query the API.
+
+1. **Include the Final OpenAPI YAML**  
+   - Make sure your plugin or agent references the `openapi.yaml` v1.0.3 file.  
+   - For ChatGPT Plugins: In the `ai-plugin.json`, point to the OpenAPI doc under `"api": { "url": "<path_to_openapi.yaml>" }`.  
+   - Confirm the plugin manifest sets `"auth": { "type": "none" }` (if you handle the Authorization header separately) **or** a custom scheme.
+
+2. **Supply an Authorization Header**  
+   - LLM calls **must** include `Authorization: Token eed953f7e2b4f53834f6a804215226660aaef55c` (or your valid key).  
+   - For ChatGPT plugins specifically, you can inject the header in your plugin’s server code or specify in the OpenAPI `securitySchemes`.
+
+3. **Respect Filings & Contributions Pagination**  
+   - If the LLM tries to retrieve `page=2` or beyond for `/filings/` or `/contributions/`, it **must** supply a query parameter (e.g., `filing_year=2024`). Otherwise, a 400 error occurs.  
+
+4. **Rate Limits**  
+   - Maximum 120 requests/min for authenticated keys, 15/min for anonymous.  
+   - If a 429 occurs, your LLM can parse the `Retry-After` header to wait before retrying.
+
+5. **Suggested Usage Patterns**  
+   - **Search Filings**: Provide `filing_year`, plus `registrant_id` or other filters.  
+   - **View Single Filing**: Grab the `filing_uuid` from search results to retrieve `/filings/{filing_uuid}/`.  
+   - **List Registrants**: Filter by `registrant_name` or just page through to find potential matches.  
+   - **Constants**: For validated or enumerated fields (e.g., government entities, states, countries, etc.), call the relevant `/constants/` endpoints.
+
+6. **Example LLM Query**  
+   - “Find the 2024 Filings for ‘CTIA’”  
+     - The LLM would:  
+       1. Call `/filings/?filing_year=2024&client_name=CTIA&page_size=5` (if `client_name` were a valid filter—some advanced filters might differ).  
+       2. Retrieve `filing_uuid` from results.  
+       3. Possibly call `/filings/{filing_uuid}/` for more detail.  
+
+7. **Potential Errors**  
+   - **401** “Invalid token” if the key is missing or incorrect.  
+   - **429** “Too Many Requests” if you exceed rate limits.
+
+- This House-to-Guide ensures LLM-based tools can properly navigate the LDA Senate API by referencing the `openapi.yaml` (v1.0.3) specification, applying the required authentication, and respecting pagination rules.
+- Keep your API key secret—**never** commit it in public repos or logs.  
+
+---
+
 This guide empowers AI and contributors to collaborate effectively, ensuring robust data analysis and seamless workflow execution.
