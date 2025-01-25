@@ -140,7 +140,3 @@ Below are some example **workflows** that demonstrate how you might **chain** th
 - **Transparency:** Combining campaign finance (FEC), lobbying (Senate LDA), legislative data (Congress.gov), and regulatory dockets (Regulations.gov) can expose how public policy is shaped across multiple channels.
 - **Deep Insights:** Investigative journalists, civic hackers, and policy analysts get a 360° view of how bills and regulations evolve, and who’s fueling that evolution.
 - **Policy Efficacy:** By seeing whether certain bills or rules gather broad support vs. special-interest push, you can gauge potential outcomes and impacts.
-
----
-
-**Have fun chaining these APIs** to discover new connections between legislation, campaign funding, lobbying efforts, and regulatory actions. This integrated approach can lead to powerful, data-driven insights that inform citizens, journalists, and policymakers alike.
