@@ -1,0 +1,2110 @@
+
+"openapi": "3.1.0"
+"info":
+  "title": "Senate Lobbying Disclosure API"
+  "version": "1.0.0"
+  "description": "OpenAPI 3.1.0 specification for the Senate Lobbying Disclosure (LDA) REST API (v1).\n**API Key** (preferred):   ``` Authorization: Token SENATE_LDA_API_KEY ``` or use Anonymous access (subject to stricter throttling).\n"
+"servers":
+  -
+    "url": "https://lda.senate.gov/api/v1"
+    "description": "Production LDA API"
+"tags":
+  -
+    "name": "Root"
+  -
+    "name": "Filings"
+  -
+    "name": "Contributions"
+  -
+    "name": "Registrants"
+  -
+    "name": "Clients"
+  -
+    "name": "Lobbyists"
+  -
+    "name": "Constants"
+"security":
+  -
+    "ApiKeyAuth": []
+"paths":
+  "/":
+    "get":
+      "tags":
+        - "Root"
+      "summary": "Root Endpoint"
+      "description": "Returns the top-level endpoints available in v1."
+      "operationId": "getRoot"
+      "responses":
+        "200":
+          "description": "OK"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "filings":
+                    "type": "string"
+                  "contributions":
+                    "type": "string"
+                  "registrants":
+                    "type": "string"
+                  "clients":
+                    "type": "string"
+                  "lobbyists":
+                    "type": "string"
+                  "constants_filing_filingtypes":
+                    "type": "string"
+                  "constants_filing_lobbyingactivityissues":
+                    "type": "string"
+                  "constants_filing_governmententities":
+                    "type": "string"
+                  "constants_general_countries":
+                    "type": "string"
+                  "constants_general_states":
+                    "type": "string"
+                  "constants_lobbyist_prefixes":
+                    "type": "string"
+                  "constants_lobbyist_suffixes":
+                    "type": "string"
+        "401":
+          "description": "Invalid or missing API key"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "429":
+          "description": "Throttled - Rate limit exceeded"
+          "headers":
+            "Retry-After":
+              "schema":
+                "type": "integer"
+              "description": "Seconds until next request is allowed"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+  "/filings/":
+    "get":
+      "tags":
+        - "Filings"
+      "summary": "List Filings"
+      "description": "Returns a paginated list of LD1/LD2 Filings."
+      "operationId": "listFilings"
+      "parameters":
+        -
+          "name": "filing_year"
+          "in": "query"
+          "schema":
+            "type": "integer"
+            "enum":
+              - 2021
+              - 2022
+              - 2023
+              - 2024
+              - 2025
+        -
+          "name": "registrant_id"
+          "in": "query"
+          "schema":
+            "type": "integer"
+        -
+          "name": "page"
+          "in": "query"
+          "schema":
+            "type": "integer"
+        -
+          "name": "page_size"
+          "in": "query"
+          "schema":
+            "type": "integer"
+      "responses":
+        "200":
+          "description": "OK"
+          "content":
+            "application/json":
+              "schema":
+                "allOf":
+                  -
+                    "type": "object"
+                    "properties":
+                      "count":
+                        "type": "integer"
+                      "next":
+                        "type":
+                          - "string"
+                          - "null"
+                      "previous":
+                        "type":
+                          - "string"
+                          - "null"
+                      "results":
+                        "type": "array"
+                        "items":
+                          "type": "object"
+                  -
+                    "type": "object"
+                    "properties":
+                      "results":
+                        "type": "array"
+                        "items":
+                          "type": "object"
+                          "properties":
+                            "filing_uuid":
+                              "type": "string"
+                              "format": "uuid"
+                            "filing_type":
+                              "type": "string"
+                            "filing_year":
+                              "type": "integer"
+                            "filing_period":
+                              "type": "string"
+                            "dt_posted":
+                              "type":
+                                - "string"
+                                - "null"
+                            "registrant_name":
+                              "type":
+                                - "string"
+                                - "null"
+                            "client_name":
+                              "type":
+                                - "string"
+                                - "null"
+        "400":
+          "description": "Bad Request"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "401":
+          "description": "Invalid or missing API key"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "404":
+          "description": "Resource not found"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "405":
+          "description": "Method not allowed on this endpoint"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "429":
+          "description": "Throttled - Rate limit exceeded"
+          "headers":
+            "Retry-After":
+              "schema":
+                "type": "integer"
+              "description": "Seconds until next request is allowed"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+  "/filings/{filing_uuid}/":
+    "get":
+      "tags":
+        - "Filings"
+      "summary": "Retrieve Filing by UUID"
+      "description": "Returns a single filing record."
+      "operationId": "retrieveFiling"
+      "parameters":
+        -
+          "name": "filing_uuid"
+          "in": "path"
+          "required": true
+          "schema":
+            "type": "string"
+            "format": "uuid"
+      "responses":
+        "200":
+          "description": "OK"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "filing_uuid":
+                    "type": "string"
+                    "format": "uuid"
+                  "filing_type":
+                    "type":
+                      - "string"
+                      - "null"
+                  "filing_type_display":
+                    "type":
+                      - "string"
+                      - "null"
+                  "filing_year":
+                    "type":
+                      - "integer"
+                      - "null"
+                  "filing_period":
+                    "type":
+                      - "string"
+                      - "null"
+                  "filing_period_display":
+                    "type":
+                      - "string"
+                      - "null"
+                  "filing_document_url":
+                    "type":
+                      - "string"
+                      - "null"
+                  "dt_posted":
+                    "type":
+                      - "string"
+                      - "null"
+                  "income":
+                    "type":
+                      - "string"
+                      - "null"
+                  "expenses":
+                    "type":
+                      - "string"
+                      - "null"
+                  "registrant":
+                    "type": "object"
+                    "properties":
+                      "id":
+                        "type": "integer"
+                      "name":
+                        "type": "string"
+                      "city":
+                        "type":
+                          - "string"
+                          - "null"
+                      "state":
+                        "type":
+                          - "string"
+                          - "null"
+                      "country":
+                        "type":
+                          - "string"
+                          - "null"
+                      "dt_updated":
+                        "type":
+                          - "string"
+                          - "null"
+                  "client":
+                    "type": "object"
+                    "properties":
+                      "id":
+                        "type": "integer"
+                      "client_id":
+                        "type":
+                          - "string"
+                          - "null"
+                      "name":
+                        "type": "string"
+                      "country":
+                        "type":
+                          - "string"
+                          - "null"
+                      "dt_updated":
+                        "type":
+                          - "string"
+                          - "null"
+        "400":
+          "description": "Bad Request"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "401":
+          "description": "Invalid or missing API key"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "404":
+          "description": "Resource not found"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "405":
+          "description": "Method not allowed on this endpoint"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "429":
+          "description": "Throttled - Rate limit exceeded"
+          "headers":
+            "Retry-After":
+              "schema":
+                "type": "integer"
+              "description": "Seconds until next request is allowed"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+  "/contributions/":
+    "get":
+      "tags":
+        - "Contributions"
+      "summary": "List Contributions (LD-203)"
+      "description": "Returns a paginated list of LD-203 contribution filings."
+      "operationId": "listContributionReports"
+      "parameters":
+        -
+          "name": "filing_year"
+          "in": "query"
+          "schema":
+            "type": "integer"
+        -
+          "name": "page"
+          "in": "query"
+          "schema":
+            "type": "integer"
+        -
+          "name": "page_size"
+          "in": "query"
+          "schema":
+            "type": "integer"
+      "responses":
+        "200":
+          "description": "OK"
+          "content":
+            "application/json":
+              "schema":
+                "allOf":
+                  -
+                    "type": "object"
+                    "properties":
+                      "count":
+                        "type": "integer"
+                      "next":
+                        "type":
+                          - "string"
+                          - "null"
+                      "previous":
+                        "type":
+                          - "string"
+                          - "null"
+                      "results":
+                        "type": "array"
+                        "items":
+                          "type": "object"
+                  -
+                    "type": "object"
+                    "properties":
+                      "results":
+                        "type": "array"
+                        "items":
+                          "type": "object"
+                          "properties":
+                            "filing_uuid":
+                              "type": "string"
+                              "format": "uuid"
+                            "filing_type":
+                              "type":
+                                - "string"
+                                - "null"
+                            "filing_year":
+                              "type":
+                                - "integer"
+                                - "null"
+                            "filing_period":
+                              "type":
+                                - "string"
+                                - "null"
+                            "dt_posted":
+                              "type":
+                                - "string"
+                                - "null"
+                            "registrant_name":
+                              "type":
+                                - "string"
+                                - "null"
+                            "lobbyist_name":
+                              "type":
+                                - "string"
+                                - "null"
+        "400":
+          "description": "Bad Request"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "401":
+          "description": "Invalid or missing API key"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "404":
+          "description": "Resource not found"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "405":
+          "description": "Method not allowed on this endpoint"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "429":
+          "description": "Throttled - Rate limit exceeded"
+          "headers":
+            "Retry-After":
+              "schema":
+                "type": "integer"
+              "description": "Seconds until next request is allowed"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+  "/contributions/{filing_uuid}/":
+    "get":
+      "tags":
+        - "Contributions"
+      "summary": "Retrieve a single LD-203 by UUID"
+      "description": "Returns a single contribution filing record (LD-203)."
+      "operationId": "retrieveContributionReport"
+      "parameters":
+        -
+          "name": "filing_uuid"
+          "in": "path"
+          "required": true
+          "schema":
+            "type": "string"
+            "format": "uuid"
+      "responses":
+        "200":
+          "description": "OK"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "filing_uuid":
+                    "type": "string"
+                    "format": "uuid"
+                  "filing_type":
+                    "type":
+                      - "string"
+                      - "null"
+                  "filing_type_display":
+                    "type":
+                      - "string"
+                      - "null"
+                  "filing_year":
+                    "type":
+                      - "integer"
+                      - "null"
+                  "filing_period":
+                    "type":
+                      - "string"
+                      - "null"
+                  "filing_period_display":
+                    "type":
+                      - "string"
+                      - "null"
+                  "filing_document_url":
+                    "type":
+                      - "string"
+                      - "null"
+                  "dt_posted":
+                    "type":
+                      - "string"
+                      - "null"
+                  "contact_name":
+                    "type":
+                      - "string"
+                      - "null"
+                  "no_contributions":
+                    "type":
+                      - "boolean"
+                      - "null"
+                  "registrant":
+                    "type": "object"
+                    "properties":
+                      "id":
+                        "type": "integer"
+                      "name":
+                        "type": "string"
+                      "city":
+                        "type":
+                          - "string"
+                          - "null"
+                      "state":
+                        "type":
+                          - "string"
+                          - "null"
+                      "country":
+                        "type":
+                          - "string"
+                          - "null"
+                      "dt_updated":
+                        "type":
+                          - "string"
+                          - "null"
+                  "lobbyist":
+                    "type": "object"
+                    "properties":
+                      "id":
+                        "type": "integer"
+                      "first_name":
+                        "type": "string"
+                      "last_name":
+                        "type": "string"
+                      "prefix":
+                        "type":
+                          - "string"
+                          - "null"
+                      "suffix":
+                        "type":
+                          - "string"
+                          - "null"
+        "400":
+          "description": "Bad Request"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "401":
+          "description": "Invalid or missing API key"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "404":
+          "description": "Resource not found"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "405":
+          "description": "Method not allowed on this endpoint"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "429":
+          "description": "Throttled - Rate limit exceeded"
+          "headers":
+            "Retry-After":
+              "schema":
+                "type": "integer"
+              "description": "Seconds until next request is allowed"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+  "/registrants/":
+    "get":
+      "tags":
+        - "Registrants"
+      "summary": "List Registrants"
+      "operationId": "listRegistrants"
+      "parameters":
+        -
+          "name": "registrant_name"
+          "in": "query"
+          "schema":
+            "type": "string"
+        -
+          "name": "page"
+          "in": "query"
+          "schema":
+            "type": "integer"
+        -
+          "name": "page_size"
+          "in": "query"
+          "schema":
+            "type": "integer"
+      "responses":
+        "200":
+          "description": "OK"
+          "content":
+            "application/json":
+              "schema":
+                "allOf":
+                  -
+                    "type": "object"
+                    "properties":
+                      "count":
+                        "type": "integer"
+                      "next":
+                        "type":
+                          - "string"
+                          - "null"
+                      "previous":
+                        "type":
+                          - "string"
+                          - "null"
+                      "results":
+                        "type": "array"
+                        "items":
+                          "type": "object"
+                  -
+                    "type": "object"
+                    "properties":
+                      "results":
+                        "type": "array"
+                        "items":
+                          "type": "object"
+                          "properties":
+                            "id":
+                              "type": "integer"
+                            "name":
+                              "type": "string"
+                            "city":
+                              "type":
+                                - "string"
+                                - "null"
+                            "state":
+                              "type":
+                                - "string"
+                                - "null"
+                            "country":
+                              "type":
+                                - "string"
+                                - "null"
+                            "dt_updated":
+                              "type":
+                                - "string"
+                                - "null"
+        "400":
+          "description": "Bad Request"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "401":
+          "description": "Invalid or missing API key"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "404":
+          "description": "Resource not found"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "405":
+          "description": "Method not allowed on this endpoint"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "429":
+          "description": "Throttled - Rate limit exceeded"
+          "headers":
+            "Retry-After":
+              "schema":
+                "type": "integer"
+              "description": "Seconds until next request is allowed"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+  "/registrants/{id}/":
+    "get":
+      "tags":
+        - "Registrants"
+      "summary": "Retrieve Registrant by ID"
+      "operationId": "retrieveRegistrant"
+      "parameters":
+        -
+          "name": "id"
+          "in": "path"
+          "required": true
+          "schema":
+            "type": "integer"
+      "responses":
+        "200":
+          "description": "OK"
+          "content":
+            "application/json":
+              "schema":
+                "allOf":
+                  -
+                    "type": "object"
+                    "properties":
+                      "id":
+                        "type": "integer"
+                      "name":
+                        "type": "string"
+                      "city":
+                        "type":
+                          - "string"
+                          - "null"
+                      "state":
+                        "type":
+                          - "string"
+                          - "null"
+                      "country":
+                        "type":
+                          - "string"
+                          - "null"
+                      "dt_updated":
+                        "type":
+                          - "string"
+                          - "null"
+                  -
+                    "type": "object"
+                    "properties":
+                      "description":
+                        "type":
+                          - "string"
+                          - "null"
+        "400":
+          "description": "Bad Request"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "401":
+          "description": "Invalid or missing API key"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "404":
+          "description": "Resource not found"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "405":
+          "description": "Method not allowed on this endpoint"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "429":
+          "description": "Throttled - Rate limit exceeded"
+          "headers":
+            "Retry-After":
+              "schema":
+                "type": "integer"
+              "description": "Seconds until next request is allowed"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+  "/clients/":
+    "get":
+      "tags":
+        - "Clients"
+      "summary": "List Clients"
+      "operationId": "listClients"
+      "parameters":
+        -
+          "name": "client_name"
+          "in": "query"
+          "schema":
+            "type": "string"
+        -
+          "name": "page"
+          "in": "query"
+          "schema":
+            "type": "integer"
+        -
+          "name": "page_size"
+          "in": "query"
+          "schema":
+            "type": "integer"
+      "responses":
+        "200":
+          "description": "OK"
+          "content":
+            "application/json":
+              "schema":
+                "allOf":
+                  -
+                    "type": "object"
+                    "properties":
+                      "count":
+                        "type": "integer"
+                      "next":
+                        "type":
+                          - "string"
+                          - "null"
+                      "previous":
+                        "type":
+                          - "string"
+                          - "null"
+                      "results":
+                        "type": "array"
+                        "items":
+                          "type": "object"
+                  -
+                    "type": "object"
+                    "properties":
+                      "results":
+                        "type": "array"
+                        "items":
+                          "type": "object"
+                          "properties":
+                            "id":
+                              "type": "integer"
+                            "client_id":
+                              "type":
+                                - "string"
+                                - "null"
+                            "name":
+                              "type": "string"
+                            "country":
+                              "type":
+                                - "string"
+                                - "null"
+                            "dt_updated":
+                              "type":
+                                - "string"
+                                - "null"
+        "400":
+          "description": "Bad Request"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "401":
+          "description": "Invalid or missing API key"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "404":
+          "description": "Resource not found"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "405":
+          "description": "Method not allowed on this endpoint"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "429":
+          "description": "Throttled - Rate limit exceeded"
+          "headers":
+            "Retry-After":
+              "schema":
+                "type": "integer"
+              "description": "Seconds until next request is allowed"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+  "/clients/{id}/":
+    "get":
+      "tags":
+        - "Clients"
+      "summary": "Retrieve a single Client by ID"
+      "operationId": "retrieveClient"
+      "parameters":
+        -
+          "name": "id"
+          "in": "path"
+          "required": true
+          "schema":
+            "type": "integer"
+      "responses":
+        "200":
+          "description": "OK"
+          "content":
+            "application/json":
+              "schema":
+                "allOf":
+                  -
+                    "type": "object"
+                    "properties":
+                      "id":
+                        "type": "integer"
+                      "client_id":
+                        "type":
+                          - "string"
+                          - "null"
+                      "name":
+                        "type": "string"
+                      "country":
+                        "type":
+                          - "string"
+                          - "null"
+                      "dt_updated":
+                        "type":
+                          - "string"
+                          - "null"
+                  -
+                    "type": "object"
+                    "properties":
+                      "pass":
+                        "type": "string"
+                        "description": "placeholder"
+        "400":
+          "description": "Bad Request"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "401":
+          "description": "Invalid or missing API key"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "404":
+          "description": "Resource not found"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "405":
+          "description": "Method not allowed on this endpoint"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "429":
+          "description": "Throttled - Rate limit exceeded"
+          "headers":
+            "Retry-After":
+              "schema":
+                "type": "integer"
+              "description": "Seconds until next request is allowed"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+  "/lobbyists/":
+    "get":
+      "tags":
+        - "Lobbyists"
+      "summary": "List Lobbyists"
+      "operationId": "listLobbyists"
+      "parameters":
+        -
+          "name": "lobbyist_name"
+          "in": "query"
+          "schema":
+            "type": "string"
+        -
+          "name": "page"
+          "in": "query"
+          "schema":
+            "type": "integer"
+        -
+          "name": "page_size"
+          "in": "query"
+          "schema":
+            "type": "integer"
+      "responses":
+        "200":
+          "description": "OK"
+          "content":
+            "application/json":
+              "schema":
+                "allOf":
+                  -
+                    "type": "object"
+                    "properties":
+                      "count":
+                        "type": "integer"
+                      "next":
+                        "type":
+                          - "string"
+                          - "null"
+                      "previous":
+                        "type":
+                          - "string"
+                          - "null"
+                      "results":
+                        "type": "array"
+                        "items":
+                          "type": "object"
+                  -
+                    "type": "object"
+                    "properties":
+                      "results":
+                        "type": "array"
+                        "items":
+                          "type": "object"
+                          "properties":
+                            "id":
+                              "type": "integer"
+                            "first_name":
+                              "type": "string"
+                            "last_name":
+                              "type": "string"
+                            "prefix":
+                              "type":
+                                - "string"
+                                - "null"
+                            "suffix":
+                              "type":
+                                - "string"
+                                - "null"
+        "400":
+          "description": "Bad Request"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "401":
+          "description": "Invalid or missing API key"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "404":
+          "description": "Resource not found"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "405":
+          "description": "Method not allowed on this endpoint"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "429":
+          "description": "Throttled - Rate limit exceeded"
+          "headers":
+            "Retry-After":
+              "schema":
+                "type": "integer"
+              "description": "Seconds until next request is allowed"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+  "/lobbyists/{id}/":
+    "get":
+      "tags":
+        - "Lobbyists"
+      "summary": "Retrieve Lobbyist by ID"
+      "operationId": "retrieveLobbyist"
+      "parameters":
+        -
+          "name": "id"
+          "in": "path"
+          "required": true
+          "schema":
+            "type": "integer"
+      "responses":
+        "200":
+          "description": "OK"
+          "content":
+            "application/json":
+              "schema":
+                "allOf":
+                  -
+                    "type": "object"
+                    "properties":
+                      "id":
+                        "type": "integer"
+                      "first_name":
+                        "type": "string"
+                      "last_name":
+                        "type": "string"
+                      "prefix":
+                        "type":
+                          - "string"
+                          - "null"
+                      "suffix":
+                        "type":
+                          - "string"
+                          - "null"
+                  -
+                    "type": "object"
+                    "properties":
+                      "registrant":
+                        "type": "object"
+                        "properties":
+                          "id":
+                            "type": "integer"
+                          "name":
+                            "type": "string"
+                          "city":
+                            "type":
+                              - "string"
+                              - "null"
+                          "state":
+                            "type":
+                              - "string"
+                              - "null"
+                          "country":
+                            "type":
+                              - "string"
+                              - "null"
+                          "dt_updated":
+                            "type":
+                              - "string"
+                              - "null"
+        "400":
+          "description": "Bad Request"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "401":
+          "description": "Invalid or missing API key"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "404":
+          "description": "Resource not found"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "405":
+          "description": "Method not allowed on this endpoint"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "429":
+          "description": "Throttled - Rate limit exceeded"
+          "headers":
+            "Retry-After":
+              "schema":
+                "type": "integer"
+              "description": "Seconds until next request is allowed"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+  "/constants/filing/filingtypes/":
+    "get":
+      "tags":
+        - "Constants"
+      "summary": "List FilingTypes"
+      "operationId": "listFilingTypes"
+      "responses":
+        "200":
+          "description": "OK"
+          "content":
+            "application/json":
+              "schema":
+                "type": "array"
+                "items":
+                  "type": "object"
+                  "properties":
+                    "name":
+                      "type": "string"
+                    "value":
+                      "type": "string"
+        "401":
+          "description": "Invalid or missing API key"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "429":
+          "description": "Throttled - Rate limit exceeded"
+          "headers":
+            "Retry-After":
+              "schema":
+                "type": "integer"
+              "description": "Seconds until next request is allowed"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+  "/constants/filing/lobbyingactivityissues/":
+    "get":
+      "tags":
+        - "Constants"
+      "summary": "List Lobbying Activity Issues"
+      "operationId": "listLobbyingActivityIssues"
+      "responses":
+        "200":
+          "description": "OK"
+          "content":
+            "application/json":
+              "schema":
+                "type": "array"
+                "items":
+                  "type": "object"
+                  "properties":
+                    "name":
+                      "type": "string"
+                    "value":
+                      "type": "string"
+        "401":
+          "description": "Invalid or missing API key"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "429":
+          "description": "Throttled - Rate limit exceeded"
+          "headers":
+            "Retry-After":
+              "schema":
+                "type": "integer"
+              "description": "Seconds until next request is allowed"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+  "/constants/filing/governmententities/":
+    "get":
+      "tags":
+        - "Constants"
+      "summary": "List Government Entities"
+      "operationId": "listGovernmentEntities"
+      "responses":
+        "200":
+          "description": "OK"
+          "content":
+            "application/json":
+              "schema":
+                "type": "array"
+                "items":
+                  "type": "object"
+                  "properties":
+                    "id":
+                      "type": "integer"
+                    "name":
+                      "type": "string"
+        "401":
+          "description": "Invalid or missing API key"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "429":
+          "description": "Throttled - Rate limit exceeded"
+          "headers":
+            "Retry-After":
+              "schema":
+                "type": "integer"
+              "description": "Seconds until next request is allowed"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+  "/constants/general/countries/":
+    "get":
+      "tags":
+        - "Constants"
+      "summary": "List Countries"
+      "operationId": "listCountries"
+      "responses":
+        "200":
+          "description": "OK"
+          "content":
+            "application/json":
+              "schema":
+                "type": "array"
+                "items":
+                  "type": "object"
+                  "properties":
+                    "name":
+                      "type": "string"
+                    "value":
+                      "type": "string"
+        "401":
+          "description": "Invalid or missing API key"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "429":
+          "description": "Throttled - Rate limit exceeded"
+          "headers":
+            "Retry-After":
+              "schema":
+                "type": "integer"
+              "description": "Seconds until next request is allowed"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+  "/constants/general/states/":
+    "get":
+      "tags":
+        - "Constants"
+      "summary": "List States"
+      "operationId": "listStates"
+      "responses":
+        "200":
+          "description": "OK"
+          "content":
+            "application/json":
+              "schema":
+                "type": "array"
+                "items":
+                  "type": "object"
+                  "properties":
+                    "name":
+                      "type": "string"
+                    "value":
+                      "type": "string"
+        "401":
+          "description": "Invalid or missing API key"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "429":
+          "description": "Throttled - Rate limit exceeded"
+          "headers":
+            "Retry-After":
+              "schema":
+                "type": "integer"
+              "description": "Seconds until next request is allowed"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+  "/constants/lobbyist/prefixes/":
+    "get":
+      "tags":
+        - "Constants"
+      "summary": "List Lobbyist Prefixes"
+      "operationId": "listLobbyistPrefixes"
+      "responses":
+        "200":
+          "description": "OK"
+          "content":
+            "application/json":
+              "schema":
+                "type": "array"
+                "items":
+                  "type": "object"
+                  "properties":
+                    "name":
+                      "type": "string"
+                    "value":
+                      "type": "string"
+        "401":
+          "description": "Invalid or missing API key"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "429":
+          "description": "Throttled - Rate limit exceeded"
+          "headers":
+            "Retry-After":
+              "schema":
+                "type": "integer"
+              "description": "Seconds until next request is allowed"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+  "/constants/lobbyist/suffixes/":
+    "get":
+      "tags":
+        - "Constants"
+      "summary": "List Lobbyist Suffixes"
+      "operationId": "listLobbyistSuffixes"
+      "responses":
+        "200":
+          "description": "OK"
+          "content":
+            "application/json":
+              "schema":
+                "type": "array"
+                "items":
+                  "type": "object"
+                  "properties":
+                    "name":
+                      "type": "string"
+                    "value":
+                      "type": "string"
+        "401":
+          "description": "Invalid or missing API key"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+        "429":
+          "description": "Throttled - Rate limit exceeded"
+          "headers":
+            "Retry-After":
+              "schema":
+                "type": "integer"
+              "description": "Seconds until next request is allowed"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "properties":
+                  "detail":
+                    "type": "string"
+"components":
+  "securitySchemes":
+    "ApiKeyAuth":
+      "type": "apiKey"
+      "in": "header"
+      "name": "Authorization"
+      "description": "Include your API Key as `Authorization: Token YOUR_API_KEY`\n"
+  "schemas":
+    "Paging":
+      "type": "object"
+      "properties":
+        "count":
+          "type": "integer"
+        "next":
+          "type":
+            - "string"
+            - "null"
+        "previous":
+          "type":
+            - "string"
+            - "null"
+        "results":
+          "type": "array"
+          "items":
+            "type": "object"
+    "FilingListItem":
+      "type": "object"
+      "properties":
+        "filing_uuid":
+          "type": "string"
+          "format": "uuid"
+        "filing_type":
+          "type": "string"
+        "filing_year":
+          "type": "integer"
+        "filing_period":
+          "type": "string"
+        "dt_posted":
+          "type":
+            - "string"
+            - "null"
+        "registrant_name":
+          "type":
+            - "string"
+            - "null"
+        "client_name":
+          "type":
+            - "string"
+            - "null"
+    "FilingDetail":
+      "type": "object"
+      "properties":
+        "filing_uuid":
+          "type": "string"
+          "format": "uuid"
+        "filing_type":
+          "type":
+            - "string"
+            - "null"
+        "filing_type_display":
+          "type":
+            - "string"
+            - "null"
+        "filing_year":
+          "type":
+            - "integer"
+            - "null"
+        "filing_period":
+          "type":
+            - "string"
+            - "null"
+        "filing_period_display":
+          "type":
+            - "string"
+            - "null"
+        "filing_document_url":
+          "type":
+            - "string"
+            - "null"
+        "dt_posted":
+          "type":
+            - "string"
+            - "null"
+        "income":
+          "type":
+            - "string"
+            - "null"
+        "expenses":
+          "type":
+            - "string"
+            - "null"
+        "registrant":
+          "type": "object"
+          "properties":
+            "id":
+              "type": "integer"
+            "name":
+              "type": "string"
+            "city":
+              "type":
+                - "string"
+                - "null"
+            "state":
+              "type":
+                - "string"
+                - "null"
+            "country":
+              "type":
+                - "string"
+                - "null"
+            "dt_updated":
+              "type":
+                - "string"
+                - "null"
+        "client":
+          "type": "object"
+          "properties":
+            "id":
+              "type": "integer"
+            "client_id":
+              "type":
+                - "string"
+                - "null"
+            "name":
+              "type": "string"
+            "country":
+              "type":
+                - "string"
+                - "null"
+            "dt_updated":
+              "type":
+                - "string"
+                - "null"
+    "ContributionListItem":
+      "type": "object"
+      "properties":
+        "filing_uuid":
+          "type": "string"
+          "format": "uuid"
+        "filing_type":
+          "type":
+            - "string"
+            - "null"
+        "filing_year":
+          "type":
+            - "integer"
+            - "null"
+        "filing_period":
+          "type":
+            - "string"
+            - "null"
+        "dt_posted":
+          "type":
+            - "string"
+            - "null"
+        "registrant_name":
+          "type":
+            - "string"
+            - "null"
+        "lobbyist_name":
+          "type":
+            - "string"
+            - "null"
+    "ContributionDetail":
+      "type": "object"
+      "properties":
+        "filing_uuid":
+          "type": "string"
+          "format": "uuid"
+        "filing_type":
+          "type":
+            - "string"
+            - "null"
+        "filing_type_display":
+          "type":
+            - "string"
+            - "null"
+        "filing_year":
+          "type":
+            - "integer"
+            - "null"
+        "filing_period":
+          "type":
+            - "string"
+            - "null"
+        "filing_period_display":
+          "type":
+            - "string"
+            - "null"
+        "filing_document_url":
+          "type":
+            - "string"
+            - "null"
+        "dt_posted":
+          "type":
+            - "string"
+            - "null"
+        "contact_name":
+          "type":
+            - "string"
+            - "null"
+        "no_contributions":
+          "type":
+            - "boolean"
+            - "null"
+        "registrant":
+          "type": "object"
+          "properties":
+            "id":
+              "type": "integer"
+            "name":
+              "type": "string"
+            "city":
+              "type":
+                - "string"
+                - "null"
+            "state":
+              "type":
+                - "string"
+                - "null"
+            "country":
+              "type":
+                - "string"
+                - "null"
+            "dt_updated":
+              "type":
+                - "string"
+                - "null"
+        "lobbyist":
+          "type": "object"
+          "properties":
+            "id":
+              "type": "integer"
+            "first_name":
+              "type": "string"
+            "last_name":
+              "type": "string"
+            "prefix":
+              "type":
+                - "string"
+                - "null"
+            "suffix":
+              "type":
+                - "string"
+                - "null"
+    "RegistrantBase":
+      "type": "object"
+      "properties":
+        "id":
+          "type": "integer"
+        "name":
+          "type": "string"
+        "city":
+          "type":
+            - "string"
+            - "null"
+        "state":
+          "type":
+            - "string"
+            - "null"
+        "country":
+          "type":
+            - "string"
+            - "null"
+        "dt_updated":
+          "type":
+            - "string"
+            - "null"
+    "RegistrantDetail":
+      "allOf":
+        -
+          "type": "object"
+          "properties":
+            "id":
+              "type": "integer"
+            "name":
+              "type": "string"
+            "city":
+              "type":
+                - "string"
+                - "null"
+            "state":
+              "type":
+                - "string"
+                - "null"
+            "country":
+              "type":
+                - "string"
+                - "null"
+            "dt_updated":
+              "type":
+                - "string"
+                - "null"
+        -
+          "type": "object"
+          "properties":
+            "description":
+              "type":
+                - "string"
+                - "null"
+    "ClientBase":
+      "type": "object"
+      "properties":
+        "id":
+          "type": "integer"
+        "client_id":
+          "type":
+            - "string"
+            - "null"
+        "name":
+          "type": "string"
+        "country":
+          "type":
+            - "string"
+            - "null"
+        "dt_updated":
+          "type":
+            - "string"
+            - "null"
+    "ClientDetail":
+      "allOf":
+        -
+          "type": "object"
+          "properties":
+            "id":
+              "type": "integer"
+            "client_id":
+              "type":
+                - "string"
+                - "null"
+            "name":
+              "type": "string"
+            "country":
+              "type":
+                - "string"
+                - "null"
+            "dt_updated":
+              "type":
+                - "string"
+                - "null"
+        -
+          "type": "object"
+          "properties":
+            "pass":
+              "type": "string"
+              "description": "placeholder"
+    "LobbyistBase":
+      "type": "object"
+      "properties":
+        "id":
+          "type": "integer"
+        "first_name":
+          "type": "string"
+        "last_name":
+          "type": "string"
+        "prefix":
+          "type":
+            - "string"
+            - "null"
+        "suffix":
+          "type":
+            - "string"
+            - "null"
+    "LobbyistDetail":
+      "allOf":
+        -
+          "type": "object"
+          "properties":
+            "id":
+              "type": "integer"
+            "first_name":
+              "type": "string"
+            "last_name":
+              "type": "string"
+            "prefix":
+              "type":
+                - "string"
+                - "null"
+            "suffix":
+              "type":
+                - "string"
+                - "null"
+        -
+          "type": "object"
+          "properties":
+            "registrant":
+              "type": "object"
+              "properties":
+                "id":
+                  "type": "integer"
+                "name":
+                  "type": "string"
+                "city":
+                  "type":
+                    - "string"
+                    - "null"
+                "state":
+                  "type":
+                    - "string"
+                    - "null"
+                "country":
+                  "type":
+                    - "string"
+                    - "null"
+                "dt_updated":
+                  "type":
+                    - "string"
+                    - "null"
+    "ConstantNameValue":
+      "type": "object"
+      "properties":
+        "name":
+          "type": "string"
+        "value":
+          "type": "string"
+    "ConstantGovernmentEntity":
+      "type": "object"
+      "properties":
+        "id":
+          "type": "integer"
+        "name":
+          "type": "string"
+  "responses":
+    "BadRequestError":
+      "description": "Bad Request"
+      "content":
+        "application/json":
+          "schema":
+            "type": "object"
+            "properties":
+              "detail":
+                "type": "string"
+    "UnauthorizedError":
+      "description": "Invalid or missing API key"
+      "content":
+        "application/json":
+          "schema":
+            "type": "object"
+            "properties":
+              "detail":
+                "type": "string"
+    "NotFoundError":
+      "description": "Resource not found"
+      "content":
+        "application/json":
+          "schema":
+            "type": "object"
+            "properties":
+              "detail":
+                "type": "string"
+    "MethodNotAllowedError":
+      "description": "Method not allowed on this endpoint"
+      "content":
+        "application/json":
+          "schema":
+            "type": "object"
+            "properties":
+              "detail":
+                "type": "string"
+    "TooManyRequestsError":
+      "description": "Throttled - Rate limit exceeded"
+      "headers":
+        "Retry-After":
+          "schema":
+            "type": "integer"
+          "description": "Seconds until next request is allowed"
+      "content":
+        "application/json":
+          "schema":
+            "type": "object"
+            "properties":
+              "detail":
+                "type": "string"
