@@ -13,6 +13,7 @@ This document serves as a changelog, detailing recent updates, improvements, and
   - Removed latency in `fetch_fr.py` via caching mechanisms.
   - Updated `monitor_keywords.py` to accommodate multi-keyword searches.
   - Expanded visualization options, including geographic mapping.
+  - Added Senate Lobbying Disclosure API support with  `data_connections/ldasenategov_openapi.yaml`
 
 ### Version 1.0.2
 
