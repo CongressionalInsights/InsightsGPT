@@ -179,6 +179,8 @@
     - Issue: 10, Date: 2025-01-17, [Daily Digest PDF](https://www.congress.gov/119/crec/2025/01/17/171/10/CREC-2025-01-17-dailydigest.pdf)
     - Issue: 9, Date: 2025-01-16, [Daily Digest PDF](https://www.congress.gov/119/crec/2025/01/16/171/9/CREC-2025-01-16-dailydigest.pdf)
 
+---
+
 #### FEC API
 
 - **Endpoint:** `/candidates`
@@ -233,6 +235,8 @@
   - **Usage:** Explore party affiliations, treasurers, and committee types.
   - **Example:** Committee: 12TH DISTRICT VOTERS EDUCATION COMMITTEE, State: NC, Treasurer: Doris W. Mack.
 
+---
+
 #### Regulations.gov API
 
 - **Endpoint:** `/listDockets`
@@ -264,3 +268,457 @@
   - **Description:** Retrieves detailed metadata for a specific comment, including tracking numbers and related documents.
   - **Usage:** Analyze individual public feedback or access attachments.
   - **Example:** Title: Comment submitted by J. Grimble; Docket ID: EPA-R10-OW-2017-0369; Comment Content: "See attached"; Attachments.
+
+---
+
+#### Senate Lobbying Disclosure API (LDA) Endpoints
+
+## Root
+
+- **Endpoint:** `/`
+  - **Status:** Functional
+  - **Description:** Returns top-level links to Filings, Contributions, Registrants, Clients, Lobbyists, and Constants endpoints.
+  - **Usage:** Helps discover all available endpoint URIs.
+  - **Example:**  
+    - **Request:**  
+      ```http
+      GET https://lda.senate.gov/api/v1/
+      Authorization: Token YOUR_API_KEY
+      ```
+    - **Response (snippet):**
+      ```json
+      {
+        "filings": "https://lda.senate.gov/api/v1/filings/",
+        "contributions": "https://lda.senate.gov/api/v1/contributions/",
+        "registrants": "https://lda.senate.gov/api/v1/registrants/",
+        "clients": "https://lda.senate.gov/api/v1/clients/",
+        "lobbyists": "https://lda.senate.gov/api/v1/lobbyists/",
+        "constants/filing/filingtypes": "https://lda.senate.gov/api/v1/constants/filing/filingtypes/",
+        ...
+      }
+      ```
+
+---
+
+## Filings
+
+### List Filings
+- **Endpoint:** `/filings/`
+- **Status:** Functional
+- **Description:** Lists LD1/LD2 filings (quarterly and registration filings).
+- **Usage:**
+  - Can filter by `filing_year`, `registrant_id`, etc.
+  - Pagination uses `page` and `page_size` (up to 25).
+  - **Important**: To request `page=2` or beyond, you **must** include at least one query param (e.g., `filing_year=2024`).
+- **Example:**
+  - **Request:**
+    ```http
+    GET https://lda.senate.gov/api/v1/filings/?filing_year=2024&page_size=5
+    Authorization: Token YOUR_API_KEY
+    ```
+  - **Response (snippet):**
+    ```json
+    {
+      "count": 93189,
+      "next": "https://lda.senate.gov/api/v1/filings/?filing_year=2024&page=2",
+      "results": [
+        {
+          "filing_uuid": "7866327b-c892-4430-b9f0-1f0f679c58c6",
+          "filing_type": "RR",
+          "filing_year": 2024,
+          ...
+        }
+      ]
+    }
+    ```
+
+### Get Single Filing
+- **Endpoint:** `/filings/{filing_uuid}/`
+- **Status:** Functional
+- **Description:** Retrieves a single filing’s details.
+- **Usage:** Provide the UUID from `/filings/`.
+- **Example:**
+  - **Request:**
+    ```http
+    GET https://lda.senate.gov/api/v1/filings/7866327b-c892-4430-b9f0-1f0f679c58c6/
+    Authorization: Token YOUR_API_KEY
+    ```
+  - **Response (snippet):**
+    ```json
+    {
+      "filing_uuid": "7866327b-c892-4430-b9f0-1f0f679c58c6",
+      "filing_type": "RR",
+      "filing_year": 2024,
+      "registrant": { ... },
+      "client": { ... },
+      "lobbying_activities": [ ... ],
+      ...
+    }
+    ```
+
+---
+
+## Contributions (LD-203)
+
+### List Contributions
+- **Endpoint:** `/contributions/`
+- **Status:** Functional
+- **Description:** Lists LD-203 contribution (semiannual) filings.
+- **Usage:**  
+  - Filter by `filing_year`, etc.  
+  - Paginate with `page` and `page_size` (up to 25).  
+  - Must supply at least one query string parameter if requesting beyond `page=1`.
+- **Example:**
+  - **Request:**
+    ```http
+    GET https://lda.senate.gov/api/v1/contributions/?filing_year=2024&page_size=5
+    Authorization: Token YOUR_API_KEY
+    ```
+  - **Response (snippet):**
+    ```json
+    {
+      "count": 112,
+      "next": "...?filing_year=2024&page=2",
+      "results": [
+        {
+          "filing_uuid": "62b1778e-e2e3-443d-a795-ca3813b6cee5",
+          "filing_type": "MM",
+          "filing_year": 2024,
+          ...
+        }
+      ]
+    }
+    ```
+
+### Get Single Contribution
+- **Endpoint:** `/contributions/{filing_uuid}/`
+- **Status:** Functional
+- **Description:** Retrieves details for a single LD-203 filing.
+- **Usage:** Provide the `filing_uuid` from `/contributions/`.
+- **Example:**
+  - **Request:**
+    ```http
+    GET https://lda.senate.gov/api/v1/contributions/62b1778e-e2e3-443d-a795-ca3813b6cee5/
+    Authorization: Token YOUR_API_KEY
+    ```
+  - **Response (snippet):**
+    ```json
+    {
+      "filing_uuid": "62b1778e-e2e3-443d-a795-ca3813b6cee5",
+      "filer_type": "lobbyist",
+      "registrant": { ... },
+      "lobbyist": { ... },
+      "contribution_items": [ ... ],
+      ...
+    }
+    ```
+
+---
+
+## Registrants
+
+### List Registrants
+- **Endpoint:** `/registrants/`
+- **Status:** Functional
+- **Description:** Lists lobbying registrants (firms or organizations).
+- **Usage:**  
+  - Filter by `registrant_name`, paginate with `page` and `page_size`.
+- **Example:**
+  - **Request:**
+    ```http
+    GET https://lda.senate.gov/api/v1/registrants/?registrant_name=SMITH
+    Authorization: Token YOUR_API_KEY
+    ```
+  - **Response (snippet):**
+    ```json
+    {
+      "count": 45,
+      "results": [
+        {
+          "id": 35707,
+          "name": "SMITH DAWSON & ANDREWS",
+          ...
+        }
+      ]
+    }
+    ```
+
+### Get Single Registrant
+- **Endpoint:** `/registrants/{id}/`
+- **Status:** Functional
+- **Description:** Retrieves detail for a single registrant by integer ID.
+- **Usage:** Use the `id` from the `/registrants/` list.
+- **Example:**
+  - **Request:**
+    ```http
+    GET https://lda.senate.gov/api/v1/registrants/35707/
+    Authorization: Token YOUR_API_KEY
+    ```
+  - **Response (snippet):**
+    ```json
+    {
+      "id": 35707,
+      "name": "SMITH DAWSON & ANDREWS",
+      "house_registrant_id": 32416,
+      "description": "Government affairs",
+      ...
+    }
+    ```
+
+---
+
+## Clients
+
+### List Clients
+- **Endpoint:** `/clients/`
+- **Status:** Functional
+- **Description:** Lists lobbying clients (entities that hire registrants).
+- **Usage:**  
+  - Filter by `client_name`.  
+  - Paginate with `page` and `page_size`.
+- **Example:**
+  - **Request:**
+    ```http
+    GET https://lda.senate.gov/api/v1/clients/?client_name=CTIA
+    Authorization: Token YOUR_API_KEY
+    ```
+  - **Response (snippet):**
+    ```json
+    {
+      "count": 1,
+      "results": [
+        {
+          "id": 56764,
+          "name": "CTIA - THE WIRELESS ASSOCIATION",
+          ...
+        }
+      ]
+    }
+    ```
+
+### Get Single Client
+- **Endpoint:** `/clients/{id}/`
+- **Status:** Functional
+- **Description:** Retrieves detail for a single client by integer ID.
+- **Usage:** Provide `id` from the `/clients/` listing.
+- **Example:**
+  - **Request:**
+    ```http
+    GET https://lda.senate.gov/api/v1/clients/56764/
+    Authorization: Token YOUR_API_KEY
+    ```
+  - **Response (snippet):**
+    ```json
+    {
+      "id": 56764,
+      "name": "CTIA - THE WIRELESS ASSOCIATION",
+      "general_description": "Trade association of the cellular/wireless industry.",
+      ...
+    }
+    ```
+
+---
+
+## Lobbyists
+
+### List Lobbyists
+- **Endpoint:** `/lobbyists/`
+- **Status:** Functional
+- **Description:** Lists all lobbyists by their registrant.  
+- **Usage:**  
+  - Filter by `lobbyist_name`.  
+  - Paginate with `page` and `page_size`.
+- **Example:**
+  - **Request:**
+    ```http
+    GET https://lda.senate.gov/api/v1/lobbyists/?lobbyist_name=BRETT
+    Authorization: Token YOUR_API_KEY
+    ```
+  - **Response (snippet):**
+    ```json
+    {
+      "count": 10,
+      "results": [
+        {
+          "id": 38841,
+          "first_name": "BRETT",
+          "last_name": "GARSON",
+          ...
+        }
+      ]
+    }
+    ```
+
+### Get Single Lobbyist
+- **Endpoint:** `/lobbyists/{id}/`
+- **Status:** Functional
+- **Description:** Retrieves detail for a single lobbyist by integer ID.
+- **Usage:** Provide `id` from the `/lobbyists/` listing.
+- **Example:**
+  - **Request:**
+    ```http
+    GET https://lda.senate.gov/api/v1/lobbyists/38841/
+    Authorization: Token YOUR_API_KEY
+    ```
+  - **Response (snippet):**
+    ```json
+    {
+      "id": 38841,
+      "first_name": "BRETT",
+      "last_name": "GARSON",
+      "prefix": null,
+      "suffix": null,
+      ...
+    }
+    ```
+
+---
+
+## Constants
+
+### Filing Types
+- **Endpoint:** `/constants/filing/filingtypes/`
+- **Status:** Functional
+- **Description:** Returns all possible filing types (e.g. `RR`, `Q1`, etc.).
+- **Usage:** Validate or enumerate `filing_type` values in Filings.
+- **Example:**
+  - **Request:**
+    ```http
+    GET https://lda.senate.gov/api/v1/constants/filing/filingtypes/
+    Authorization: Token YOUR_API_KEY
+    ```
+  - **Response (snippet):**
+    ```json
+    [
+      { "name": "Registration", "value": "RR" },
+      { "name": "1st Quarter - Report", "value": "Q1" },
+      ...
+    ]
+    ```
+
+### Lobbying Activity Issues
+- **Endpoint:** `/constants/filing/lobbyingactivityissues/`
+- **Status:** Functional
+- **Description:** Lists general issue codes (like `AGR`, `DEF`, etc.).
+- **Usage:** Cross-reference codes (like `BUD`, `DIS`, etc.) in the `lobbying_activities`.
+- **Example:**
+  - **Request:**
+    ```http
+    GET https://lda.senate.gov/api/v1/constants/filing/lobbyingactivityissues/
+    Authorization: Token YOUR_API_KEY
+    ```
+  - **Response (snippet):**
+    ```json
+    [
+      { "name": "Agriculture", "value": "AGR" },
+      { "name": "Defense", "value": "DEF" },
+      ...
+    ]
+    ```
+
+### Government Entities
+- **Endpoint:** `/constants/filing/governmententities/`
+- **Status:** Functional
+- **Description:** Lists recognized government entities (like House, Senate, GAO).
+- **Usage:** Cross-reference `government_entities` in Filings.
+- **Example:**
+  - **Request:**
+    ```http
+    GET https://lda.senate.gov/api/v1/constants/filing/governmententities/
+    Authorization: Token YOUR_API_KEY
+    ```
+  - **Response (snippet):**
+    ```json
+    [
+      { "id": 2, "name": "HOUSE OF REPRESENTATIVES" },
+      { "id": 1, "name": "SENATE" },
+      ...
+    ]
+    ```
+
+### Countries
+- **Endpoint:** `/constants/general/countries/`
+- **Status:** Functional
+- **Description:** Lists country codes for `country` or `ppb_country`.
+- **Usage:** Required for interpreting `registrant_country`, `client_country`, etc.
+- **Example:**
+  - **Request:**
+    ```http
+    GET https://lda.senate.gov/api/v1/constants/general/countries/
+    Authorization: Token YOUR_API_KEY
+    ```
+  - **Response (snippet):**
+    ```json
+    [
+      { "name": "United States of America", "value": "US" },
+      { "name": "Canada", "value": "CA" },
+      ...
+    ]
+    ```
+
+### States
+- **Endpoint:** `/constants/general/states/`
+- **Status:** Functional
+- **Description:** Lists U.S. states (and DC, etc.) for `state` or `ppb_state`.
+- **Usage:** Cross-reference state codes for Filings, Clients, Registrants, etc.
+- **Example:**
+  - **Request:**
+    ```http
+    GET https://lda.senate.gov/api/v1/constants/general/states/
+    Authorization: Token YOUR_API_KEY
+    ```
+  - **Response (snippet):**
+    ```json
+    [
+      { "name": "California", "value": "CA" },
+      { "name": "District of Columbia", "value": "DC" },
+      ...
+    ]
+    ```
+
+### Lobbyist Prefixes
+- **Endpoint:** `/constants/lobbyist/prefixes/`
+- **Status:** Functional
+- **Description:** Returns available lobbyist prefixes (Mr., Ms., Mx., Dr., etc.).
+- **Usage:** Validate or enumerate `prefix` in the lobbyist records.
+- **Example:**
+  - **Request:**
+    ```http
+    GET https://lda.senate.gov/api/v1/constants/lobbyist/prefixes/
+    Authorization: Token YOUR_API_KEY
+    ```
+  - **Response (snippet):**
+    ```json
+    [
+      { "name": "Mr.", "value": "mr" },
+      { "name": "Dr.", "value": "dr" },
+      ...
+    ]
+    ```
+
+### Lobbyist Suffixes
+- **Endpoint:** `/constants/lobbyist/suffixes/`
+- **Status:** Functional
+- **Description:** Returns suffix constants (like Jr., Sr., II, III).
+- **Usage:** Validate or enumerate `suffix` in the lobbyist records.
+- **Example:**
+  - **Request:**
+    ```http
+    GET https://lda.senate.gov/api/v1/constants/lobbyist/suffixes/
+    Authorization: Token YOUR_API_KEY
+    ```
+  - **Response (snippet):**
+    ```json
+    [
+      { "name": "Jr.", "value": "jr" },
+      { "name": "Sr.", "value": "sr" },
+      ...
+    ]
+    ```
+
+---
+
+## Authentication
+
+Always include your Senate LDA **API Key** in the request header:
+
