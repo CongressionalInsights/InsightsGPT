@@ -1,1083 +1,832 @@
-###NOT YET FUNCTIONAL IN BOT. STILL IN TESTING###
-"openapi": "3.1.0"
-"info":
-  "title": "GovInfo API"
-  "description": "OpenAPI specification for accessing GovInfo (U.S. Government Publishing Office) content and metadata, revised to use a unified `/packages` endpoint for dateIssued queries.\n"
-  "version": "1.0.0"
-  "contact":
-    "name": "GovInfo Support"
-    "url": "https://www.govinfo.gov/developers"
-    "email": "support@govinfo.gov"
-"servers":
-  -
-    "url": "https://api.govinfo.gov"
-    "description": "Production server"
-"security":
-  -
-    "apiKeyAuth": []
-"components":
-  "securitySchemes":
-    "apiKeyAuth":
-      "type": "apiKey"
-      "in": "query"
-      "name": "api_key"
-  "schemas":
-    "CollectionList":
-      "type": "object"
-      "properties":
-        "collections":
-          "type": "array"
-          "items":
-            "type": "object"
-            "properties":
-              "collectionCode":
-                "type": "string"
-              "collectionName":
-                "type": "string"
-              "packageCount":
-                "type": "integer"
-              "granuleCount":
-                "type":
-                  - "integer"
+openapi: "3.1.0"
+info:
+  title: "GovInfo API"
+  description: >-
+    OpenAPI specification for accessing GovInfo (U.S. Government Publishing
+    Office) content and metadata, revised to unify dateIssued queries under
+    /packages. Incorporates pagination, docClass, and other parameters based on
+    official docs. Includes experimental placeholders for the Bulk Data
+    Repository, which can be accessed in file-based form (XML or JSON) by
+    appending /xml or /json to a Bulk Data path.
+  version: "1.0.2"
+  contact:
+    name: "GovInfo Support"
+    url: "https://www.govinfo.gov/developers"
+    email: "support@govinfo.gov"
+servers:
+  - url: "https://api.govinfo.gov?api_key=GOVINFOGOV_API_KEY"
+    description: "Production server"
+security:
+  - apiKeyAuth: []
+components:
+  securitySchemes:
+    apiKeyAuth:
+      type: apiKey
+      in: query
+      name: api_key
+  schemas:
+    CollectionList:
+      type: object
+      properties:
+        collections:
+          type: array
+          items:
+            type: object
+            properties:
+              collectionCode:
+                type: string
+              collectionName:
+                type: string
+              packageCount:
+                type: integer
+              granuleCount:
+                type:
+                  - integer
                   - "null"
-                "description": "May be null if no granules"
-      "required":
-        - "collections"
-    "CollectionItem":
-      "type": "object"
-      "properties":
-        "collectionCode":
-          "type": "string"
-        "collectionName":
-          "type": "string"
-        "packageCount":
-          "type": "integer"
-        "granuleCount":
-          "type":
-            - "integer"
+                description: May be null if no granules
+      required:
+        - collections
+
+    CollectionItem:
+      type: object
+      properties:
+        collectionCode:
+          type: string
+        collectionName:
+          type: string
+        packageCount:
+          type: integer
+        granuleCount:
+          type:
+            - integer
             - "null"
-          "description": "May be null if no granules"
-    "PackagesList":
-      "type": "object"
-      "properties":
-        "count":
-          "type": "integer"
-        "message":
-          "type": "string"
-        "nextPage":
-          "type":
-            - "string"
+          description: May be null if no granules
+
+    PackagesList:
+      type: object
+      properties:
+        count:
+          type: integer
+        message:
+          type: string
+        nextPage:
+          type:
+            - string
             - "null"
-          "description": "Token for fetching the next page (if any)."
-        "previousPage":
-          "type":
-            - "string"
+          description: Token for fetching the next page (if any).
+        previousPage:
+          type:
+            - string
             - "null"
-          "description": "Token for fetching the previous page (if any)."
-        "packages":
-          "type": "array"
-          "items":
-            "type": "object"
-            "properties":
-              "packageId":
-                "type": "string"
-              "lastModified":
-                "type": "string"
-                "description": "ISO8601 date/time indicating last modification"
-              "packageLink":
-                "type": "string"
-                "description": "Link to retrieve the summary for this package"
-              "docClass":
-                "type":
-                  - "string"
+          description: Token for fetching the previous page (if any).
+        packages:
+          type: array
+          items:
+            type: object
+            properties:
+              packageId:
+                type: string
+              lastModified:
+                type: string
+                description: ISO8601 date/time indicating last modification
+              packageLink:
+                type: string
+                description: Link to retrieve the summary for this package
+              docClass:
+                type:
+                  - string
                   - "null"
-                "description": "Overarching category; e.g., Bill Type for BILLS"
-              "title":
-                "type": "string"
-              "congress":
-                "type":
-                  - "string"
+                description: Overarching category; e.g., Bill Type for BILLS
+              title:
+                type: string
+              congress:
+                type:
+                  - string
                   - "null"
-                "description": "Congress number (where applicable)"
-              "dateIssued":
-                "type":
-                  - "string"
+                description: Congress number (where applicable)
+              dateIssued:
+                type:
+                  - string
                   - "null"
-                "description": "Official publication date (if any)"
-      "required":
-        - "count"
-        - "packages"
-    "PackageItem":
-      "type": "object"
-      "properties":
-        "packageId":
-          "type": "string"
-        "lastModified":
-          "type": "string"
-          "description": "ISO8601 date/time indicating last modification"
-        "packageLink":
-          "type": "string"
-          "description": "Link to retrieve the summary for this package"
-        "docClass":
-          "type":
-            - "string"
+                description: Official publication date (if any)
+      required:
+        - count
+        - packages
+
+    PackageItem:
+      type: object
+      properties:
+        packageId:
+          type: string
+        lastModified:
+          type: string
+          description: ISO8601 date/time indicating last modification
+        packageLink:
+          type: string
+          description: Link to retrieve the summary for this package
+        docClass:
+          type:
+            - string
             - "null"
-          "description": "Overarching category; e.g., Bill Type for BILLS"
-        "title":
-          "type": "string"
-        "congress":
-          "type":
-            - "string"
+          description: Overarching category; e.g., Bill Type for BILLS
+        title:
+          type: string
+        congress:
+          type:
+            - string
             - "null"
-          "description": "Congress number (where applicable)"
-        "dateIssued":
-          "type":
-            - "string"
+          description: Congress number (where applicable)
+        dateIssued:
+          type:
+            - string
             - "null"
-          "description": "Official publication date (if any)"
-    "PackageSummary":
-      "type": "object"
-      "description": "JSON summary for a specified package"
-      "properties":
-        "metadata":
-          "type": "string"
-          "description": "Minimal placeholder property so the schema isn't empty."
-      "additionalProperties": true
-    "GranulesList":
-      "type": "object"
-      "properties":
-        "count":
-          "type": "integer"
-        "offset":
-          "type": "integer"
-        "pageSize":
-          "type": "integer"
-        "nextPage":
-          "type":
-            - "string"
+          description: Official publication date (if any)
+
+    PackageSummary:
+      type: object
+      description: "JSON summary for a specified package"
+      properties:
+        metadata:
+          type: string
+          description: "Minimal placeholder property so the schema isn't empty."
+      additionalProperties: true
+
+    GranulesList:
+      type: object
+      properties:
+        count:
+          type: integer
+        offset:
+          type: integer
+        pageSize:
+          type: integer
+        nextPage:
+          type:
+            - string
             - "null"
-          "description": "Token for fetching the next page"
-        "previousPage":
-          "type":
-            - "string"
+          description: Token for fetching the next page
+        previousPage:
+          type:
+            - string
             - "null"
-          "description": "Token for fetching the previous page"
-        "granules":
-          "type": "array"
-          "items":
-            "type": "object"
-            "properties":
-              "title":
-                "type": "string"
-              "granuleId":
-                "type": "string"
-              "granuleLink":
-                "type": "string"
-              "granuleClass":
-                "type":
-                  - "string"
+          description: Token for fetching the previous page
+        granules:
+          type: array
+          items:
+            type: object
+            properties:
+              title:
+                type: string
+              granuleId:
+                type: string
+              granuleLink:
+                type: string
+              granuleClass:
+                type:
+                  - string
                   - "null"
-                "description": "Overarching category for granules; e.g., CREC sections"
-              "md5":
-                "type":
-                  - "string"
+                description: Overarching category for granules; e.g., CREC sections
+              md5:
+                type:
+                  - string
                   - "null"
-                "description": "MD5 hash of content file (e.g., for HOB or CRI)"
-        "message":
-          "type": "string"
-      "required":
-        - "count"
-        - "granules"
-    "GranuleItem":
-      "type": "object"
-      "properties":
-        "title":
-          "type": "string"
-        "granuleId":
-          "type": "string"
-        "granuleLink":
-          "type": "string"
-        "granuleClass":
-          "type":
-            - "string"
+                description: MD5 hash of content file (e.g., for HOB or CRI)
+        message:
+          type: string
+      required:
+        - count
+        - granules
+
+    GranuleItem:
+      type: object
+      properties:
+        title:
+          type: string
+        granuleId:
+          type: string
+        granuleLink:
+          type: string
+        granuleClass:
+          type:
+            - string
             - "null"
-          "description": "Overarching category for granules; e.g., CREC sections"
-        "md5":
-          "type":
-            - "string"
+          description: Overarching category for granules; e.g., CREC sections
+        md5:
+          type:
+            - string
             - "null"
-          "description": "MD5 hash of content file (e.g., for HOB or CRI)"
-    "GranuleSummary":
-      "type": "object"
-      "description": "JSON summary for a specified granule"
-      "properties":
-        "granuleMetadata":
-          "type": "string"
-          "description": "Minimal placeholder property so the schema isn't empty."
-      "additionalProperties": true
-    "RelatedResponse":
-      "type": "object"
-      "description": "Relationships for a given accessId"
-      "properties":
-        "relatedMetadata":
-          "type": "string"
-          "description": "Minimal placeholder so the schema isn't empty."
-      "additionalProperties": true
-    "SearchRequest":
-      "type": "object"
-      "properties":
-        "query":
-          "type": "string"
-          "description": "Keywords or fielded queries (e.g. congress:117)."
-        "pageSize":
-          "type": "integer"
-          "default": 20
-        "offsetMark":
-          "type": "string"
-          "default": "*"
-        "sorts":
-          "type": "array"
-          "description": "List of sorting criteria."
-          "items":
-            "type": "object"
-            "properties":
-              "field":
-                "type": "string"
-                "description": "e.g. relevancy, date"
-              "sortOrder":
-                "type": "string"
-                "enum":
-                  - "ASC"
-                  - "DESC"
-        "historical":
-          "type": "boolean"
-          "default": true
-        "resultLevel":
-          "type": "string"
-          "enum":
+          description: MD5 hash of content file (e.g., for HOB or CRI)
+
+    GranuleSummary:
+      type: object
+      description: "JSON summary for a specified granule"
+      properties:
+        granuleMetadata:
+          type: string
+          description: "Minimal placeholder property so the schema isn't empty."
+      additionalProperties: true
+
+    RelatedResponse:
+      type: object
+      description: "Relationships for a given accessId"
+      properties:
+        relatedMetadata:
+          type: string
+          description: "Minimal placeholder so the schema isn't empty."
+      additionalProperties: true
+
+    SearchRequest:
+      type: object
+      properties:
+        query:
+          type: string
+          description: "Keywords or fielded queries (e.g. congress:117)."
+        pageSize:
+          type: integer
+          default: 20
+        offsetMark:
+          type: string
+          default: "*"
+        sorts:
+          type: array
+          description: "List of sorting criteria."
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+                description: "e.g. relevancy, date"
+              sortOrder:
+                type: string
+                enum:
+                  - ASC
+                  - DESC
+        historical:
+          type: boolean
+          default: true
+        resultLevel:
+          type: string
+          enum:
             - "default"
             - "detail"
-          "default": "default"
-    "SearchResponse":
-      "type": "object"
-      "properties":
-        "offsetMark":
-          "type": "string"
-        "count":
-          "type": "integer"
-        "results":
-          "type": "array"
-          "items":
-            "type": "object"
-            "properties":
-              "title":
-                "type": "string"
-              "packageId":
-                "type": "string"
-              "granuleId":
-                "type":
-                  - "string"
+          default: "default"
+
+    SearchResponse:
+      type: object
+      properties:
+        offsetMark:
+          type: string
+        count:
+          type: integer
+        results:
+          type: array
+          items:
+            type: object
+            properties:
+              title:
+                type: string
+              packageId:
+                type: string
+              granuleId:
+                type:
+                  - string
                   - "null"
-              "lastModified":
-                "type": "string"
-              "governmentAuthor":
-                "type": "array"
-                "items":
-                  "type": "string"
-              "dateIssued":
-                "type": "string"
-              "collectionCode":
-                "type": "string"
-              "resultLink":
-                "type": "string"
-              "dateIngested":
-                "type": "string"
-              "download":
-                "type": "object"
-                "description": "Maps file types (PDF, XML, etc.) to URLs."
-                "additionalProperties":
-                  "type": "string"
-              "relatedLink":
-                "type": "string"
-    "SearchResultItem":
-      "type": "object"
-      "properties":
-        "title":
-          "type": "string"
-        "packageId":
-          "type": "string"
-        "granuleId":
-          "type":
-            - "string"
+              lastModified:
+                type: string
+              governmentAuthor:
+                type: array
+                items:
+                  type: string
+              dateIssued:
+                type: string
+              collectionCode:
+                type: string
+              resultLink:
+                type: string
+              dateIngested:
+                type: string
+              download:
+                type: object
+                description: "Maps file types (PDF, XML, etc.) to URLs."
+                additionalProperties:
+                  type: string
+              relatedLink:
+                type: string
+
+    SearchResultItem:
+      type: object
+      properties:
+        title:
+          type: string
+        packageId:
+          type: string
+        granuleId:
+          type:
+            - string
             - "null"
-        "lastModified":
-          "type": "string"
-        "governmentAuthor":
-          "type": "array"
-          "items":
-            "type": "string"
-        "dateIssued":
-          "type": "string"
-        "collectionCode":
-          "type": "string"
-        "resultLink":
-          "type": "string"
-        "dateIngested":
-          "type": "string"
-        "download":
-          "type": "object"
-          "description": "Maps file types (PDF, XML, etc.) to URLs."
-          "additionalProperties":
-            "type": "string"
-        "relatedLink":
-          "type": "string"
-"paths":
-  "/collections":
-    "get":
-      "operationId": "listCollections"
-      "summary": "List all available collections"
-      "description": "Returns a list of GovInfo collection codes, names, and counts.\n"
-      "security":
-        -
-          "apiKeyAuth": []
-      "parameters":
-        -
-          "name": "offsetMark"
-          "in": "query"
-          "required": true
-          "schema":
-            "type": "string"
-            "default": "*"
-          "description": "For pagination. If it's your first call, set `offsetMark=*`.\n"
-        -
-          "name": "pageSize"
-          "in": "query"
-          "required": true
-          "schema":
-            "type": "integer"
-            "default": 100
-            "maximum": 1000
-          "description": "Number of records to return (max 1000).\n"
-      "responses":
+        lastModified:
+          type: string
+        governmentAuthor:
+          type: array
+          items:
+            type: string
+        dateIssued:
+          type: string
+        collectionCode:
+          type: string
+        resultLink:
+          type: string
+        dateIngested:
+          type: string
+        download:
+          type: object
+          description: "Maps file types (PDF, XML, etc.) to URLs."
+          additionalProperties:
+            type: string
+        relatedLink:
+          type: string
+
+paths:
+  /collections:
+    get:
+      operationId: listCollections
+      summary: "List all available collections"
+      description: >-
+        Returns a list of GovInfo collection codes, names, and counts.
+        Typically no query params are required; just your API key.
+      security:
+        - apiKeyAuth: []
+      parameters: []
+      responses:
         "200":
-          "description": "OK"
-          "content":
-            "application/json":
-              "schema":
-                "type": "object"
-                "properties":
-                  "collections":
-                    "type": "array"
-                    "items":
-                      "type": "object"
-                      "properties":
-                        "collectionCode":
-                          "type": "string"
-                        "collectionName":
-                          "type": "string"
-                        "packageCount":
-                          "type": "integer"
-                        "granuleCount":
-                          "type":
-                            - "integer"
-                            - "null"
-                          "description": "May be null if no granules"
-                "required":
-                  - "collections"
-  "/collections/{collection}/{lastModifiedStartDate}":
-    "get":
-      "operationId": "getCollectionsByStartDate"
-      "summary": "Retrieve new or updated packages for a collection since a given date"
-      "description": "Returns packages that were last modified on or after `lastModifiedStartDate`.\n"
-      "parameters":
-        -
-          "name": "collection"
-          "in": "path"
-          "required": true
-          "schema":
-            "type": "string"
-          "description": "Collection code, e.g. BILLS, CREC, FR, etc."
-        -
-          "name": "lastModifiedStartDate"
-          "in": "path"
-          "required": true
-          "schema":
-            "type": "string"
-          "description": "ISO8601 date/time, e.g. 2018-01-28T20:18:10Z"
-        -
-          "name": "offset"
-          "in": "query"
-          "schema":
-            "type": "integer"
-          "description": "Starting record for pagination (deprecated in favor of offsetMark).\n"
-        -
-          "name": "pageSize"
-          "in": "query"
-          "schema":
-            "type": "integer"
-            "default": 100
-            "maximum": 1000
-          "required": true
-          "description": "Number of records to return. Max 1000."
-        -
-          "name": "offsetMark"
-          "in": "query"
-          "schema":
-            "type": "string"
-          "description": "For pagination. First request use `*`. Subsequent requests use the `nextPage` token from the prior response.\n"
-        -
-          "name": "congress"
-          "in": "query"
-          "schema":
-            "type": "integer"
-          "description": "Filter by Congress number, e.g. 117."
-        -
-          "name": "docClass"
-          "in": "query"
-          "schema":
-            "type": "string"
-          "description": "Collection-specific category, e.g. Bill Type in BILLS."
-        -
-          "name": "billVersion"
-          "in": "query"
-          "schema":
-            "type": "string"
-          "description": "Collection-specific categories, e.g. Bill versions."
-      "security":
-        -
-          "apiKeyAuth": []
-      "responses":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CollectionList"
+
+  /collections/{collection}/{lastModifiedStartDate}:
+    get:
+      operationId: getCollectionsByStartDate
+      summary: "Retrieve new or updated packages for a collection since a given date"
+      description: >-
+        Returns packages that were last modified on or after `lastModifiedStartDate`.
+        Note: `offset` is deprecated, use `offsetMark` if possible.
+      parameters:
+        - name: collection
+          in: path
+          required: true
+          schema:
+            type: string
+          description: "Collection code, e.g. BILLS, CREC, FR, etc."
+        - name: lastModifiedStartDate
+          in: path
+          required: true
+          schema:
+            type: string
+          description: "ISO8601 date/time, e.g. 2018-01-28T20:18:10Z"
+        - name: offset
+          in: query
+          schema:
+            type: integer
+          description: |
+            Starting record for pagination (DEPRECATED - use offsetMark). 0-based.
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            default: 100
+            maximum: 1000
+          required: true
+          description: "Number of records to return. Max 1000."
+        - name: offsetMark
+          in: query
+          schema:
+            type: string
+          description: "For pagination. First request use `*`. Subsequent requests use `nextPage`."
+        - name: congress
+          in: query
+          schema:
+            type: integer
+          description: "Filter by Congress number, e.g. 117."
+        - name: docClass
+          in: query
+          schema:
+            type: string
+          description: "Collection-specific category, e.g. Bill Type in BILLS."
+        - name: billVersion
+          in: query
+          schema:
+            type: string
+          description: "Filter by Bill version."
+        - name: courtCode
+          in: query
+          schema:
+            type: string
+          description: "For USCOURTS documents."
+        - name: courtType
+          in: query
+          schema:
+            type: string
+        - name: state
+          in: query
+          schema:
+            type: string
+        - name: topic
+          in: query
+          schema:
+            type: string
+        - name: isGLP
+          in: query
+          schema:
+            type: boolean
+        - name: natureSuitCode
+          in: query
+          schema:
+            type: string
+        - name: natureSuit
+          in: query
+          schema:
+            type: string
+      security:
+        - apiKeyAuth: []
+      responses:
         "200":
-          "description": "OK"
-          "content":
-            "application/json":
-              "schema":
-                "type": "object"
-                "properties":
-                  "count":
-                    "type": "integer"
-                  "message":
-                    "type": "string"
-                  "nextPage":
-                    "type":
-                      - "string"
-                      - "null"
-                    "description": "Token for fetching the next page (if any)."
-                  "previousPage":
-                    "type":
-                      - "string"
-                      - "null"
-                    "description": "Token for fetching the previous page (if any)."
-                  "packages":
-                    "type": "array"
-                    "items":
-                      "type": "object"
-                      "properties":
-                        "packageId":
-                          "type": "string"
-                        "lastModified":
-                          "type": "string"
-                          "description": "ISO8601 date/time indicating last modification"
-                        "packageLink":
-                          "type": "string"
-                          "description": "Link to retrieve the summary for this package"
-                        "docClass":
-                          "type":
-                            - "string"
-                            - "null"
-                          "description": "Overarching category; e.g., Bill Type for BILLS"
-                        "title":
-                          "type": "string"
-                        "congress":
-                          "type":
-                            - "string"
-                            - "null"
-                          "description": "Congress number (where applicable)"
-                        "dateIssued":
-                          "type":
-                            - "string"
-                            - "null"
-                          "description": "Official publication date (if any)"
-                "required":
-                  - "count"
-                  - "packages"
-  "/collections/{collection}/{lastModifiedStartDate}/{lastModifiedEndDate}":
-    "get":
-      "operationId": "getCollectionsByDateRange"
-      "summary": "Retrieve new or updated packages for a collection within a date range"
-      "description": "Returns packages that were last modified between `lastModifiedStartDate` and `lastModifiedEndDate`.\n"
-      "parameters":
-        -
-          "name": "collection"
-          "in": "path"
-          "required": true
-          "schema":
-            "type": "string"
-        -
-          "name": "lastModifiedStartDate"
-          "in": "path"
-          "required": true
-          "schema":
-            "type": "string"
-          "description": "ISO8601 date/time, e.g. 2018-01-28T20:18:10Z"
-        -
-          "name": "lastModifiedEndDate"
-          "in": "path"
-          "required": true
-          "schema":
-            "type": "string"
-          "description": "ISO8601 date/time, e.g. 2018-01-29T20:18:10Z"
-        -
-          "name": "offset"
-          "in": "query"
-          "schema":
-            "type": "integer"
-          "description": "Offset for pagination (deprecated in favor of offsetMark)."
-        -
-          "name": "pageSize"
-          "in": "query"
-          "schema":
-            "type": "integer"
-            "default": 100
-            "maximum": 1000
-          "required": true
-          "description": "Number of records to return. Max 1000."
-        -
-          "name": "offsetMark"
-          "in": "query"
-          "schema":
-            "type": "string"
-          "description": "For pagination across multiple pages."
-        -
-          "name": "docClass"
-          "in": "query"
-          "schema":
-            "type": "string"
-          "description": "Collection-specific category, e.g. Bill Type in BILLS."
-        -
-          "name": "congress"
-          "in": "query"
-          "schema":
-            "type": "integer"
-        -
-          "name": "billVersion"
-          "in": "query"
-          "schema":
-            "type": "string"
-        -
-          "name": "isGLP"
-          "in": "query"
-          "schema":
-            "type": "boolean"
-      "security":
-        -
-          "apiKeyAuth": []
-      "responses":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PackagesList"
+
+  /collections/{collection}/{lastModifiedStartDate}/{lastModifiedEndDate}:
+    get:
+      operationId: getCollectionsByDateRange
+      summary: "Retrieve new or updated packages for a collection within a date range"
+      description: >-
+        Returns packages that were last modified between `lastModifiedStartDate`
+        and `lastModifiedEndDate`. Note: `offset` is deprecated, use `offsetMark`.
+      parameters:
+        - name: collection
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: lastModifiedStartDate
+          in: path
+          required: true
+          schema:
+            type: string
+          description: "e.g. 2018-01-28T20:18:10Z"
+        - name: lastModifiedEndDate
+          in: path
+          required: true
+          schema:
+            type: string
+          description: "e.g. 2018-01-29T20:18:10Z"
+        - name: offset
+          in: query
+          schema:
+            type: integer
+          description: |
+            Starting record for pagination (DEPRECATED). 0-based.
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            default: 100
+            maximum: 1000
+          required: true
+          description: "Number of records to return (max 1000)."
+        - name: offsetMark
+          in: query
+          schema:
+            type: string
+          description: "Token-based pagination. Use `*` initially, or the `nextPage` from prior calls."
+        - name: docClass
+          in: query
+          schema:
+            type: string
+        - name: congress
+          in: query
+          schema:
+            type: integer
+        - name: billVersion
+          in: query
+          schema:
+            type: string
+        - name: courtCode
+          in: query
+          schema:
+            type: string
+        - name: courtType
+          in: query
+          schema:
+            type: string
+        - name: state
+          in: query
+          schema:
+            type: string
+        - name: topic
+          in: query
+          schema:
+            type: string
+        - name: isGLP
+          in: query
+          schema:
+            type: boolean
+        - name: natureSuitCode
+          in: query
+          schema:
+            type: string
+        - name: natureSuit
+          in: query
+          schema:
+            type: string
+      security:
+        - apiKeyAuth: []
+      responses:
         "200":
-          "description": "OK"
-          "content":
-            "application/json":
-              "schema":
-                "type": "object"
-                "properties":
-                  "count":
-                    "type": "integer"
-                  "message":
-                    "type": "string"
-                  "nextPage":
-                    "type":
-                      - "string"
-                      - "null"
-                    "description": "Token for fetching the next page (if any)."
-                  "previousPage":
-                    "type":
-                      - "string"
-                      - "null"
-                    "description": "Token for fetching the previous page (if any)."
-                  "packages":
-                    "type": "array"
-                    "items":
-                      "type": "object"
-                      "properties":
-                        "packageId":
-                          "type": "string"
-                        "lastModified":
-                          "type": "string"
-                          "description": "ISO8601 date/time indicating last modification"
-                        "packageLink":
-                          "type": "string"
-                          "description": "Link to retrieve the summary for this package"
-                        "docClass":
-                          "type":
-                            - "string"
-                            - "null"
-                          "description": "Overarching category; e.g., Bill Type for BILLS"
-                        "title":
-                          "type": "string"
-                        "congress":
-                          "type":
-                            - "string"
-                            - "null"
-                          "description": "Congress number (where applicable)"
-                        "dateIssued":
-                          "type":
-                            - "string"
-                            - "null"
-                          "description": "Official publication date (if any)"
-                "required":
-                  - "count"
-                  - "packages"
-  "/packages":
-    "get":
-      "operationId": "getPackages"
-      "summary": "Retrieve packages with optional dateIssued filters"
-      "description": "Retrieves packages from GovInfo. You can filter by `dateIssuedStartDate` and `dateIssuedEndDate` to find packages published in a date range.\n"
-      "security":
-        -
-          "apiKeyAuth": []
-      "parameters":
-        -
-          "name": "dateIssuedStartDate"
-          "in": "query"
-          "schema":
-            "type": "string"
-          "description": "Earliest dateIssued (YYYY-MM-DD)."
-        -
-          "name": "dateIssuedEndDate"
-          "in": "query"
-          "schema":
-            "type": "string"
-          "description": "Latest dateIssued (YYYY-MM-DD)."
-        -
-          "name": "offset"
-          "in": "query"
-          "schema":
-            "type": "integer"
-        -
-          "name": "pageSize"
-          "in": "query"
-          "schema":
-            "type": "integer"
-            "default": 20
-            "maximum": 1000
-          "description": "How many results to return (max 1000)."
-        -
-          "name": "collection"
-          "in": "query"
-          "schema":
-            "type": "string"
-          "description": "Comma-separated list of collection codes"
-        -
-          "name": "congress"
-          "in": "query"
-          "schema":
-            "type": "string"
-        -
-          "name": "docClass"
-          "in": "query"
-          "schema":
-            "type": "string"
-        -
-          "name": "billVersion"
-          "in": "query"
-          "schema":
-            "type": "string"
-        -
-          "name": "offsetMark"
-          "in": "query"
-          "schema":
-            "type": "string"
-          "description": "Token-based pagination. First call use '*'."
-        -
-          "name": "isGLP"
-          "in": "query"
-          "schema":
-            "type": "boolean"
-        -
-          "name": "modifiedSince"
-          "in": "query"
-          "schema":
-            "type": "string"
-          "description": "ISO8601 date/time to filter by lastModified"
-      "responses":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PackagesList"
+
+  /packages:
+    get:
+      operationId: getPackages
+      summary: "Retrieve packages with optional dateIssued filters"
+      description: >-
+        Retrieves packages from GovInfo. You can filter by dateIssuedStartDate
+        and dateIssuedEndDate to find packages published in a date range, or use
+        modifiedSince to filter by lastModified date/time.
+      security:
+        - apiKeyAuth: []
+      parameters:
+        - name: dateIssuedStartDate
+          in: query
+          schema:
+            type: string
+          description: "Earliest dateIssued (YYYY-MM-DD)"
+        - name: dateIssuedEndDate
+          in: query
+          schema:
+            type: string
+          description: "Latest dateIssued (YYYY-MM-DD)"
+        - name: offset
+          in: query
+          schema:
+            type: integer
+          description: "DEPRECATED (use offsetMark)"
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 1000
+          description: "How many results to return (max 1000)"
+        - name: collection
+          in: query
+          schema:
+            type: string
+          description: "Comma-separated list of collection codes"
+        - name: congress
+          in: query
+          schema:
+            type: string
+        - name: docClass
+          in: query
+          schema:
+            type: string
+        - name: billVersion
+          in: query
+          schema:
+            type: string
+        - name: offsetMark
+          in: query
+          schema:
+            type: string
+          description: "Token-based pagination. First call use '*'."
+        - name: isGLP
+          in: query
+          schema:
+            type: boolean
+        - name: modifiedSince
+          in: query
+          schema:
+            type: string
+          description: "ISO8601 date/time to filter by lastModified"
+        - name: courtCode
+          in: query
+          schema:
+            type: string
+        - name: courtType
+          in: query
+          schema:
+            type: string
+        - name: state
+          in: query
+          schema:
+            type: string
+        - name: topic
+          in: query
+          schema:
+            type: string
+        - name: natureSuitCode
+          in: query
+          schema:
+            type: string
+        - name: natureSuit
+          in: query
+          schema:
+            type: string
+      responses:
         "200":
-          "description": "OK"
-          "content":
-            "application/json":
-              "schema":
-                "type": "object"
-                "properties":
-                  "count":
-                    "type": "integer"
-                  "message":
-                    "type": "string"
-                  "nextPage":
-                    "type":
-                      - "string"
-                      - "null"
-                    "description": "Token for fetching the next page (if any)."
-                  "previousPage":
-                    "type":
-                      - "string"
-                      - "null"
-                    "description": "Token for fetching the previous page (if any)."
-                  "packages":
-                    "type": "array"
-                    "items":
-                      "type": "object"
-                      "properties":
-                        "packageId":
-                          "type": "string"
-                        "lastModified":
-                          "type": "string"
-                          "description": "ISO8601 date/time indicating last modification"
-                        "packageLink":
-                          "type": "string"
-                          "description": "Link to retrieve the summary for this package"
-                        "docClass":
-                          "type":
-                            - "string"
-                            - "null"
-                          "description": "Overarching category; e.g., Bill Type for BILLS"
-                        "title":
-                          "type": "string"
-                        "congress":
-                          "type":
-                            - "string"
-                            - "null"
-                          "description": "Congress number (where applicable)"
-                        "dateIssued":
-                          "type":
-                            - "string"
-                            - "null"
-                          "description": "Official publication date (if any)"
-                "required":
-                  - "count"
-                  - "packages"
-  "/packages/{packageId}/summary":
-    "get":
-      "operationId": "getPackageSummary"
-      "summary": "Return JSON summary for the specified package"
-      "description": "Retrieves metadata and summary for a specific package by its packageId.\n"
-      "parameters":
-        -
-          "name": "packageId"
-          "in": "path"
-          "required": true
-          "schema":
-            "type": "string"
-          "description": "e.g. CREC-2018-01-04"
-      "security":
-        -
-          "apiKeyAuth": []
-      "responses":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PackagesList"
+
+  /packages/{packageId}/summary:
+    get:
+      operationId: getPackageSummary
+      summary: "Return JSON summary for the specified package"
+      description: >-
+        Retrieves metadata and summary for a specific package by its packageId.
+      parameters:
+        - name: packageId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: "e.g. CREC-2018-01-04"
+      security:
+        - apiKeyAuth: []
+      responses:
         "200":
-          "description": "OK"
-          "content":
-            "application/json":
-              "schema":
-                "type": "object"
-                "description": "JSON summary for a specified package"
-                "properties":
-                  "metadata":
-                    "type": "string"
-                    "description": "Minimal placeholder property so the schema isn't empty."
-                "additionalProperties": true
-  "/packages/{packageId}/granules":
-    "get":
-      "operationId": "listPackageGranules"
-      "summary": "Get a list of granules associated with a package"
-      "description": "Retrieves granule-level items belonging to the specified package.\n"
-      "parameters":
-        -
-          "name": "packageId"
-          "in": "path"
-          "required": true
-          "schema":
-            "type": "string"
-          "description": "e.g. CREC-2018-01-04"
-        -
-          "name": "offset"
-          "in": "query"
-          "schema":
-            "type": "integer"
-        -
-          "name": "pageSize"
-          "in": "query"
-          "schema":
-            "type": "integer"
-            "default": 100
-            "maximum": 1000
-          "required": true
-        -
-          "name": "md5"
-          "in": "query"
-          "schema":
-            "type": "string"
-        -
-          "name": "granuleClass"
-          "in": "query"
-          "schema":
-            "type": "string"
-        -
-          "name": "offsetMark"
-          "in": "query"
-          "schema":
-            "type": "string"
-      "security":
-        -
-          "apiKeyAuth": []
-      "responses":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PackageSummary"
+
+  /packages/{packageId}/granules:
+    get:
+      operationId: listPackageGranules
+      summary: "Get a list of granules associated with a package"
+      description: >-
+        Retrieves granule-level items belonging to the specified package.
+        `offset` is deprecated, please use `offsetMark`.
+      parameters:
+        - name: packageId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: "e.g. CREC-2018-01-04"
+        - name: offset
+          in: query
+          schema:
+            type: integer
+          description: "DEPRECATED - use offsetMark"
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            default: 100
+            maximum: 1000
+          required: true
+        - name: md5
+          in: query
+          schema:
+            type: string
+        - name: granuleClass
+          in: query
+          schema:
+            type: string
+        - name: offsetMark
+          in: query
+          schema:
+            type: string
+      security:
+        - apiKeyAuth: []
+      responses:
         "200":
-          "description": "OK"
-          "content":
-            "application/json":
-              "schema":
-                "type": "object"
-                "properties":
-                  "count":
-                    "type": "integer"
-                  "offset":
-                    "type": "integer"
-                  "pageSize":
-                    "type": "integer"
-                  "nextPage":
-                    "type":
-                      - "string"
-                      - "null"
-                    "description": "Token for fetching the next page"
-                  "previousPage":
-                    "type":
-                      - "string"
-                      - "null"
-                    "description": "Token for fetching the previous page"
-                  "granules":
-                    "type": "array"
-                    "items":
-                      "type": "object"
-                      "properties":
-                        "title":
-                          "type": "string"
-                        "granuleId":
-                          "type": "string"
-                        "granuleLink":
-                          "type": "string"
-                        "granuleClass":
-                          "type":
-                            - "string"
-                            - "null"
-                          "description": "Overarching category for granules; e.g., CREC sections"
-                        "md5":
-                          "type":
-                            - "string"
-                            - "null"
-                          "description": "MD5 hash of content file (e.g., for HOB or CRI)"
-                  "message":
-                    "type": "string"
-                "required":
-                  - "count"
-                  - "granules"
-  "/packages/{packageId}/granules/{granuleId}/summary":
-    "get":
-      "operationId": "getGranuleSummary"
-      "summary": "Return JSON summary for the specified granule"
-      "parameters":
-        -
-          "name": "packageId"
-          "in": "path"
-          "required": true
-          "schema":
-            "type": "string"
-        -
-          "name": "granuleId"
-          "in": "path"
-          "required": true
-          "schema":
-            "type": "string"
-      "security":
-        -
-          "apiKeyAuth": []
-      "responses":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GranulesList"
+
+  /packages/{packageId}/granules/{granuleId}/summary:
+    get:
+      operationId: getGranuleSummary
+      summary: "Return JSON summary for the specified granule"
+      parameters:
+        - name: packageId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: granuleId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - apiKeyAuth: []
+      responses:
         "200":
-          "description": "OK"
-          "content":
-            "application/json":
-              "schema":
-                "type": "object"
-                "description": "JSON summary for a specified granule"
-                "properties":
-                  "granuleMetadata":
-                    "type": "string"
-                    "description": "Minimal placeholder property so the schema isn't empty."
-                "additionalProperties": true
-  "/related/{accessId}":
-    "get":
-      "operationId": "getRelated"
-      "summary": "Get a list of relationships for a given accessId"
-      "description": "Returns details about relationships for a given package or granule ID.\n"
-      "parameters":
-        -
-          "name": "accessId"
-          "in": "path"
-          "required": true
-          "schema":
-            "type": "string"
-      "security":
-        -
-          "apiKeyAuth": []
-      "responses":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GranuleSummary"
+
+  /related/{accessId}:
+    get:
+      operationId: getRelated
+      summary: "Get a list of relationships for a given accessId"
+      description: >-
+        Returns details about relationships for a given package or granule ID.
+      parameters:
+        - name: accessId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - apiKeyAuth: []
+      responses:
         "200":
-          "description": "OK"
-          "content":
-            "application/json":
-              "schema":
-                "type": "object"
-                "description": "Relationships for a given accessId"
-                "properties":
-                  "relatedMetadata":
-                    "type": "string"
-                    "description": "Minimal placeholder so the schema isn't empty."
-                "additionalProperties": true
-  "/related/{accessId}/{collection}":
-    "get":
-      "operationId": "getRelatedByCollection"
-      "summary": "Get relationships for a given accessId filtered by collection"
-      "description": "Similar to `/related/{accessId}`, but filtered to the specified collection code.\n"
-      "parameters":
-        -
-          "name": "accessId"
-          "in": "path"
-          "required": true
-          "schema":
-            "type": "string"
-        -
-          "name": "collection"
-          "in": "path"
-          "required": true
-          "schema":
-            "type": "string"
-        -
-          "name": "granuleClass"
-          "in": "query"
-          "schema":
-            "type": "string"
-        -
-          "name": "subGranuleClass"
-          "in": "query"
-          "schema":
-            "type": "string"
-      "security":
-        -
-          "apiKeyAuth": []
-      "responses":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RelatedResponse"
+
+  /related/{accessId}/{collection}:
+    get:
+      operationId: getRelatedByCollection
+      summary: "Get relationships for a given accessId filtered by collection"
+      description: >-
+        Similar to `/related/{accessId}`, but filtered to the specified collection code.
+      parameters:
+        - name: accessId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: collection
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: granuleClass
+          in: query
+          schema:
+            type: string
+        - name: subGranuleClass
+          in: query
+          schema:
+            type: string
+      security:
+        - apiKeyAuth: []
+      responses:
         "200":
-          "description": "OK"
-          "content":
-            "application/json":
-              "schema":
-                "type": "object"
-                "description": "Relationships for a given accessId"
-                "properties":
-                  "relatedMetadata":
-                    "type": "string"
-                    "description": "Minimal placeholder so the schema isn't empty."
-                "additionalProperties": true
-  "/search":
-    "post":
-      "operationId": "searchDocuments"
-      "summary": "Search documents"
-      "description": "Query the GovInfo search engine with advanced parameters. This is equivalent to searching on the main UI and can include field operators.\n"
-      "requestBody":
-        "required": true
-        "content":
-          "application/json":
-            "schema":
-              "type": "object"
-              "properties":
-                "query":
-                  "type": "string"
-                  "description": "Keywords or fielded queries (e.g. congress:117)."
-                "pageSize":
-                  "type": "integer"
-                  "default": 20
-                "offsetMark":
-                  "type": "string"
-                  "default": "*"
-                "sorts":
-                  "type": "array"
-                  "description": "List of sorting criteria."
-                  "items":
-                    "type": "object"
-                    "properties":
-                      "field":
-                        "type": "string"
-                        "description": "e.g. relevancy, date"
-                      "sortOrder":
-                        "type": "string"
-                        "enum":
-                          - "ASC"
-                          - "DESC"
-                "historical":
-                  "type": "boolean"
-                  "default": true
-                "resultLevel":
-                  "type": "string"
-                  "enum":
-                    - "default"
-                    - "detail"
-                  "default": "default"
-      "security":
-        -
-          "apiKeyAuth": []
-      "responses":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RelatedResponse"
+
+  /search:
+    post:
+      operationId: searchDocuments
+      summary: "Search documents"
+      description: >-
+        Query the GovInfo search engine with advanced parameters. This is
+        equivalent to searching on the main UI and can include field operators
+        (like `congress:119`).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SearchRequest"
+      security:
+        - apiKeyAuth: []
+      responses:
         "200":
-          "description": "Search results"
-          "content":
-            "application/json":
-              "schema":
-                "type": "object"
-                "properties":
-                  "offsetMark":
-                    "type": "string"
-                  "count":
-                    "type": "integer"
-                  "results":
-                    "type": "array"
-                    "items":
-                      "type": "object"
-                      "properties":
-                        "title":
-                          "type": "string"
-                        "packageId":
-                          "type": "string"
-                        "granuleId":
-                          "type":
-                            - "string"
-                            - "null"
-                        "lastModified":
-                          "type": "string"
-                        "governmentAuthor":
-                          "type": "array"
-                          "items":
-                            "type": "string"
-                        "dateIssued":
-                          "type": "string"
-                        "collectionCode":
-                          "type": "string"
-                        "resultLink":
-                          "type": "string"
-                        "dateIngested":
-                          "type": "string"
-                        "download":
-                          "type": "object"
-                          "description": "Maps file types (PDF, XML, etc.) to URLs."
-                          "additionalProperties":
-                            "type": "string"
-                        "relatedLink":
-                          "type": "string"
+          description: "Search results"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchResponse"
         "400":
-          "description": "Bad request (invalid JSON or spec)"
+          description: "Bad request (invalid JSON or spec)"
         "404":
-          "description": "No Content found for a given search criteria"
+          description: "No Content found for a given search criteria"
         "500":
-          "description": "System failure while processing the search request"
+          description: "System failure while processing the search request"
