@@ -1,0 +1,27 @@
+diff --git a/.github/workflows/fetch_federal_register_data.yml b/.github/workflows/fetch_federal_register_data.yml
+index 5d2ab21..e3c4a7b 100644
+--- a/.github/workflows/fetch_federal_register_data.yml
++++ b/.github/workflows/fetch_federal_register_data.yml
+@@ -20,7 +20,7 @@ jobs:
+         run: |
+           mkdir -p data
+-          python <<EOF
++          python <<'EOF'
+ import json, os, requests, sys
+ URL = "https://www.federalregister.gov/api/v1/documents"
+ PARAMS = {
+@@
+-r = requests.get(URL, params=PARAMS, timeout=30)
+-if r.status_code == 200:
+-    with open("data/federal_register_education.json", "ws") as f:
+-        f.write(r.text)
+-else:
+-    print(f"API error: {r.status_code} {r.reason}")
+-    sys.exit(1)
++resp = requests.get(URL, params=PARAMS, timeout=30)
++resp.raise_for_status()
++out = "data/federal_register_${{ github.run_id }}.json"
++with open(out, "w", encoding="utf-8") as f:
++    f.write(resp.text)
++print(f"Saved → {out}")
+ EOF
