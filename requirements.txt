@@ -1,15 +1,7 @@
-
-# HTTP requests library
-requests==2.32.2
-
-# Code linting tool
-flake8
-
-# Testing framework
-pytest
-
-# Security analysis tool
-bandit
-
-# Machine learning library
-tensorflow==2.12.1
+requests>=2.31.0,<3
+python-dotenv>=1.0.1
+flake8>=6.1
+black>=24.3
+pytest>=8.1
+pytest-cov>=5.0
+bandit>=1.7
