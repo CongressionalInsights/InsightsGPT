@@ -24,7 +24,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install flake8 bandit pytest pytest-cov black
     - name: Run Flake8 Linter
-      run: flake8 .
+      run: flake8 . --config=.flake8
     - name: Run Bandit Security Scan
       run: bandit -r .
     - name: Run tests with coverage
