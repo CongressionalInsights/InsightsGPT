@@ -24,20 +24,24 @@ jobs:
     - name: Fetch Data from Federal Register
       run: |
         mkdir -p data  # Ensure the data folder exists
-        python <<EOF
-          import requests
-          url = "https://www.federalregister.gov/api/v1/documents"
-          params = {
-                "conditions[term]": "education",
-                "conditions[publication_date][gte]": "2023-01-01",
-                "per_page": 100,
-                "order": "relevance",
-                "fields[]": ["title", "document_number", "url", "publication_date"]
-            }
-          response = requests.get(url, params=params)
-          if response.status_code == 200:
-            with open("data/federal_register_education.json", "ws") as f:
-                f.write(response.text)
-          else:
-                print(f "API error: {r.status_code} {r.reason}")
-        EOF
+        python <<'EOF'
+      import requests, os
+
+      URL = "https://www.federalregister.gov/api/v1/documents"
+      PARAMS = {
+          "conditions[term]": os.getenv("FR_SEARCH_TERM", "education"),
+          "conditions[publication_date][gte]": "2023-01-01",
+          "per_page": 100,
+          "order": "relevance",
+          "fields[]": ["title", "document_number", "url", "publication_date"],
+      }
+
+      resp = requests.get(URL, params=PARAMS, timeout=30)
+      resp.raise_for_status()
+
+      out = f"data/federal_register_${{ github.run_id }}.json"
+      with open(out, "w", encoding="utf-8") as f:
+          f.write(resp.text)
+
+      print(f"Saved → {out}")
+      EOF

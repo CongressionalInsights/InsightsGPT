@@ -13,6 +13,6 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
       - name: Lint scripts
-        run: flake8 scripts/ 
+        run: flake8 . --config=.flake8 
       - name: Run tests
         run: python -m unittest discover
