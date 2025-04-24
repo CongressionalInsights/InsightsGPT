@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 import json
+
 REQUEST_TIMEOUT = 10  # seconds
 import os
+
 REQUEST_TIMEOUT = 10  # seconds
 
 import requests
+
 REQUEST_TIMEOUT = 10  # seconds
 
 # Federal Register API endpoint for agencies

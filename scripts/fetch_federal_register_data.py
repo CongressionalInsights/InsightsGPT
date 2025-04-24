@@ -1,9 +1,12 @@
 import json
+
 REQUEST_TIMEOUT = 10  # seconds
 import os
+
 REQUEST_TIMEOUT = 10  # seconds
 
 import requests
+
 REQUEST_TIMEOUT = 10  # seconds
 
 

@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
 
 import argparse
+
 REQUEST_TIMEOUT = 10  # seconds
 import json
+
 REQUEST_TIMEOUT = 10  # seconds
 import os
+
 REQUEST_TIMEOUT = 10  # seconds
 from urllib.parse import urlencode
 
 import requests
+
 REQUEST_TIMEOUT = 10  # seconds
 
 API_BASE = "https://www.federalregister.gov/api/v1"
