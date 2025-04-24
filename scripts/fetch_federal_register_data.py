@@ -1,7 +1,10 @@
 import json
+REQUEST_TIMEOUT = 10  # seconds
 import os
+REQUEST_TIMEOUT = 10  # seconds
 
 import requests
+REQUEST_TIMEOUT = 10  # seconds
 
 
 def fetch_executive_orders(date):
@@ -15,7 +18,7 @@ def fetch_executive_orders(date):
     }
 
     try:
-        response = requests.get(BASE_URL, params=params)
+        response = requests.get(BASE_URL, params=params, timeout=REQUEST_TIMEOUT)
 
         # Enhanced logging for debugging
         print(f"Request URL: {response.url}")

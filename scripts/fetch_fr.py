@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
 
 import argparse
+REQUEST_TIMEOUT = 10  # seconds
 import json
+REQUEST_TIMEOUT = 10  # seconds
 import os
+REQUEST_TIMEOUT = 10  # seconds
 from urllib.parse import urlencode
 
 import requests
+REQUEST_TIMEOUT = 10  # seconds
 
 API_BASE = "https://www.federalregister.gov/api/v1"
 DATA_DIR = "data"
@@ -40,7 +44,7 @@ def save_json(data, file_prefix, **identifiers):
 def fetch_json(url):
     """Basic GET request and JSON parse with error handling."""
     print(f"GET {url}")
-    resp = requests.get(url)
+    resp = requests.get(url, timeout=REQUEST_TIMEOUT)
     resp.raise_for_status()
     return resp.json()
 
