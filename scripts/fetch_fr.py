@@ -3,7 +3,7 @@
 import argparse
 import json
 import os
-from urllib.parse import quote_plus, urlencode
+from urllib.parse import urlencode
 
 import requests
 
