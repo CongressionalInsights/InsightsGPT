@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-import requests
 import json
 import os
 
+import requests
+
 # Federal Register API endpoint for agencies
 AGENCIES_URL = "https://www.federalregister.gov/api/v1/agencies"
+
 
 def main():
     print("Fetching agencies from Federal Register API...")
@@ -23,6 +25,7 @@ def main():
         json.dump(agencies_data, f, indent=2, ensure_ascii=False)
 
     print(f"Agencies data saved to {output_path}")
+
 
 if __name__ == "__main__":
     main()

@@ -1,7 +1,8 @@
-
-import requests
 import json
 import os
+
+import requests
+
 
 def fetch_executive_orders(date):
     BASE_URL = "https://www.federalregister.gov/api/v1/documents"
@@ -10,7 +11,7 @@ def fetch_executive_orders(date):
         "conditions[publication_date]": date,
         "per_page": 100,
         "order": "relevance",
-        "fields[]": ["title", "document_number", "url", "publication_date"]
+        "fields[]": ["title", "document_number", "url", "publication_date"],
     }
 
     try:
@@ -38,6 +39,7 @@ def fetch_executive_orders(date):
 
     except requests.exceptions.RequestException as e:
         print(f"API error: {e}")
+
 
 if __name__ == "__main__":
     test_date = "2023-01-01"  # Replace with a relevant test date

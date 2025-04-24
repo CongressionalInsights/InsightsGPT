@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
 
 import argparse
-import requests
 import json
 import os
-from urllib.parse import urlencode, quote_plus
+from urllib.parse import quote_plus, urlencode
+
+import requests
 
 API_BASE = "https://www.federalregister.gov/api/v1"
 DATA_DIR = "data"
 
+
 def save_json(data, file_prefix, **identifiers):
     """
-    Save the JSON data into the `data/` folder. 
+    Save the JSON data into the `data/` folder.
     Filename includes a prefix (e.g. 'documents_search') plus any relevant identifiers.
     """
     os.makedirs(DATA_DIR, exist_ok=True)
@@ -34,16 +36,19 @@ def save_json(data, file_prefix, **identifiers):
 
     print(f"Saved JSON to {path}.")
 
+
 def fetch_json(url):
-    """ Basic GET request and JSON parse with error handling. """
+    """Basic GET request and JSON parse with error handling."""
     print(f"GET {url}")
     resp = requests.get(url)
     resp.raise_for_status()
     return resp.json()
 
+
 ###################
 #  SUBCOMMANDS
 ###################
+
 
 def cmd_documents_search(args):
     """
@@ -114,6 +119,7 @@ def cmd_documents_search(args):
         doc_type="__".join(args.doc_type) if args.doc_type else "",
     )
 
+
 def cmd_documents_single(args):
     """
     GET /documents/{doc_number}.{format}
@@ -122,6 +128,7 @@ def cmd_documents_single(args):
     url = f"{API_BASE}/documents/{doc_number}.json"
     data = fetch_json(url)
     save_json(data, "documents_single", doc_number=doc_number)
+
 
 def cmd_documents_multi(args):
     """
@@ -132,6 +139,7 @@ def cmd_documents_multi(args):
     url = f"{API_BASE}/documents/{doc_numbers}.json"
     data = fetch_json(url)
     save_json(data, "documents_multi", doc_numbers=doc_numbers)
+
 
 def cmd_documents_facets(args):
     """
@@ -148,6 +156,7 @@ def cmd_documents_facets(args):
     data = fetch_json(url)
     save_json(data, "documents_facets", facet=facet, term=args.term or "")
 
+
 def cmd_issues(args):
     """
     GET /issues/{publication_date}.{format}
@@ -156,6 +165,7 @@ def cmd_issues(args):
     url = f"{API_BASE}/issues/{publication_date}.json"
     data = fetch_json(url)
     save_json(data, "issues", publication_date=publication_date)
+
 
 def cmd_public_inspection_search(args):
     """
@@ -174,6 +184,7 @@ def cmd_public_inspection_search(args):
     data = fetch_json(url)
     save_json(data, "public_inspection_search", term=args.term or "")
 
+
 def cmd_public_inspection_single(args):
     """
     GET /public-inspection-documents/{doc_number}.{format}
@@ -182,6 +193,7 @@ def cmd_public_inspection_single(args):
     url = f"{API_BASE}/public-inspection-documents/{doc_number}.json"
     data = fetch_json(url)
     save_json(data, "public_inspection_single", doc_number=doc_number)
+
 
 def cmd_public_inspection_multi(args):
     """
@@ -192,6 +204,7 @@ def cmd_public_inspection_multi(args):
     data = fetch_json(url)
     save_json(data, "public_inspection_multi", doc_numbers=doc_numbers)
 
+
 def cmd_public_inspection_current(args):
     """
     GET /public-inspection-documents/current.{format}
@@ -200,6 +213,7 @@ def cmd_public_inspection_current(args):
     data = fetch_json(url)
     save_json(data, "public_inspection_current")
 
+
 def cmd_agencies(args):
     """
     GET /agencies
@@ -207,6 +221,7 @@ def cmd_agencies(args):
     url = f"{API_BASE}/agencies"
     data = fetch_json(url)
     save_json(data, "agencies")
+
 
 def cmd_agency_single(args):
     """
@@ -217,6 +232,7 @@ def cmd_agency_single(args):
     data = fetch_json(url)
     save_json(data, "agency_single", slug=slug)
 
+
 def cmd_images(args):
     """
     GET /images/{identifier}
@@ -225,6 +241,7 @@ def cmd_images(args):
     url = f"{API_BASE}/images/{identifier}"
     data = fetch_json(url)
     save_json(data, "images", identifier=identifier)
+
 
 def cmd_suggested_searches(args):
     """
@@ -244,7 +261,12 @@ def cmd_suggested_searches(args):
     qs = urlencode(qlist, doseq=True)
     url = f"{endpoint}?{qs}" if qs else endpoint
     data = fetch_json(url)
-    save_json(data, "suggested_searches", section="__".join(args.section) if args.section else "")
+    save_json(
+        data,
+        "suggested_searches",
+        section="__".join(args.section) if args.section else "",
+    )
+
 
 def cmd_suggested_search(args):
     """
@@ -265,56 +287,106 @@ def main():
     # Documents search
     p_docs_search = sub.add_parser("documents-search", help="Search FR documents.")
     p_docs_search.add_argument("--term", default="", help="Full text search term")
-    p_docs_search.add_argument("--per_page", default="", help="How many docs per page, up to 1000")
+    p_docs_search.add_argument(
+        "--per_page", default="", help="How many docs per page, up to 1000"
+    )
     p_docs_search.add_argument("--page", default="", help="Page number of results")
-    p_docs_search.add_argument("--order", default="", choices=["relevance", "newest", "oldest", "executive_order_number"])
-    p_docs_search.add_argument("--pub_date_year", default="", help="conditions[publication_date][year]")
-    p_docs_search.add_argument("--pub_date_gte", default="", help="conditions[publication_date][gte]")
-    p_docs_search.add_argument("--pub_date_lte", default="", help="conditions[publication_date][lte]")
-    p_docs_search.add_argument("--agency_slug", action="append", default=[], help="conditions[agencies][] (may be repeated)")
-    p_docs_search.add_argument("--doc_type", action="append", default=[], help="conditions[type][] (RULE, PRORULE, NOTICE, PRESDOCU)")
+    p_docs_search.add_argument(
+        "--order",
+        default="",
+        choices=["relevance", "newest", "oldest", "executive_order_number"],
+    )
+    p_docs_search.add_argument(
+        "--pub_date_year", default="", help="conditions[publication_date][year]"
+    )
+    p_docs_search.add_argument(
+        "--pub_date_gte", default="", help="conditions[publication_date][gte]"
+    )
+    p_docs_search.add_argument(
+        "--pub_date_lte", default="", help="conditions[publication_date][lte]"
+    )
+    p_docs_search.add_argument(
+        "--agency_slug",
+        action="append",
+        default=[],
+        help="conditions[agencies][] (may be repeated)",
+    )
+    p_docs_search.add_argument(
+        "--doc_type",
+        action="append",
+        default=[],
+        help="conditions[type][] (RULE, PRORULE, NOTICE, PRESDOCU)",
+    )
     p_docs_search.set_defaults(func=cmd_documents_search)
 
     # Documents single
-    p_docs_single = sub.add_parser("documents-single", help="Fetch single FR document by doc_number.")
+    p_docs_single = sub.add_parser(
+        "documents-single", help="Fetch single FR document by doc_number."
+    )
     p_docs_single.add_argument("--doc_number", required=True, help="E.g. 2023-12345")
     p_docs_single.set_defaults(func=cmd_documents_single)
 
     # Documents multi
-    p_docs_multi = sub.add_parser("documents-multi", help="Fetch multiple FR documents by comma-separated doc_numbers.")
-    p_docs_multi.add_argument("--doc_numbers", required=True, help="E.g. 2023-12345,2023-12346")
+    p_docs_multi = sub.add_parser(
+        "documents-multi",
+        help="Fetch multiple FR documents by comma-separated doc_numbers.",
+    )
+    p_docs_multi.add_argument(
+        "--doc_numbers", required=True, help="E.g. 2023-12345,2023-12346"
+    )
     p_docs_multi.set_defaults(func=cmd_documents_multi)
 
     # Documents facets
-    p_docs_facets = sub.add_parser("documents-facets", help="Fetch document facet counts.")
-    p_docs_facets.add_argument("--facet", required=True, help="daily, agency, topic, etc.")
-    p_docs_facets.add_argument("--term", default="", help="Full text search, conditions[term]")
+    p_docs_facets = sub.add_parser(
+        "documents-facets", help="Fetch document facet counts."
+    )
+    p_docs_facets.add_argument(
+        "--facet", required=True, help="daily, agency, topic, etc."
+    )
+    p_docs_facets.add_argument(
+        "--term", default="", help="Full text search, conditions[term]"
+    )
     p_docs_facets.set_defaults(func=cmd_documents_facets)
 
     # Issues
-    p_issues = sub.add_parser("issues", help="Fetch an issue's table of contents by date (YYYY-MM-DD).")
+    p_issues = sub.add_parser(
+        "issues", help="Fetch an issue's table of contents by date (YYYY-MM-DD)."
+    )
     p_issues.add_argument("--publication_date", required=True, help="E.g. 2025-01-10")
     p_issues.set_defaults(func=cmd_issues)
 
     # Public Inspection search
-    p_pi_search = sub.add_parser("public-inspection-search", help="Search public inspection documents.")
+    p_pi_search = sub.add_parser(
+        "public-inspection-search", help="Search public inspection documents."
+    )
     p_pi_search.add_argument("--term", default="", help="conditions[term]")
-    p_pi_search.add_argument("--per_page", default="", help="Number per page, up to 1000")
+    p_pi_search.add_argument(
+        "--per_page", default="", help="Number per page, up to 1000"
+    )
     p_pi_search.add_argument("--page", default="", help="Which page of results")
     p_pi_search.set_defaults(func=cmd_public_inspection_search)
 
     # Public Inspection single
-    p_pi_single = sub.add_parser("public-inspection-single", help="Fetch single public inspection doc by doc_number.")
+    p_pi_single = sub.add_parser(
+        "public-inspection-single",
+        help="Fetch single public inspection doc by doc_number.",
+    )
     p_pi_single.add_argument("--doc_number", required=True)
     p_pi_single.set_defaults(func=cmd_public_inspection_single)
 
     # Public Inspection multi
-    p_pi_multi = sub.add_parser("public-inspection-multi", help="Fetch multiple public inspection docs by comma-separated doc_numbers.")
+    p_pi_multi = sub.add_parser(
+        "public-inspection-multi",
+        help="Fetch multiple public inspection docs by comma-separated doc_numbers.",
+    )
     p_pi_multi.add_argument("--doc_numbers", required=True)
     p_pi_multi.set_defaults(func=cmd_public_inspection_multi)
 
     # Public Inspection current
-    p_pi_current = sub.add_parser("public-inspection-current", help="Fetch all docs currently on public inspection.")
+    p_pi_current = sub.add_parser(
+        "public-inspection-current",
+        help="Fetch all docs currently on public inspection.",
+    )
     p_pi_current.set_defaults(func=cmd_public_inspection_current)
 
     # Agencies
@@ -322,10 +394,18 @@ def main():
     p_agencies.set_defaults(func=cmd_agencies)
 
     # Agency single
-    p_agency_single = sub.add_parser("agency-single", help="Fetch single agency by slug.")
-    p_agency_single.add_argument("--slug", required=True, help="E.g. 'agriculture-department'")
+    p_agency_single = sub.add_parser(
+        "agency-single", help="Fetch single agency by slug."
+    )
+    p_agency_single.add_argument(
+        "--slug", required=True, help="E.g. 'agriculture-department'"
+    )
     p_agency_single.set_defaults(func=cmd_agency_single)
 
     # Images
-    p_images = sub.add_parser("images", help="Fetch available image variants by identifier.")
-    p_images.add_argument("--identifier", required=True, help="Identifier for the image, e.g., '12345'")
+    p_images = sub.add_parser(
+        "images", help="Fetch available image variants by identifier."
+    )
+    p_images.add_argument(
+        "--identifier", required=True, help="Identifier for the image, e.g., '12345'"
+    )

@@ -1,6 +1,7 @@
-import os
-import json
 import argparse
+import json
+import os
+
 
 def monitor_keywords(input_folder, output_folder, keywords):
     """
@@ -40,15 +41,24 @@ def monitor_keywords(input_folder, output_folder, keywords):
             output_path = os.path.join(output_folder, output_filename)
 
             with open(output_path, "w", encoding="utf-8") as out_f:
-                json.dump({"results": flagged_results}, out_f, indent=2, ensure_ascii=False)
+                json.dump(
+                    {"results": flagged_results}, out_f, indent=2, ensure_ascii=False
+                )
 
             print(f"Flagged results saved to {output_path}")
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Monitor keywords in JSON data.")
-    parser.add_argument("--input_folder", required=True, help="Folder containing JSON files to monitor.")
-    parser.add_argument("--output_folder", required=True, help="Folder to save flagged results.")
-    parser.add_argument("--keywords", nargs="+", required=True, help="List of keywords to monitor.")
+    parser.add_argument(
+        "--input_folder", required=True, help="Folder containing JSON files to monitor."
+    )
+    parser.add_argument(
+        "--output_folder", required=True, help="Folder to save flagged results."
+    )
+    parser.add_argument(
+        "--keywords", nargs="+", required=True, help="List of keywords to monitor."
+    )
 
     args = parser.parse_args()
 

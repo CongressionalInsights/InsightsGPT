@@ -1,7 +1,9 @@
-import os
-import json
 import argparse
+import json
+import os
+
 import matplotlib.pyplot as plt
+
 
 def load_data(input_folder):
     """
@@ -26,6 +28,7 @@ def load_data(input_folder):
                     print(f"Error decoding {file_path}: {e}")
 
     return all_data
+
 
 def plot_publication_trends(data, output_folder):
     """
@@ -66,6 +69,7 @@ def plot_publication_trends(data, output_folder):
     plt.close()
     print(f"Plot saved to {output_path}")
 
+
 def plot_agency_distribution(data, output_folder):
     """
     Generates a bar chart of document counts by agency.
@@ -81,7 +85,9 @@ def plot_agency_distribution(data, output_folder):
         agencies[agency] = agencies.get(agency, 0) + 1
 
     # Sort by document count
-    sorted_agencies = sorted(agencies.items(), key=lambda x: x[1], reverse=True)[:10]  # Top 10 agencies
+    sorted_agencies = sorted(agencies.items(), key=lambda x: x[1], reverse=True)[
+        :10
+    ]  # Top 10 agencies
     x, y = zip(*sorted_agencies)
 
     plt.figure(figsize=(12, 8))
@@ -97,10 +103,19 @@ def plot_agency_distribution(data, output_folder):
     plt.close()
     print(f"Plot saved to {output_path}")
 
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Generate visualizations from JSON datasets.")
-    parser.add_argument("--input_folder", required=True, help="Folder containing JSON files to analyze.")
-    parser.add_argument("--output_folder", required=True, help="Folder to save generated visualizations.")
+    parser = argparse.ArgumentParser(
+        description="Generate visualizations from JSON datasets."
+    )
+    parser.add_argument(
+        "--input_folder", required=True, help="Folder containing JSON files to analyze."
+    )
+    parser.add_argument(
+        "--output_folder",
+        required=True,
+        help="Folder to save generated visualizations.",
+    )
 
     args = parser.parse_args()
 
