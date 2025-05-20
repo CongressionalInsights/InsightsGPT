@@ -12,12 +12,12 @@ cd InsightsGPT
 ```
 
 ### 2. Install Dependencies
-Ensure you have Python installed. Use the following command to install the required libraries:
+Ensure you have Python installed. For a full development setup, including all tools for testing, linting, and formatting, use the following command:
 
 ```bash
-pip install -r requirements.txt
+pip install -r requirements-dev.txt
 ```
-If you plan to run tests or linters, you might also need development dependencies. Check if a `requirements-dev.txt` exists and install it if needed.
+This command installs all runtime dependencies (from `requirements.txt`, which is included by `requirements-dev.txt`) as well as development-specific tools. If you only need to set up a runtime environment (e.g., for deployment, not development), you can use `pip install -r requirements.txt`.
 
 ### 3. Understand the Project
 
@@ -72,7 +72,7 @@ To maintain consistency across the project, please adhere to the following codin
 
 This project uses `pytest` for testing. To run the test suite:
 
-1.  **Install Test Dependencies:** Ensure `pytest` and any other test-related dependencies from `requirements.txt` (or a `requirements-dev.txt` if available) are installed.
+1.  **Install Test Dependencies:** Ensure all development dependencies are installed by running `pip install -r requirements-dev.txt`. This includes `pytest` and other necessary tools.
 2.  **Run Tests:** Execute the following command from the project root:
     ```bash
     python -m pytest tests/

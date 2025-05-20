@@ -1,3 +1,6 @@
 
 # Local security scan output
 bandit_report.txt
+
+# Environment variables file
+.env

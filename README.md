@@ -23,10 +23,9 @@
 2.  **Install dependencies:**
     ```bash
     pip install -r requirements.txt
-    # For development (e.g., running tests, linting), you might also need:
+    # For development (to run tests, linters, etc.), install additional development dependencies:
     # pip install -r requirements-dev.txt 
     ```
-    *(Note: `requirements-dev.txt` will be created if it doesn't exist, containing tools like `pytest`, `flake8`, and `black`)*
 
 3.  **Run an example script:**
     Fetch recent Federal Register documents related to "climate change":
@@ -42,6 +41,27 @@
     (A new file `data/documents_search_term_climate_change_per_page_5_order_newest.json` will be created containing the search results).
 
 For more detailed examples and advanced usage, please see our [Sample Workflows Guide](docs/Sample_Workflows.md) and the [Full Usage Guide](docs/USAGE_GUIDE_FOR_AI.md).
+
+---
+
+## Configuration
+
+For local development, API keys (if required by specific scripts in the future) and other configurable parameters can be managed using a `.env` file in the project root.
+
+1.  **Create your `.env` file:**
+    Copy the example file to `.env`:
+    ```bash
+    cp .env.example .env
+    ```
+2.  **Edit `.env`:**
+    Open the `.env` file and add any necessary environment variables. For example:
+    ```env
+    # FEDERAL_REGISTER_API_KEY=your_actual_api_key_if_needed
+    # OTHER_CONFIG_PARAM=some_value
+    ```
+    Currently, `scripts/fetch_fr.py` does not require an API key for the Federal Register API it uses. However, `python-dotenv` has been integrated to support environment-specific configurations easily if needed in the future.
+
+**Important:** The `.env` file should **not** be committed to version control and is listed in `.gitignore`. Ensure you keep any sensitive information like API keys in your local `.env` file only.
 
 ---
 

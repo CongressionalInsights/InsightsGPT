@@ -15,10 +15,11 @@ cd InsightsGPT
 ```
 
 ### Step 2: Install Dependencies
-Ensure you have Python installed, then run:
+Ensure you have Python installed. For a full development setup, including all tools for testing, linting, and development tasks, run:
 ```bash
-pip install -r requirements.txt
+pip install -r requirements-dev.txt
 ```
+This installs all runtime dependencies (from `requirements.txt`) plus additional development tools.
 
 ### Step 3: Set Up Environment Variables
 For certain workflows, you may need API keys. Add them to a `.env` file in the root directory:

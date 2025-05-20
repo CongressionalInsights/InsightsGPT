@@ -7,6 +7,7 @@ from urllib.parse import urlencode
 import requests
 import logging
 import sys
+from dotenv import load_dotenv
 
 REQUEST_TIMEOUT = 10  # seconds
 API_BASE = "https://www.federalregister.gov/api/v1"
@@ -278,6 +279,7 @@ def cmd_suggested_search(args):
 
 def main():
     print("MAIN_STARTED") # Basic print for testing
+    load_dotenv() # Load environment variables from .env file
     # Configure logging
     logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s', stream=sys.stdout)
 
