@@ -2,33 +2,6 @@ import matplotlib.pyplot as plt
 from textblob import TextBlob
 
 
-def fetch_bill_details(keyword):
-    """
-    Search Congress.gov for bills matching the keyword and fetch their details.
-    This is a placeholder function and should be implemented with actual API calls.
-    """
-    # TODO: Implement actual API call to fetch bill details
-    return {
-        "bill_title": "Climate Change Act",
-        "sponsor": "Senator Green",
-        "cosponsors_count": 15,
-        "latest_action": "Referred to the Committee on Environment and Public Works",
-    }
-
-
-def collect_public_sentiment_data(bill_title):
-    """
-    Collect public sentiment data for a given bill.
-    This function should be implemented to collect real data.
-    """
-    # TODO: Implement actual data collection logic
-    return [
-        "This bill is a great step towards combating climate change.",
-        "I have concerns about the economic impact of this legislation.",
-        "Neutral stance on the Climate Change Act.",
-    ]
-
-
 def analyze_sentiment(sentiment_data):
     """
     Analyze sentiment values and generate a bar chart showing the distribution
@@ -57,9 +30,6 @@ def analyze_sentiment(sentiment_data):
 
 
 if __name__ == "__main__":
-    keyword = "Climate Change"
-    bill_details = fetch_bill_details(keyword)
-    print(f"Analyzing sentiment for bill: {bill_details['bill_title']}")
-
-    sentiment_data = collect_public_sentiment_data(bill_details["bill_title"])
-    analyze_sentiment(sentiment_data)
+    # Placeholder functions and their usage were removed.
+    # analyze_sentiment function is kept for future use.
+    pass

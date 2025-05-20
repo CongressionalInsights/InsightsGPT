@@ -21,23 +21,15 @@ jobs:
         python -m pip install --upgrade pip
         pip install requests
 
-    - name: Fetch Data from Federal Register
+    - name: Fetch Data from Federal Register using fetch_fr.py
       run: |
-        mkdir -p data  # Ensure the data folder exists
-        python <<EOF
-          import requests
-          url = "https://www.federalregister.gov/api/v1/documents"
-          params = {
-                "conditions[term]": "education",
-                "conditions[publication_date][gte]": "2023-01-01",
-                "per_page": 100,
-                "order": "relevance",
-                "fields[]": ["title", "document_number", "url", "publication_date"]
-            }
-          response = requests.get(url, params=params)
-          if response.status_code == 200:
-            with open("data/federal_register_education.json", "ws") as f:
-                f.write(response.text)
-          else:
-                print(f "API error: {r.status_code} {r.reason}")
-        EOF
+        python scripts/fetch_fr.py documents-search \
+          --term "education" \
+          --pub_date_gte "2023-01-01" \
+          --per_page 100 \
+          --order "relevance"
+        # The output filename from fetch_fr.py for these parameters
+        # will be data/documents_search_term_education_pub_date_gte_2023-01-01.json
+        # We need to rename it to data/federal_register_education.json
+        # to maintain compatibility with the workflow's original output name.
+        mv data/documents_search_term_education_pub_date_gte_2023-01-01.json data/federal_register_education.json

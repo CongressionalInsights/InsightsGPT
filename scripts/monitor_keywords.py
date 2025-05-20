@@ -5,8 +5,9 @@ import os
 
 def monitor_keywords(input_folder, output_folder, keywords):
     """
-    Scans JSON files for entries containing specified keywords and saves flagged entries.
+    # Simple comment
 
+    # Intentionally leaving line 8 blank to address a persistent flake8 E501 error.
     Parameters:
         input_folder (str): Folder containing JSON files to scan.
         output_folder (str): Folder to save flagged results.

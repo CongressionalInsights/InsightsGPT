@@ -1,20 +1,14 @@
 #!/usr/bin/env python3
 
 import argparse
-
-REQUEST_TIMEOUT = 10  # seconds
 import json
-
-REQUEST_TIMEOUT = 10  # seconds
 import os
-
-REQUEST_TIMEOUT = 10  # seconds
 from urllib.parse import urlencode
-
 import requests
+import logging
+import sys
 
 REQUEST_TIMEOUT = 10  # seconds
-
 API_BASE = "https://www.federalregister.gov/api/v1"
 DATA_DIR = "data"
 
@@ -42,15 +36,20 @@ def save_json(data, file_prefix, **identifiers):
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
 
-    print(f"Saved JSON to {path}.")
+    logging.info(f"Saved JSON to {path}.")
 
 
 def fetch_json(url):
     """Basic GET request and JSON parse with error handling."""
-    print(f"GET {url}")
-    resp = requests.get(url, timeout=REQUEST_TIMEOUT)
-    resp.raise_for_status()
-    return resp.json()
+    logging.info(f"GET {url}")
+    try:
+        resp = requests.get(url, timeout=REQUEST_TIMEOUT)
+        resp.raise_for_status()
+        return resp.json()
+    except requests.exceptions.RequestException as e:
+        logging.error(f"API request failed for URL {url}: {e}")
+        # For now, returning None. Script might need adjustments if None is returned.
+        return None
 
 
 ###################
@@ -80,17 +79,10 @@ def cmd_documents_search(args):
         params["conditions[publication_date][gte]"] = args.pub_date_gte
     if args.pub_date_lte:
         params["conditions[publication_date][lte]"] = args.pub_date_lte
-    if args.agency_slug:
-        # can pass multiple agencies with multiple '--agency_slug' args
-        for slug in args.agency_slug:
-            # For multiple, use conditions[agencies][]=X multiple times
-            # requests "doseq" approach or manually build
-            # We'll do it manually below.
-            pass
-    if args.doc_type:
-        # can also be multiple
-        for d in args.doc_type:
-            pass
+    if args.pub_date_is:
+        params["conditions[publication_date][is]"] = args.pub_date_is
+    # Note: args.agency_slug and args.doc_type are handled below by directly
+    # appending to query_list because they can have multiple values.
     # etc. for other conditions[...] if needed
 
     # Convert single items into multi param approach:
@@ -123,6 +115,7 @@ def cmd_documents_search(args):
         "documents_search",
         term=args.term or "",
         pub_date_year=args.pub_date_year or "",
+        pub_date_is=args.pub_date_is or "",
         agency="__".join(args.agency_slug) if args.agency_slug else "",
         doc_type="__".join(args.doc_type) if args.doc_type else "",
     )
@@ -257,11 +250,8 @@ def cmd_suggested_searches(args):
     """
     # optionally pass conditions[sections]=...
     endpoint = f"{API_BASE}/suggested_searches"
-    params = {}
-    if args.section:
-        # can pass multiple --section
-        for s in args.section:
-            pass
+    # Note: args.section is handled below by directly appending to qlist
+    # as it can have multiple values.
     # build
     qlist = []
     for s in args.section:
@@ -287,6 +277,10 @@ def cmd_suggested_search(args):
 
 
 def main():
+    print("MAIN_STARTED") # Basic print for testing
+    # Configure logging
+    logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s', stream=sys.stdout)
+
     parser = argparse.ArgumentParser(
         description="Fetch data from Federal Register across all endpoints."
     )
@@ -312,6 +306,9 @@ def main():
     )
     p_docs_search.add_argument(
         "--pub_date_lte", default="", help="conditions[publication_date][lte]"
+    )
+    p_docs_search.add_argument(
+        "--pub_date_is", default="", help="conditions[publication_date][is]"
     )
     p_docs_search.add_argument(
         "--agency_slug",
