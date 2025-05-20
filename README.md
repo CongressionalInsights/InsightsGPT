@@ -6,6 +6,45 @@
 
 ---
 
+## Prerequisites
+
+-   Python 3.9 or higher.
+-   `pip` (Python package installer) for installing dependencies.
+
+---
+
+## Quick Start
+
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/CongressionalInsights/InsightsGPT.git
+    cd InsightsGPT
+    ```
+2.  **Install dependencies:**
+    ```bash
+    pip install -r requirements.txt
+    # For development (e.g., running tests, linting), you might also need:
+    # pip install -r requirements-dev.txt 
+    ```
+    *(Note: `requirements-dev.txt` will be created if it doesn't exist, containing tools like `pytest`, `flake8`, and `black`)*
+
+3.  **Run an example script:**
+    Fetch recent Federal Register documents related to "climate change":
+    ```bash
+    python scripts/fetch_fr.py documents-search --term "climate change" --per_page 5 --order newest
+    ```
+
+    **Example Output (stdout):**
+    ```
+    INFO: GET https://www.federalregister.gov/api/v1/documents.json?per_page=5&order=newest&conditions%5Bterm%5D=climate+change
+    INFO: Saved JSON to data/documents_search_term_climate_change_per_page_5_order_newest.json
+    ```
+    (A new file `data/documents_search_term_climate_change_per_page_5_order_newest.json` will be created containing the search results).
+
+For more detailed examples and advanced usage, please see our [Sample Workflows Guide](docs/Sample_Workflows.md) and the [Full Usage Guide](docs/USAGE_GUIDE_FOR_AI.md).
+
+---
+
 ## **Key Features**
 
 ### **GitHub Actions Workflows**
@@ -16,7 +55,7 @@ InsightsGPT employs robust GitHub Actions workflows to maintain high code qualit
 - **Security Scanning** with `bandit`.
 - **Code Formatting** with `black`.
 - **Test Coverage** with `pytest-cov`.
-- **Fetch Federal Register Data Fetching** via embedded Python script.
+- **Fetch Federal Register Data** via embedded Python script.
 
 ---
 
@@ -48,7 +87,8 @@ The workflows are triggered automatically on code pushes, pull requests, and now
 - **Purpose**: Validates JSON data for structure and required fields.
 - **Usage**:
   ```bash
-  python scripts/validate_data.py --folder data
+  python scripts/validate_data.py --input_folder data/ --output_file logs/validation_results.json
+  ```
 
   ---
 

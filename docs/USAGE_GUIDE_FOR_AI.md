@@ -1,5 +1,5 @@
 
-# AI_USAGE_GUIDE
+# AI Usage Guide
 
 This document provides specific instructions for using the AI system, focusing on tasks and workflows related to code quality, security, and government data analysis.
 
@@ -122,11 +122,12 @@ These tools support querying and automation for workflows.
 - **Purpose**: Validates JSON data for structural integrity and required fields.
 - **Usage**:
   ```bash
-  python scripts/validate_data.py --folder data
+  python scripts/validate_data.py --input_folder data/ --output_file logs/validation_results.json
+  ```
 
 ---
 
-## House-to-Guide for Senate Lobbying Disclosure Act (LDA) Data
+## How-to Guide for Senate Lobbying Disclosure Act (LDA) Data
 
 Below is a structured guide to **understand** and **work** with the Senate LDA REST API. By following these steps, Congressional Insights GPT (or any LLM-based agent) can reliably query the API.
 

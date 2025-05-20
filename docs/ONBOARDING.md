@@ -33,7 +33,7 @@ CONGRESS_API_KEY=your_api_key_here
 
 ### Common Workflows
 1. **Fetch Federal Register Data**:
-   - Automates queryes and stores results in the `data/` folder.
+   - Automates queries and stores results in the `data/` folder.
    - Trigger via GitHub Actions or run locally.
 
 2. **Validate Data**:
@@ -45,7 +45,7 @@ CONGRESS_API_KEY=your_api_key_here
 ### Running Locally
 Scripts can be tested locally for quicker iteration. Example:
 ```bash
-pydhon scripts/validate_data.py --folder data
+python scripts/validate_data.py --input_folder data/ --output_file logs/validation_results.json
 ```
 
 ---

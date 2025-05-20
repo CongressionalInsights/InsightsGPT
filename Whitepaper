@@ -12,7 +12,7 @@ This white paper introduces an AI-driven legislative analytics agent—Congressi
 Key Benefits
 •	AI-Driven Summaries: Instantly condense 200-page bills into digestible, human-readable insights.
 •	Integrated Data Sources: Automated cross-referencing of Congress.gov, FEC records, and socio-economic data for holistic analysis.
-•	Predictive Modeling: Real-time* predictions of bill passage, co-sponsorship trends, and compliance risks.
+•	Predictive Modeling: Real-time* predictions of bill passage, co-sponsorship trends, and compliance risks. (Note: Predictive modeling capabilities described herein are part of our forward-looking roadmap and are planned for future development.)
 •	Visual Dashboards: Interactive charts, maps, and timelines that can be shared.
 •	No Cost Barrier: Empowers grassroots organizations and individuals who cannot afford expensive subscription tools.
 
