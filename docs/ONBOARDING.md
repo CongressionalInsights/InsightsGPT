@@ -15,10 +15,11 @@ cd InsightsGPT
 ```
 
 ### Step 2: Install Dependencies
-Ensure you have Python installed, then run:
+Ensure you have Python installed. For a full development setup, including all tools for testing, linting, and development tasks, run:
 ```bash
-pip install -r requirements.txt
+pip install -r requirements-dev.txt
 ```
+This installs all runtime dependencies (from `requirements.txt`) plus additional development tools.
 
 ### Step 3: Set Up Environment Variables
 For certain workflows, you may need API keys. Add them to a `.env` file in the root directory:
@@ -33,7 +34,7 @@ CONGRESS_API_KEY=your_api_key_here
 
 ### Common Workflows
 1. **Fetch Federal Register Data**:
-   - Automates queryes and stores results in the `data/` folder.
+   - Automates queries and stores results in the `data/` folder.
    - Trigger via GitHub Actions or run locally.
 
 2. **Validate Data**:
@@ -45,7 +46,7 @@ CONGRESS_API_KEY=your_api_key_here
 ### Running Locally
 Scripts can be tested locally for quicker iteration. Example:
 ```bash
-pydhon scripts/validate_data.py --folder data
+python scripts/validate_data.py --input_folder data/ --output_file logs/validation_results.json
 ```
 
 ---

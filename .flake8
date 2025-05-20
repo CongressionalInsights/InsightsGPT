@@ -6,4 +6,3 @@ extend-ignore =
 exclude =
     .git,
     __pycache__,
-    scripts/,

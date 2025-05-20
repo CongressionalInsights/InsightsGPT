@@ -1,0 +1,1 @@
+This directory stores outputs from monitoring scripts, such as `scripts/monitor_keywords.py`. Typically, these are JSON files or reports highlighting documents or data entries that match specific flagged keywords or criteria.

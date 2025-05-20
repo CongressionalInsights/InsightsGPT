@@ -82,7 +82,7 @@ if __name__ == "__main__":
         "--required_fields",
         nargs="+",
         default=["title", "publication_date", "agency"],
-        help="List of fields that are required in each JSON entry. Default: title, publication_date, agency.",
+        help="Required JSON fields. Default: title, publication_date, agency.",
     )
 
     args = parser.parse_args()
