@@ -1,0 +1,1 @@
+This directory is used to store log files generated during script executions. These logs can be helpful for debugging and tracking script activity. For example, scripts using Python's `logging` module might direct their output here.

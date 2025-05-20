@@ -1,0 +1,1 @@
+This directory is intended for processed or filtered datasets. For example, scripts like `scripts/generate_datasets.py` (if it exists and produces such output) would save their results here. These datasets are often derived from the raw data in the `data/` directory.
