@@ -1,7 +1,14 @@
+import json
+
+REQUEST_TIMEOUT = 10  # seconds
+import os
+
+REQUEST_TIMEOUT = 10  # seconds
 
 import requests
-import json
-import os
+
+REQUEST_TIMEOUT = 10  # seconds
+
 
 def fetch_executive_orders(date):
     BASE_URL = "https://www.federalregister.gov/api/v1/documents"
@@ -10,11 +17,11 @@ def fetch_executive_orders(date):
         "conditions[publication_date]": date,
         "per_page": 100,
         "order": "relevance",
-        "fields[]": ["title", "document_number", "url", "publication_date"]
+        "fields[]": ["title", "document_number", "url", "publication_date"],
     }
 
     try:
-        response = requests.get(BASE_URL, params=params)
+        response = requests.get(BASE_URL, params=params, timeout=REQUEST_TIMEOUT)
 
         # Enhanced logging for debugging
         print(f"Request URL: {response.url}")
@@ -38,6 +45,7 @@ def fetch_executive_orders(date):
 
     except requests.exceptions.RequestException as e:
         print(f"API error: {e}")
+
 
 if __name__ == "__main__":
     test_date = "2023-01-01"  # Replace with a relevant test date

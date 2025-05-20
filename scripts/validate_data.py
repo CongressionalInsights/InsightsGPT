@@ -1,6 +1,7 @@
-import os
-import json
 import argparse
+import json
+import os
+
 
 def validate_file(file_path, required_fields):
     """
@@ -25,17 +26,22 @@ def validate_file(file_path, required_fields):
     for idx, entry in enumerate(results):
         missing_fields = [field for field in required_fields if field not in entry]
         if missing_fields:
-            errors.append({
-                "index": idx,
-                "missing_fields": missing_fields,
-                "entry_summary": {k: entry.get(k, None) for k in required_fields if k in entry}
-            })
+            errors.append(
+                {
+                    "index": idx,
+                    "missing_fields": missing_fields,
+                    "entry_summary": {
+                        k: entry.get(k, None) for k in required_fields if k in entry
+                    },
+                }
+            )
 
     return {
         "file": file_path,
         "total_entries": len(results),
         "errors": errors,
     }
+
 
 def validate_folder(input_folder, required_fields, output_file):
     """
@@ -59,10 +65,19 @@ def validate_folder(input_folder, required_fields, output_file):
 
     print(f"Validation results saved to {output_file}")
 
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Validate JSON data files against required fields.")
-    parser.add_argument("--input_folder", required=True, help="Folder containing JSON files to validate.")
-    parser.add_argument("--output_file", required=True, help="File to save validation results.")
+    parser = argparse.ArgumentParser(
+        description="Validate JSON data files against required fields."
+    )
+    parser.add_argument(
+        "--input_folder",
+        required=True,
+        help="Folder containing JSON files to validate.",
+    )
+    parser.add_argument(
+        "--output_file", required=True, help="File to save validation results."
+    )
     parser.add_argument(
         "--required_fields",
         nargs="+",

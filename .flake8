@@ -1,12 +1,9 @@
 [flake8]
-max-line-length = 120
-
-# Ignore legacy helper scripts for now
-exclude =
-    scripts/*,
-
-# Silence common style noise we don't care about today
+max-line-length = 88
 extend-ignore =
-    E302,E305,E501,   # blank‑line & long‑line
-    E401,W291,W292,   # import‑on‑one‑line, trailing white‑space/newline
-    F401,F841         # unused imports / locals
+    E203,
+    W503
+exclude =
+    .git,
+    __pycache__,
+    scripts/,

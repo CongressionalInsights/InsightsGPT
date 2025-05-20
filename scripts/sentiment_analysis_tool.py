@@ -1,6 +1,6 @@
-import requests
-from textblob import TextBlob
 import matplotlib.pyplot as plt
+from textblob import TextBlob
+
 
 def fetch_bill_details(keyword):
     """
@@ -12,8 +12,9 @@ def fetch_bill_details(keyword):
         "bill_title": "Climate Change Act",
         "sponsor": "Senator Green",
         "cosponsors_count": 15,
-        "latest_action": "Referred to the Committee on Environment and Public Works"
+        "latest_action": "Referred to the Committee on Environment and Public Works",
     }
+
 
 def collect_public_sentiment_data(bill_title):
     """
@@ -24,8 +25,9 @@ def collect_public_sentiment_data(bill_title):
     return [
         "This bill is a great step towards combating climate change.",
         "I have concerns about the economic impact of this legislation.",
-        "Neutral stance on the Climate Change Act."
+        "Neutral stance on the Climate Change Act.",
     ]
+
 
 def analyze_sentiment(sentiment_data):
     """
@@ -47,16 +49,17 @@ def analyze_sentiment(sentiment_data):
     labels = sentiment_counts.keys()
     counts = sentiment_counts.values()
 
-    plt.bar(labels, counts, color=['green', 'blue', 'red'])
-    plt.xlabel('Sentiment')
-    plt.ylabel('Number of Comments')
-    plt.title('Public Sentiment Analysis of Bill')
+    plt.bar(labels, counts, color=["green", "blue", "red"])
+    plt.xlabel("Sentiment")
+    plt.ylabel("Number of Comments")
+    plt.title("Public Sentiment Analysis of Bill")
     plt.show()
+
 
 if __name__ == "__main__":
     keyword = "Climate Change"
     bill_details = fetch_bill_details(keyword)
     print(f"Analyzing sentiment for bill: {bill_details['bill_title']}")
 
-    sentiment_data = collect_public_sentiment_data(bill_details['bill_title'])
+    sentiment_data = collect_public_sentiment_data(bill_details["bill_title"])
     analyze_sentiment(sentiment_data)

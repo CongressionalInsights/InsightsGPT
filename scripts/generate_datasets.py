@@ -1,6 +1,7 @@
-import os
-import json
 import argparse
+import json
+import os
+
 
 def filter_data(input_folder, output_folder, keyword=None, agency=None, year=None):
     """
@@ -36,14 +37,21 @@ def filter_data(input_folder, output_folder, keyword=None, agency=None, year=Non
             output_path = os.path.join(output_folder, output_filename)
 
             with open(output_path, "w", encoding="utf-8") as out_f:
-                json.dump({"results": filtered_results}, out_f, indent=2, ensure_ascii=False)
+                json.dump(
+                    {"results": filtered_results}, out_f, indent=2, ensure_ascii=False
+                )
 
             print(f"Filtered data saved to {output_path}")
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Filter data from JSON files.")
-    parser.add_argument("--input_folder", required=True, help="Folder containing JSON files to filter.")
-    parser.add_argument("--output_folder", required=True, help="Folder to save filtered results.")
+    parser.add_argument(
+        "--input_folder", required=True, help="Folder containing JSON files to filter."
+    )
+    parser.add_argument(
+        "--output_folder", required=True, help="Folder to save filtered results."
+    )
     parser.add_argument("--keyword", help="Keyword to filter by.")
     parser.add_argument("--agency", help="Agency to filter by.")
     parser.add_argument("--year", type=int, help="Publication year to filter by.")
