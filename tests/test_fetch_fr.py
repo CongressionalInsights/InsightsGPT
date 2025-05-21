@@ -108,16 +108,17 @@ def test_fetch_json_request_exception(mock_requests_get, mock_logging_error):
 @mock.patch("scripts.fetch_fr.requests.get")
 def test_fetch_json_http_error(mock_requests_get, mock_logging_error):
     mock_response = mock.Mock()
-    http_error = requests.exceptions.HTTPError("Test HTTP error")
+    mock_response.status_code = 500 # Simulate a server error
+    http_error = requests.exceptions.HTTPError("Test HTTP 500 error")
     mock_response.raise_for_status = mock.Mock(side_effect=http_error)
     mock_requests_get.return_value = mock_response
     
     url = "http://fakeurl.com/api/http_error"
     result = fetch_json(url)
     
-    mock_requests_get.assert_called_once_with(url, timeout=mock.ANY)
+    mock_requests_get.assert_called_once_with(url, timeout=mock.ANY) # scripts.fetch_fr.REQUEST_TIMEOUT is 10
     mock_response.raise_for_status.assert_called_once()
-    mock_logging_error.assert_called_once_with(f"API request failed for URL {url}: Test HTTP error")
+    mock_logging_error.assert_called_once_with(f"API request failed for URL {url}: Test HTTP 500 error")
     assert result is None
 
 # --- Tests for cmd_documents_single (URL Construction) ---
