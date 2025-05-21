@@ -90,6 +90,7 @@ InsightsGPT employs robust GitHub Actions workflows to maintain high code qualit
 - **Trigger**: Runs on new commits to `datasets/`.
 - **Script Used**: `generate_visualizations.py`
 - **Output**: Saves visualizations to `visualizations/`.
+![Visualization](https://github.com/ORG/REPO/actions/workflows/visualization.yml/badge.svg)
 
 ### **Keyword Monitoring Workflow**
 - **Purpose**: Flags documents containing specific keywords.

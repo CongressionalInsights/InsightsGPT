@@ -29,5 +29,7 @@ jobs:
       run: bandit -r .
     - name: Run tests with coverage
       run: pytest --cov=.
+    - name: Run visualization script
+      run: python scripts/generate_visualizations.py --input data/sample.json --output visualizations/ci_test.png
     - name: Check code formatting with Black
       run: black --check .
