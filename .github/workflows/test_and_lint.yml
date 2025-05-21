@@ -16,3 +16,18 @@ jobs:
         run: flake8 --config .flake8 .
       - name: Run tests
         run: python -m unittest discover
+
+  security_scan: # New job for gitleaks
+    name: Scan for Secrets (Gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3 # Ensure code is checked out
+        with:
+          fetch-depth: 0 # Fetches all history so gitleaks can scan everything
+
+      - name: Run Gitleaks Action
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Often needed for the action to report findings
+          # GITLEAKS_CONFIG: .gitleaks.toml # Uncomment if you have a custom config
