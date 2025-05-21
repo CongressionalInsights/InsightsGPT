@@ -1,0 +1,40 @@
+name: Docs & Onboarding Check
+
+on:
+  push:
+    branches:
+      - main # Or your default branch
+  pull_request:
+    branches:
+      - main # Or your default branch
+
+jobs:
+  validate_onboarding:
+    name: Validate Onboarding Steps
+    runs-on: ubuntu-latest
+    # Optional: Use a Python container for a cleaner environment
+    # container:
+    #   image: python:3.9-slim 
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4 # Updated to v4
+
+      # If not using a Python container, set up Python explicitly
+      - name: Set up Python
+        uses: actions/setup-python@v5 # Updated to v5
+        with:
+          python-version: '3.9' # Specify a version consistent with project
+          cache: 'pip' # Cache pip dependencies
+
+      - name: Run onboarding validation (make docs-check)
+        run: |
+          make docs-check
+        # Optional: Add a step to upload validation_results.json as an artifact
+        # for inspection if the quickstart-test produces a file you want to see.
+        # - name: Upload validation results
+        #   if: always() # Run even if previous steps fail, to capture output
+        #   uses: actions/upload-artifact@v3
+        #   with:
+        #     name: validation-results
+        #     path: validation_results.json
