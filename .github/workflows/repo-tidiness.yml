@@ -1,0 +1,33 @@
+name: Repo Tidiness
+
+on: [push, pull_request]
+
+jobs:
+  check_for_stray_files:
+    name: Check for stray files and empty directories
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check for .diff and .orig files
+        run: |
+          stray_files=$(git ls-files --others --exclude-standard '*.diff' '*.orig')
+          if [ -n "$stray_files" ]; then
+            echo "Error: Found stray .diff or .orig files:"
+            echo "$stray_files"
+            exit 1
+          else
+            echo "No stray .diff or .orig files found."
+          fi
+
+      - name: Check for empty directories
+        run: |
+          empty_dirs=$(find . -type d -empty -not -path "./.git/*" -print)
+          if [ -n "$empty_dirs" ]; then
+            echo "Error: Found empty directories:"
+            echo "$empty_dirs"
+            exit 1
+          else
+            echo "No empty directories found."
+          fi
