@@ -14,25 +14,60 @@ API_BASE = "https://www.federalregister.gov/api/v1"
 DATA_DIR = "data"
 
 
+def sanitize_filename_part(part_value, is_term_for_federal_register=False):
+    """Sanitizes a string part for use in a filename."""
+    if not isinstance(part_value, str):
+        part_value = str(part_value)
+
+    # Basic sanitization: replace spaces and slashes
+    safe_val = part_value.replace(" ", "_").replace("/", "_")
+    
+    # Allow alphanumeric, underscore, hyphen. Remove others.
+    safe_val = "".join(c for c in safe_val if c.isalnum() or c in ['_', '-'])
+    
+    # Collapse multiple underscores/hyphens to a single underscore
+    safe_val = safe_val.replace("--", "_").replace("__", "_")
+    while "__" in safe_val or "--" in safe_val: # Repeat until clean
+        safe_val = safe_val.replace("--", "_").replace("__", "_")
+
+    # If it's a term for "federal_register_{term}.json" and it's empty after sanitization,
+    # use a default. Otherwise, an empty string might be fine if it's just one of many parts.
+    if is_term_for_federal_register and not safe_val:
+        return "search_results" # Fallback for empty sanitized term
+    return safe_val
+
+
 def save_json(data, file_prefix, **identifiers):
     """
     Save the JSON data into the `data/` folder.
     Filename includes a prefix (e.g. 'documents_search') plus any relevant identifiers.
+    For 'documents_search' with a 'term', filename is 'federal_register_{term}.json'.
     """
     os.makedirs(DATA_DIR, exist_ok=True)
 
-    # Build a suffix from the subcommand arguments
-    # e.g. doc_number_2023-12345, term_climate_change, etc.
-    parts = []
-    for key, val in identifiers.items():
-        if val:
-            # Replace spaces with underscores
-            safe_val = val.replace(" ", "_").replace("/", "_")
-            parts.append(f"{key}_{safe_val}")
+    term_value = identifiers.get("term")
 
-    suffix = "_".join(parts) if parts else "no_params"
-    filename = f"{file_prefix}_{suffix}.json"
-
+    if file_prefix == "documents_search" and term_value:
+        # Specific filename for documents_search with a term
+        sanitized_term = sanitize_filename_part(term_value, is_term_for_federal_register=True)
+        filename = f"federal_register_{sanitized_term}.json"
+    else:
+        # Existing/General filename logic
+        parts = []
+        for key, val in identifiers.items():
+            if val: # Ensure val is not None or empty string before processing
+                sanitized_key = sanitize_filename_part(key)
+                sanitized_val = sanitize_filename_part(str(val)) # Ensure val is string
+                if sanitized_val: # Only add if the sanitized value is not empty
+                    parts.append(f"{sanitized_key}_{sanitized_val}")
+        
+        if parts:
+            suffix = "_".join(parts)
+            filename = f"{file_prefix}_{suffix}.json"
+        else:
+            # Fallback if no identifiers produce a usable suffix
+            filename = f"{file_prefix}_no_params.json"
+            
     path = os.path.join(DATA_DIR, filename)
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)

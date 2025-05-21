@@ -1,0 +1,12 @@
+climate change
+artificial intelligence
+
+# This is a comment and should be ignored if logic is only for non-empty lines
+# Another term below, with leading/trailing spaces
+  quantum computing  
+
+# Above line is empty and should be ignored
+# Next line has only spaces and should be ignored
+   
+# final term
+advanced manufacturing

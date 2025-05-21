@@ -145,10 +145,34 @@ The embedded Python script fetches data using pre-configured parameters:
 - **Publication Date**: From `2023-01-01` onwards.
 - **Result Fields**: `title`, `document_number`, `url`, `publication_date`
 
+#### Optional Configuration for Search Terms (`config/federal_register_terms.txt`)
+
+For the "Fetch Federal Register Data" workflow, you can define a list of search terms in a configuration file located at `config/federal_register_terms.txt`. This provides a convenient way to manage a list of terms without modifying the workflow input directly each time.
+
+**Behavior:**
+
+-   **Precedence:** If `config/federal_register_terms.txt` exists and contains valid terms, the terms listed in this file (one per line) will be used for the data fetching process. These terms will override the `query_terms` input provided via the GitHub Actions workflow dispatch UI.
+-   **Format:** Each line in the file is treated as a separate search term. Empty lines or lines containing only whitespace will be ignored.
+-   **Fallback:** If `config/federal_register_terms.txt` does not exist, or if it exists but is empty (or contains only whitespace lines), the workflow will fall back to using the terms provided in the `query_terms` input field (which defaults to 'education').
+
+**Example `config/federal_register_terms.txt`:**
+
+```
+climate change
+artificial intelligence
+# Lines starting with # are treated as regular terms unless your processing logic specifically ignores them.
+# The current workflow reads all non-empty lines.
+  quantum computing  
+# Empty lines above and below are ignored.
+advanced manufacturing
+```
+
+This file should be placed in the `config/` directory at the root of the repository.
+
 #### Output
 
 - Results are saved as JSON files in the `data/` folder.
-- Example file name: `federal_register_education.json`
+- If using the term-specific naming from `scripts/fetch_fr.py` (e.g., for `documents-search` with a term), filenames will be like `federal_register_{term}.json`. Otherwise, they follow the pattern `federal_register_{subcommand}_{params}.json`.
 
 ---
 

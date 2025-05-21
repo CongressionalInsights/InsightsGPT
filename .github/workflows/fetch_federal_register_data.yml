@@ -4,6 +4,8 @@ on:
   workflow_dispatch:
     inputs:
       subcommand:
+  schedule:
+    - cron: '0 6 * * *'
         description: "fetch_fr.py subcommand (e.g., documents-search, agencies, issues)"
         required: true
         default: "documents-search"
@@ -41,6 +43,10 @@ on:
       order:
         description: "Order of results (relevance, newest, oldest, executive_order_number)"
         required: false
+      query_terms:
+        description: 'Comma-separated terms'
+        required: false
+        default: 'education'
       # Add other inputs as needed for different subcommands
 
 jobs:
@@ -65,7 +71,7 @@ jobs:
       id: fr_args
       run: |
         args=""
-        if [ -n "${{ github.event.inputs.term }}" ]; then args="$args --term \"${{ github.event.inputs.term }}\""; fi
+        # Term will be handled in the loop, so it's removed from here.
         if [ -n "${{ github.event.inputs.pub_date_year }}" ]; then args="$args --pub_date_year \"${{ github.event.inputs.pub_date_year }}\""; fi
         if [ -n "${{ github.event.inputs.pub_date_gte }}" ]; then args="$args --pub_date_gte \"${{ github.event.inputs.pub_date_gte }}\""; fi
         if [ -n "${{ github.event.inputs.pub_date_lte }}" ]; then args="$args --pub_date_lte \"${{ github.event.inputs.pub_date_lte }}\""; fi
@@ -82,9 +88,54 @@ jobs:
         # or having distinct workflows per subcommand for clarity.
         echo "script_args=$args" >> $GITHUB_OUTPUT
 
+    - name: Determine Query Terms
+      id: determine_terms
+      run: |
+        TERMS_SOURCE_FILE="config/federal_register_terms.txt"
+        FINAL_TERMS_STRING=""
+        if [[ -f "$TERMS_SOURCE_FILE" ]]; then
+          echo "Reading terms from $TERMS_SOURCE_FILE"
+          # Read file, filter empty/whitespace lines, then join with comma
+          TEMP_TERMS_STRING=$(grep -v '^[[:space:]]*$' "$TERMS_SOURCE_FILE" | paste -sd "," -)
+          # Check if TEMP_TERMS_STRING is non-empty after processing file
+          if [[ -n "$TEMP_TERMS_STRING" ]]; then
+            FINAL_TERMS_STRING="$TEMP_TERMS_STRING"
+            echo "Using terms from file: $FINAL_TERMS_STRING"
+          else
+            echo "Term file $TERMS_SOURCE_FILE is empty or contains only whitespace. Falling back to workflow input."
+            FINAL_TERMS_STRING="${{ github.event.inputs.query_terms }}"
+            echo "Using terms from workflow input: $FINAL_TERMS_STRING"
+          fi
+        else
+          echo "$TERMS_SOURCE_FILE does not exist. Using terms from workflow input."
+          FINAL_TERMS_STRING="${{ github.event.inputs.query_terms }}"
+          echo "Using terms from workflow input: $FINAL_TERMS_STRING"
+        fi
+        # Clean the final string: remove leading/trailing whitespace and commas
+        CLEANED_TERMS_STRING=$(echo "$FINAL_TERMS_STRING" | sed 's/^[[:space:]]*[,[:space:]]*//;s/[,[:space:]]*[[:space:]]*$//')
+        echo "resolved_query_terms=$CLEANED_TERMS_STRING" >> $GITHUB_OUTPUT
+
     - name: Fetch Data from Federal Register using fetch_fr.py
       run: |
-        python scripts/fetch_fr.py ${{ github.event.inputs.subcommand }} ${{ steps.fr_args.outputs.script_args }}
+        RAW_TERMS_STRING="${{ steps.determine_terms.outputs.resolved_query_terms }}"
+        if [[ -z "$RAW_TERMS_STRING" ]]; then
+          echo "No terms to process after checking config file and workflow input."
+          exit 0 # Exit gracefully if no terms are found
+        fi
+
+        IFS=',' read -ra TERMS_ARRAY <<< "$RAW_TERMS_STRING"
+        for term_item in "${TERMS_ARRAY[@]}"; do
+          # Trim whitespace from term_item (important if there are spaces around commas)
+          trimmed_term=$(echo "$term_item" | xargs) # xargs trims leading/trailing whitespace
+          if [ -n "$trimmed_term" ]; then
+            echo "Processing term: '$trimmed_term'"
+            # Construct final arguments for the script, adding the current term
+            final_args="--term \"$trimmed_term\" ${{ steps.fr_args.outputs.script_args }}"
+            python scripts/fetch_fr.py ${{ github.event.inputs.subcommand }} $final_args
+          else
+            echo "Skipping empty term after trimming."
+          fi
+        done
 
     - name: Commit and Push Changes
       run: |
