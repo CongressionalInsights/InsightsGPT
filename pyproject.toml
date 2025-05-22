@@ -1,3 +1,13 @@
 [tool.black]
 target-version = ["py310"]
 line-length    = 88
+
+[project]
+name = "insightsgpt"
+version = "1.0.5"
+description = "ETL + visualization toolkit for U.S. government data"
+dependencies = [
+  "requests>=2.31",
+]
+[project.scripts]
+insightsgpt = "insightsgpt.cli.__main__:app"
