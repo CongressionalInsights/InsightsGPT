@@ -1,4 +1,4 @@
-.PHONY: setup run
+.PHONY: setup run quickstart-test
 
 # Default Python interpreter
 PYTHON ?= python3
@@ -19,3 +19,9 @@ setup:
 run:
 	@echo "Running insightsgpt.cli..."
 	@$(VENV_DIR)/bin/python -m insightsgpt.cli $(filter-out $@,$(MAKECMDGOALS))
+
+quickstart-test:
+	@echo "Running sample validation (scripts/validate_data.py)..."
+	@mkdir -p logs
+	@$(VENV_DIR)/bin/python scripts/validate_data.py --input_folder data/ --output_file logs/validation_results.json
+	@echo "Sample validation complete. Results are in logs/validation_results.json"

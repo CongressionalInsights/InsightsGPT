@@ -54,6 +54,13 @@
     ```
     (A new file `data/documents_search_term_climate_change_per_page_5_order_newest.json` will be created containing the search results).
 
+4.  **Run a sample data validation test:**
+    After generating some data (e.g., by running the `fetch_fr.py` script example above), you can validate the contents of the `data/` directory:
+    ```bash
+    make quickstart-test
+    ```
+    This will run `scripts/validate_data.py` and save the validation report to `logs/validation_results.json`.
+
 For more detailed examples and advanced usage, please see our [Sample Workflows Guide](docs/Sample_Workflows.md) and the [Full Usage Guide](docs/USAGE_GUIDE_FOR_AI.md).
 
 ---
@@ -89,7 +96,7 @@ InsightsGPT employs robust GitHub Actions workflows to maintain high code qualit
 - **Security Scanning** with `bandit`.
 - **Code Formatting** with `black`.
 - **Test Coverage** with `pytest-cov`.
-- **Fetch Federal Register Data** via embedded Python script.
+- **Fetch Federal Register Data** using the `scripts/fetch_fr.py` script.
 
 ---
 
@@ -128,14 +135,11 @@ The workflows are triggered automatically on code pushes, pull requests, and now
 
 ### **Dependencies**
 
-The `requirements.txt` file includes the following tools to support the workflows:
+The project's dependencies are managed in two files:
+- `requirements.txt`: Contains runtime dependencies necessary for the core functionality of the application (e.g., `requests`, `python-dotenv`).
+- `requirements-dev.txt`: Includes development tools for linting, testing, and formatting (e.g., `flake8`, `pytest`, `black`).
 
-- `requests`
-- `flake8`
-- `pytest`
-- `pytest-cov`
-- `bandit`
-- `black`
+The `make setup` command installs dependencies from both files.
 
 ---
 
