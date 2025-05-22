@@ -40,7 +40,7 @@ jobs:
         run: bandit -r . -c .bandit.yml || true # Added common config and allow failure for now
 
       - name: Run tests with coverage (pytest)
-        run: pytest --cov=. --cov-report=xml # Ensure coverage report for potential upload
+        run: pytest --cov=. --cov-report=xml --cov-fail-under=80 # Ensure coverage report and fail under 80%
 
       # Example: Upload coverage report (optional, if Codecov or similar is used)
       # - name: Upload coverage to Codecov

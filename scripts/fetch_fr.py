@@ -7,11 +7,15 @@ from urllib.parse import urlencode
 import requests
 import logging
 import sys
+import time # Added import
 from dotenv import load_dotenv
 
 REQUEST_TIMEOUT = 10  # seconds
 API_BASE = "https://www.federalregister.gov/api/v1"
 DATA_DIR = "data"
+MAX_RETRIES = 3
+INITIAL_BACKOFF_SECONDS = 1
+RETRY_STATUS_CODES = [500, 502, 503, 504] # Typical transient server errors
 
 
 def sanitize_filename_part(part_value, is_term_for_federal_register=False):
@@ -76,16 +80,61 @@ def save_json(data, file_prefix, **identifiers):
 
 
 def fetch_json(url):
-    """Basic GET request and JSON parse with error handling."""
+    """GET request with JSON parse, error handling, and retry for transient errors."""
     logging.info(f"GET {url}")
-    try:
-        resp = requests.get(url, timeout=REQUEST_TIMEOUT)
-        resp.raise_for_status()
-        return resp.json()
-    except requests.exceptions.RequestException as e:
-        logging.error(f"API request failed for URL {url}: {e}")
-        # For now, returning None. Script might need adjustments if None is returned.
-        return None
+    for attempt in range(MAX_RETRIES + 1): # 0 is the initial attempt, 1 to MAX_RETRIES are retries
+        try:
+            resp = requests.get(url, timeout=REQUEST_TIMEOUT)
+            resp.raise_for_status()  # Raises HTTPError for 4xx/5xx
+            return resp.json()
+        except requests.exceptions.HTTPError as e:
+            if e.response is not None and e.response.status_code in RETRY_STATUS_CODES:
+                if attempt < MAX_RETRIES:
+                    # Exponential backoff for retryable server errors
+                    # The 'attempt' variable is 0-indexed for the loop, so 2**attempt is suitable
+                    # for the first retry (attempt=0, 2^0=1), second retry (attempt=1, 2^1=2), etc.
+                    # However, the prompt uses "attempt_number" as 0-indexed for *retry attempts*.
+                    # If 'attempt' from 'range(MAX_RETRIES + 1)' is 0 (initial try), a retry happens if it fails.
+                    # The first actual retry is when 'attempt' is 1 in the loop.
+                    # So, if attempt 0 fails, the first retry is attempt 1.
+                    # Let's adjust the logging to be attempt_in_loop + 1 for user display.
+                    # And backoff_time for the first retry (loop attempt 1) should be 2^0.
+                    # For the second retry (loop attempt 2), it should be 2^1.
+                    # So, if attempt > 0 (meaning it's a retry), use 2**(attempt - 1).
+                    # The provided code in prompt uses `2 ** attempt` where `attempt` is the loop variable
+                    # which means initial attempt (0) gets 1s, first retry (1) gets 2s, second retry (2) gets 4s. This seems fine.
+                    backoff_time = INITIAL_BACKOFF_SECONDS * (2 ** attempt) 
+                    logging.warning(
+                        f"Attempt {attempt + 1}/{MAX_RETRIES + 1} failed for URL {url} with status "
+                        f"{e.response.status_code}. Retrying in {backoff_time:.2f} seconds..."
+                    )
+                    time.sleep(backoff_time)
+                else:
+                    logging.error(
+                        f"All {MAX_RETRIES + 1} attempts failed for URL {url} with status "
+                        f"{e.response.status_code}. Final error: {e}"
+                    )
+                    return None # All retries exhausted
+            else:
+                # Non-retryable HTTPError (e.g., 4xx) or no response
+                logging.error(f"HTTP request failed for URL {url} (non-retryable HTTPError or no response): {e}")
+                return None
+        except requests.exceptions.RequestException as e:
+            # Handles other errors like network issues, timeouts beyond the HTTPError scope
+            if attempt < MAX_RETRIES:
+                backoff_time = INITIAL_BACKOFF_SECONDS * (2 ** attempt)
+                logging.warning(
+                    f"Attempt {attempt + 1}/{MAX_RETRIES + 1} for URL {url} failed due to RequestException: {e}. "
+                    f"Retrying in {backoff_time:.2f} seconds..."
+                )
+                time.sleep(backoff_time)
+            else:
+                logging.error(
+                    f"All {MAX_RETRIES + 1} attempts failed for URL {url} due to RequestException. Final error: {e}"
+                )
+                return None
+        
+    return None # Should be reached only if all retries exhausted, effectively handled within the loop.
 
 
 ###################

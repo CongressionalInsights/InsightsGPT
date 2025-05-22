@@ -4,11 +4,17 @@ import os
 import json
 import sys
 
+import time # For mocking time.sleep
+import requests # For requests.exceptions.HTTPError
+
 # Adjust path to allow direct import of scripts.fetch_fr
 # This assumes the test is run from the project root directory
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from scripts.fetch_fr import cmd_documents_search, save_json, sanitize_filename_part, DATA_DIR, API_BASE
+from scripts.fetch_fr import (
+    cmd_documents_search, save_json, sanitize_filename_part, DATA_DIR, API_BASE,
+    fetch_json, MAX_RETRIES, INITIAL_BACKOFF_SECONDS, RETRY_STATUS_CODES
+)
 
 # Create a dummy argparse Namespace class for simulating args
 class Args:
@@ -176,3 +182,108 @@ class TestFederalRegister(unittest.TestCase):
 if __name__ == '__main__':
     # This allows running the tests from the command line
     unittest.main(verbosity=2)
+
+
+    # New tests for fetch_json retry logic
+    @patch('scripts.fetch_fr.time.sleep')
+    @patch('scripts.fetch_fr.requests.get')
+    def test_fetch_json_success_first_try(self, mock_requests_get, mock_time_sleep):
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {"data": "success"}
+        mock_requests_get.return_value = mock_response
+
+        result = fetch_json("http://testurl.com/success")
+        
+        mock_requests_get.assert_called_once_with("http://testurl.com/success", timeout=unittest.mock.ANY)
+        self.assertEqual(result, {"data": "success"})
+        mock_time_sleep.assert_not_called()
+
+    @patch('scripts.fetch_fr.time.sleep')
+    @patch('scripts.fetch_fr.requests.get')
+    def test_fetch_json_retry_on_503_then_success(self, mock_requests_get, mock_time_sleep):
+        mock_response_success = MagicMock()
+        mock_response_success.status_code = 200
+        mock_response_success.json.return_value = {"data": "success from retry"}
+
+        # Create an HTTPError instance for the 503 failure
+        http_error_503 = requests.exceptions.HTTPError("503 Server Error")
+        mock_response_failure_503 = MagicMock()
+        mock_response_failure_503.status_code = 503
+        http_error_503.response = mock_response_failure_503
+        
+        mock_requests_get.side_effect = [
+            http_error_503,
+            mock_response_success
+        ]
+
+        result = fetch_json("http://testurl.com/retry_success")
+
+        self.assertEqual(mock_requests_get.call_count, 2)
+        mock_requests_get.assert_any_call("http://testurl.com/retry_success", timeout=unittest.mock.ANY)
+        # time.sleep is called once after the first failure (attempt 0 in the loop)
+        mock_time_sleep.assert_called_once_with(INITIAL_BACKOFF_SECONDS * (2**0)) 
+        self.assertEqual(result, {"data": "success from retry"})
+
+    @patch('scripts.fetch_fr.time.sleep')
+    @patch('scripts.fetch_fr.requests.get')
+    def test_fetch_json_exhausted_retries_on_persistent_503(self, mock_requests_get, mock_time_sleep):
+        # Create an HTTPError instance for the persistent 503 failure
+        http_error_503 = requests.exceptions.HTTPError("Persistent 503 Server Error")
+        mock_response_persistent_failure_503 = MagicMock()
+        mock_response_persistent_failure_503.status_code = 503
+        http_error_503.response = mock_response_persistent_failure_503
+
+        # requests.get will always raise this error
+        mock_requests_get.side_effect = http_error_503 
+
+        result = fetch_json("http://testurl.com/persistent_fail")
+
+        self.assertEqual(mock_requests_get.call_count, MAX_RETRIES + 1)
+        self.assertEqual(mock_time_sleep.call_count, MAX_RETRIES)
+        
+        # Check backoff times for each sleep call
+        expected_sleep_calls = []
+        for i in range(MAX_RETRIES):
+            expected_sleep_calls.append(call(INITIAL_BACKOFF_SECONDS * (2**i)))
+        mock_time_sleep.assert_has_calls(expected_sleep_calls)
+        
+        self.assertIsNone(result)
+
+    @patch('scripts.fetch_fr.time.sleep')
+    @patch('scripts.fetch_fr.requests.get')
+    def test_fetch_json_no_retry_on_404(self, mock_requests_get, mock_time_sleep):
+        # Create an HTTPError instance for the 404 failure
+        http_error_404 = requests.exceptions.HTTPError("404 Not Found")
+        mock_response_failure_404 = MagicMock()
+        mock_response_failure_404.status_code = 404
+        http_error_404.response = mock_response_failure_404
+        
+        mock_requests_get.side_effect = http_error_404
+
+        result = fetch_json("http://testurl.com/notfound")
+
+        mock_requests_get.assert_called_once_with("http://testurl.com/notfound", timeout=unittest.mock.ANY)
+        mock_time_sleep.assert_not_called()
+        self.assertIsNone(result)
+
+    @patch('scripts.fetch_fr.time.sleep')
+    @patch('scripts.fetch_fr.requests.get')
+    def test_fetch_json_retry_on_request_exception_then_success(self, mock_requests_get, mock_time_sleep):
+        mock_response_success = MagicMock()
+        mock_response_success.status_code = 200
+        mock_response_success.json.return_value = {"data": "success after network issue"}
+
+        # Simulate a network error (e.g., ConnectionError)
+        network_error = requests.exceptions.ConnectionError("Simulated network error")
+        
+        mock_requests_get.side_effect = [
+            network_error,
+            mock_response_success
+        ]
+
+        result = fetch_json("http://testurl.com/network_issue_then_success")
+
+        self.assertEqual(mock_requests_get.call_count, 2)
+        mock_time_sleep.assert_called_once_with(INITIAL_BACKOFF_SECONDS * (2**0))
+        self.assertEqual(result, {"data": "success after network issue"})
