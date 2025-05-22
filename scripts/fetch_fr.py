@@ -4,6 +4,7 @@ import argparse
 import json
 import os
 from urllib.parse import urlencode
+from datetime import date
 import requests
 import logging
 import sys
@@ -21,6 +22,7 @@ def save_json(data, file_prefix, **identifiers):
     """
     os.makedirs(DATA_DIR, exist_ok=True)
 
+    current_date = date.today().isoformat()
     # Build a suffix from the subcommand arguments
     # e.g. doc_number_2023-12345, term_climate_change, etc.
     parts = []
@@ -31,7 +33,7 @@ def save_json(data, file_prefix, **identifiers):
             parts.append(f"{key}_{safe_val}")
 
     suffix = "_".join(parts) if parts else "no_params"
-    filename = f"{file_prefix}_{suffix}.json"
+    filename = f"{current_date}_{file_prefix}_{suffix}.json"
 
     path = os.path.join(DATA_DIR, filename)
     with open(path, "w", encoding="utf-8") as f:

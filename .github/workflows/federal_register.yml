@@ -1,0 +1,158 @@
+name: Fetch Federal Register Data (Input Driven)
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Run daily at midnight UTC
+  workflow_dispatch:
+    inputs:
+      subcommand:
+        description: "fetch_fr.py subcommand (e.g., documents-search, agencies, issues)"
+        required: true
+        default: "documents-search"
+      term:
+        description: "Search term (for documents-search, public-inspection-search)"
+        required: false
+      pub_date_year:
+        description: "Publication year (YYYY for documents-search)"
+        required: false
+      pub_date_gte:
+        description: "Publication date greater than or equal (YYYY-MM-DD for documents-search)"
+        required: false
+      pub_date_lte:
+        description: "Publication date less than or equal (YYYY-MM-DD for documents-search)"
+        required: false
+      pub_date_is:
+        description: "Exact publication date (YYYY-MM-DD for documents-search or issues)"
+        required: false
+      agency_slug:
+        description: "Agency slug (for documents-search, agency-single)"
+        required: false
+      doc_type:
+        description: "Document type (RULE, PRORULE, NOTICE, PRESDOCU for documents-search)"
+        required: false
+      doc_number:
+        description: "Document number (for documents-single, public-inspection-single)"
+        required: false
+      per_page:
+        description: "Documents per page (max 1000)"
+        required: false
+        default: "20"
+      page:
+        description: "Page number of results"
+        required: false
+      order:
+        description: "Order of results (relevance, newest, oldest, executive_order_number)"
+        required: false
+      # Add other inputs as needed for different subcommands
+
+jobs:
+  fetch_data:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.9', '3.12']
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Setup Python
+      uses: actions/setup-python@v4 # Keep newer version
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests python-dotenv
+
+    - name: Build fetch_fr.py arguments
+      id: fr_args
+      run: |
+        if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+          subcommand="${{ github.event.inputs.subcommand }}"
+          args=""
+          if [ -n "${{ github.event.inputs.term }}" ]; then args="$args --term \"${{ github.event.inputs.term }}\""; fi
+          if [ -n "${{ github.event.inputs.pub_date_year }}" ]; then args="$args --pub_date_year \"${{ github.event.inputs.pub_date_year }}\""; fi
+          if [ -n "${{ github.event.inputs.pub_date_gte }}" ]; then args="$args --pub_date_gte \"${{ github.event.inputs.pub_date_gte }}\""; fi
+          if [ -n "${{ github.event.inputs.pub_date_lte }}" ]; then args="$args --pub_date_lte \"${{ github.event.inputs.pub_date_lte }}\""; fi
+          if [ -n "${{ github.event.inputs.pub_date_is }}" ]; then args="$args --pub_date_is \"${{ github.event.inputs.pub_date_is }}\""; fi
+          if [ -n "${{ github.event.inputs.agency_slug }}" ]; then args="$args --agency_slug \"${{ github.event.inputs.agency_slug }}\""; fi
+          if [ -n "${{ github.event.inputs.doc_type }}" ]; then args="$args --doc_type \"${{ github.event.inputs.doc_type }}\""; fi
+          if [ -n "${{ github.event.inputs.doc_number }}" ]; then args="$args --doc_number \"${{ github.event.inputs.doc_number }}\""; fi
+          if [ -n "${{ github.event.inputs.per_page }}" ]; then args="$args --per_page \"${{ github.event.inputs.per_page }}\""; else args="$args --per_page 20"; fi # Default per_page if not set for dispatch
+          if [ -n "${{ github.event.inputs.page }}" ]; then args="$args --page \"${{ github.event.inputs.page }}\""; fi
+          if [ -n "${{ github.event.inputs.order }}" ]; then args="$args --order \"${{ github.event.inputs.order }}\""; else args="$args --order newest"; fi # Default order if not set for dispatch
+        elif [ "${{ github.event_name }}" == "schedule" ]; then
+          subcommand="documents-search"
+          # For cron: fetch last day's documents. Calculate YYYY-MM-DD for yesterday.
+          # Simpler cron: search for a general term, order by newest.
+          args="--term \"federal government\" --order newest --per_page 50"
+          # To get documents from the last 24 hours, we could use --pub_date_gte with `date -d yesterday`
+          # For example: args="$args --pub_date_gte $(date -d 'yesterday' '+%Y-%m-%d')"
+          # However, to keep it simple and less prone to shell variations immediately,
+          # we'll use a general search query for cron for now.
+          # The user requirement "Output JSON appears in data/ with current date" will be handled
+          # by ensuring the script `fetch_fr.py` names files with dates, or by adding a date arg here if needed.
+        fi
+        echo "final_subcommand=$subcommand" >> $GITHUB_OUTPUT
+        echo "final_args=$args" >> $GITHUB_OUTPUT
+
+    - name: Fetch Data from Federal Register using fetch_fr.py
+      run: |
+        python scripts/fetch_fr.py ${{ steps.fr_args.outputs.final_subcommand }} ${{ steps.fr_args.outputs.final_args }}
+
+    - name: Smoke Test for Output Data
+      run: |
+        echo "Starting smoke test..."
+        # Check if data directory exists and is not empty
+        if [ ! -d "data" ] || [ -z "$(ls -A data)" ]; then
+          echo "Error: data/ directory does not exist or is empty."
+          exit 1
+        fi
+        echo "data/ directory exists and is not empty."
+
+        # Check if any JSON files exist in data/
+        if ! ls data/*.json 1> /dev/null 2>&1; then
+          echo "Error: No JSON files found in data/."
+          exit 1
+        fi
+        echo "JSON files found in data/."
+
+        # Find the newest JSON file
+        newest_json_file=$(ls -t data/*.json | head -1)
+        if [ -z "$newest_json_file" ]; then
+          echo "Error: Could not determine the newest JSON file."
+          exit 1
+        fi
+        echo "Newest JSON file is: $newest_json_file"
+
+        # Check if the newest JSON file is not empty
+        if [ ! -s "$newest_json_file" ]; then
+          echo "Error: Newest JSON file ($newest_json_file) is empty."
+          exit 1
+        fi
+        echo "Newest JSON file ($newest_json_file) is not empty."
+
+        # Check if the newest JSON file starts with today's date (YYYY-MM-DD)
+        current_date_prefix=$(date +'%Y-%m-%d')
+        filename_only=$(basename "$newest_json_file")
+        if [[ ! "$filename_only" == "$current_date_prefix"* ]]; then
+          echo "Error: Newest JSON file ($filename_only) does not start with current date prefix ($current_date_prefix)."
+          exit 1
+        fi
+        echo "Newest JSON file ($filename_only) starts with current date prefix ($current_date_prefix)."
+
+        echo "Smoke test passed."
+
+    - name: Commit and Push Changes
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        # Check if there are any new or modified JSON files in the data directory
+        if ! git diff --quiet --exit-code data/*.json && git diff --cached --quiet --exit-code data/*.json; then
+          git add data/*.json
+          git commit -m "Auto-update Federal Register data via workflow"
+          git push
+        else
+          echo "No changes to JSON files in data/ to commit."
+        fi
