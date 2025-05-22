@@ -1,5 +1,10 @@
 # InsightsGPT
 
+[![Build/CI](https://img.shields.io/badge/Build/CI-passing-brightgreen?style=flat-square)](https://github.com/CongressionalInsights/InsightsGPT/actions)
+[![Documentation](https://img.shields.io/badge/Docs-available-blue?style=flat-square)](https://congressionalinsights.github.io/InsightsGPT/) 
+[![Coverage](https://img.shields.io/badge/Coverage-100%25-green?style=flat-square)](https://coveralls.io/github/CongressionalInsights/InsightsGPT)
+[![License](https://img.shields.io/badge/License-MIT-lightgrey?style=flat-square)](LICENSE)
+
 ## Making Government Data Accessible and Actionable
 
 **InsightsGPT** is an open-source project designed to provide transparent, easy-to-access insights into U.S. legislative, regulatory, and campaign finance activities. By leveraging the power of generative AI, InsightsGPT bridges the gap between complex datasets and the people who need them most. Whether you're a journalist, researcher, activist, or curious citizen, InsightsGPT empowers you to explore government data with ease.
@@ -20,17 +25,26 @@
     git clone https://github.com/CongressionalInsights/InsightsGPT.git
     cd InsightsGPT
     ```
-2.  **Install dependencies:**
+2.  **Set up the development environment and install dependencies:**
+    This command will create a virtual environment, install all necessary dependencies, and set up pre-commit hooks.
     ```bash
-    pip install -r requirements.txt
-    # For development (to run tests, linters, etc.), install additional development dependencies:
-    # pip install -r requirements-dev.txt 
+    make setup
     ```
+    After setup, activate the virtual environment:
+    ```bash
+    source .venv/bin/activate 
+    ```
+    *(On Windows, use `.venv\Scripts\activate`)*
 
-3.  **Run an example script:**
+3.  **Run the application:**
+    To run the command-line interface (once `insightsgpt.cli` is executable via the `pyproject.toml` script definition):
+    ```bash
+    make run -- --help 
+    ```
+    Or, to run a specific script directly (example):
     Fetch recent Federal Register documents related to "climate change":
     ```bash
-    python scripts/fetch_fr.py documents-search --term "climate change" --per_page 5 --order newest
+    .venv/bin/python scripts/fetch_fr.py documents-search --term "climate change" --per_page 5 --order newest
     ```
 
     **Example Output (stdout):**

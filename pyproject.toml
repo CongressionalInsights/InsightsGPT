@@ -1,3 +1,6 @@
 [tool.black]
 target-version = ["py310"]
 line-length    = 88
+
+[project.scripts]
+insightsgpt = "insightsgpt.cli:main"
