@@ -1,47 +1,8 @@
-name: Fetch Federal Register Data (Input Driven)
+name: Fetch and Save Daily Federal Register Data
 
 on:
-  workflow_dispatch:
-    inputs:
-      subcommand:
-        description: "fetch_fr.py subcommand (e.g., documents-search, agencies, issues)"
-        required: true
-        default: "documents-search"
-      term:
-        description: "Search term (for documents-search, public-inspection-search)"
-        required: false
-      pub_date_year:
-        description: "Publication year (YYYY for documents-search)"
-        required: false
-      pub_date_gte:
-        description: "Publication date greater than or equal (YYYY-MM-DD for documents-search)"
-        required: false
-      pub_date_lte:
-        description: "Publication date less than or equal (YYYY-MM-DD for documents-search)"
-        required: false
-      pub_date_is:
-        description: "Exact publication date (YYYY-MM-DD for documents-search or issues)"
-        required: false
-      agency_slug:
-        description: "Agency slug (for documents-search, agency-single)"
-        required: false
-      doc_type:
-        description: "Document type (RULE, PRORULE, NOTICE, PRESDOCU for documents-search)"
-        required: false
-      doc_number:
-        description: "Document number (for documents-single, public-inspection-single)"
-        required: false
-      per_page:
-        description: "Documents per page (max 1000)"
-        required: false
-        default: "20"
-      page:
-        description: "Page number of results"
-        required: false
-      order:
-        description: "Order of results (relevance, newest, oldest, executive_order_number)"
-        required: false
-      # Add other inputs as needed for different subcommands
+  workflow_dispatch: {}
+  cron: '0 6 * * *'
 
 jobs:
   fetch_data:
@@ -49,52 +10,79 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Setup Python
-      uses: actions/setup-python@v4 # Keep newer version
+      uses: actions/setup-python@v4
       with:
         python-version: '3.9'
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install requests # Ensure requests is installed for fetch_fr.py
+        pip install requests
 
-    - name: Build fetch_fr.py arguments
-      id: fr_args
+    - name: Fetch and Save Federal Register Data
+      env:
+        FR_SEARCH_TERM: "environmental protection" # Example: can be overridden by repo secrets/vars
       run: |
-        args=""
-        if [ -n "${{ github.event.inputs.term }}" ]; then args="$args --term \"${{ github.event.inputs.term }}\""; fi
-        if [ -n "${{ github.event.inputs.pub_date_year }}" ]; then args="$args --pub_date_year \"${{ github.event.inputs.pub_date_year }}\""; fi
-        if [ -n "${{ github.event.inputs.pub_date_gte }}" ]; then args="$args --pub_date_gte \"${{ github.event.inputs.pub_date_gte }}\""; fi
-        if [ -n "${{ github.event.inputs.pub_date_lte }}" ]; then args="$args --pub_date_lte \"${{ github.event.inputs.pub_date_lte }}\""; fi
-        if [ -n "${{ github.event.inputs.pub_date_is }}" ]; then args="$args --pub_date_is \"${{ github.event.inputs.pub_date_is }}\""; fi
-        if [ -n "${{ github.event.inputs.agency_slug }}" ]; then args="$args --agency_slug \"${{ github.event.inputs.agency_slug }}\""; fi # Note: fetch_fr.py handles multiple via action=append
-        if [ -n "${{ github.event.inputs.doc_type }}" ]; then args="$args --doc_type \"${{ github.event.inputs.doc_type }}\""; fi # Note: fetch_fr.py handles multiple via action=append
-        if [ -n "${{ github.event.inputs.doc_number }}" ]; then args="$args --doc_number \"${{ github.event.inputs.doc_number }}\""; fi
-        if [ -n "${{ github.event.inputs.per_page }}" ]; then args="$args --per_page \"${{ github.event.inputs.per_page }}\""; fi
-        if [ -n "${{ github.event.inputs.page }}" ]; then args="$args --page \"${{ github.event.inputs.page }}\""; fi
-        if [ -n "${{ github.event.inputs.order }}" ]; then args="$args --order \"${{ github.event.inputs.order }}\""; fi
-        # Add similar lines for other specific args like --facet, --publication_date (for issues)
-        # For simplicity, this example focuses on common documents-search args.
-        # A more robust solution might involve passing all inputs directly if script can ignore unused ones,
-        # or having distinct workflows per subcommand for clarity.
-        echo "script_args=$args" >> $GITHUB_OUTPUT
+        python - <<'EOF'
+        import requests
+        import os
+        import datetime
 
-    - name: Fetch Data from Federal Register using fetch_fr.py
-      run: |
-        python scripts/fetch_fr.py ${{ github.event.inputs.subcommand }} ${{ steps.fr_args.outputs.script_args }}
+        # Ensure data directory exists
+        os.makedirs("data", exist_ok=True)
 
-    - name: Commit and Push Changes
-      run: |
-        git config user.name "github-actions[bot]"
-        git config user.email "github-actions[bot]@users.noreply.github.com"
-        # Check if there are any new or modified JSON files in the data directory
-        if ! git diff --quiet --exit-code data/*.json && git diff --cached --quiet --exit-code data/*.json; then
-          git add data/*.json
-          git commit -m "Auto-update Federal Register data via workflow"
-          git push
-        else
-          echo "No changes to JSON files in data/ to commit."
-        fi
+        # Get current date for filename
+        current_date_obj = datetime.datetime.now() # Used for YYYYMMDD in filename
+        output_filename = f"data/federal_register_{current_date_obj.strftime('%Y%m%d')}.json"
+
+        URL = "https://www.federalregister.gov/api/v1/documents"
+        
+        # For the daily cron, fetch documents published "yesterday"
+        yesterday_obj = current_date_obj - datetime.timedelta(days=1)
+        yesterday_formatted_date = yesterday_obj.strftime("%Y-%m-%d")
+
+        # Get search term from environment variable, defaulting to "education"
+        search_term = os.getenv("FR_SEARCH_TERM", "education")
+
+        PARAMS = {
+            "conditions[term]": search_term,
+            "conditions[publication_date][is]": yesterday_formatted_date,
+            "per_page": 100,
+            "order": "relevance",
+            "fields[]": ["title", "document_number", "url", "publication_date"],
+        }
+
+        print(f"Attempting to fetch Federal Register documents with parameters: {PARAMS}")
+        print(f"Output will be saved to: {output_filename}")
+
+        try:
+            resp = requests.get(URL, params=PARAMS, timeout=30)
+            resp.raise_for_status()  # Raise an exception for HTTP errors (4xx or 5xx)
+            
+            with open(output_filename, "w", encoding="utf-8") as f:
+                f.write(resp.text)
+            
+            print(f"Successfully fetched and saved data to {output_filename}")
+            # Verify file content briefly (optional, good for debugging)
+            # with open(output_filename, "r", encoding="utf-8") as f_check:
+            #     print(f"First 100 chars of saved file: {f_check.read(100)}")
+
+        except requests.exceptions.HTTPError as http_err:
+            print(f"HTTP error occurred: {http_err}")
+            # Check if resp is defined and has text attribute
+            if 'resp' in locals() and hasattr(resp, 'text'):
+                print(f"Response content: {resp.text}")
+            else:
+                print("Response content not available.")
+            # import sys; sys.exit(1) # Optional: fail the workflow step
+        except requests.exceptions.RequestException as req_err:
+            print(f"Error during request to Federal Register API: {req_err}")
+            # import sys; sys.exit(1) # Optional: fail the workflow step
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+            # import sys; sys.exit(1) # Optional: fail the workflow step
+
+        EOF

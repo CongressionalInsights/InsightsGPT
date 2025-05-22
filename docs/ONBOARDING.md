@@ -15,17 +15,22 @@ cd InsightsGPT
 ```
 
 ### Step 2: Install Dependencies
-Ensure you have Python installed. For a full development setup, including all tools for testing, linting, and development tasks, run:
+This command sets up a virtual environment and installs all necessary dependencies (runtime and development).
 ```bash
-pip install -r requirements-dev.txt
+make setup
 ```
-This installs all runtime dependencies (from `requirements.txt`) plus additional development tools.
 
 ### Step 3: Set Up Environment Variables
 For certain workflows, you may need API keys. Add them to a `.env` file in the root directory:
 ```plaintext
 FEDERAL_REGISTER_API_KEY=your_api_key_here
 CONGRESS_API_KEY=your_api_key_here
+```
+
+### Step 4: Run Quickstart Tests
+After setup, you can run a quick set of tests to ensure everything is working correctly. This usually includes data validation and core unit tests. Ensure your virtual environment is active (`source .venv/bin/activate` if you're in a new terminal).
+```bash
+make quickstart-test
 ```
 
 ---

@@ -1,5 +1,10 @@
 # InsightsGPT
 
+![Build](https://github.com/CongressionalInsights/InsightsGPT/actions/workflows/code_quality.yml/badge.svg)
+
+<!-- Coverage badge will be added once Gist automation is live -->
+<!-- ![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/<USERNAME>/<GIST_ID>/raw/coverage.json) -->
+
 ## Making Government Data Accessible and Actionable
 
 **InsightsGPT** is an open-source project designed to provide transparent, easy-to-access insights into U.S. legislative, regulatory, and campaign finance activities. By leveraging the power of generative AI, InsightsGPT bridges the gap between complex datasets and the people who need them most. Whether you're a journalist, researcher, activist, or curious citizen, InsightsGPT empowers you to explore government data with ease.
@@ -21,14 +26,13 @@
     cd InsightsGPT
     ```
 2.  **Install dependencies:**
+    This command sets up a virtual environment and installs all necessary dependencies.
     ```bash
-    pip install -r requirements.txt
-    # For development (to run tests, linters, etc.), install additional development dependencies:
-    # pip install -r requirements-dev.txt 
+    make setup
     ```
 
 3.  **Run an example script:**
-    Fetch recent Federal Register documents related to "climate change":
+    Fetch recent Federal Register documents related to "climate change" (ensure your virtual environment is active: `source .venv/bin/activate` if you're in a new terminal):
     ```bash
     python scripts/fetch_fr.py documents-search --term "climate change" --per_page 5 --order newest
     ```
@@ -39,6 +43,12 @@
     INFO: Saved JSON to data/documents_search_term_climate_change_per_page_5_order_newest.json
     ```
     (A new file `data/documents_search_term_climate_change_per_page_5_order_newest.json` will be created containing the search results).
+
+4.  **Run quickstart tests:**
+    This command validates data and runs the pytest suite (ensure your virtual environment is active: `source .venv/bin/activate` if you're in a new terminal).
+    ```bash
+    make quickstart-test
+    ```
 
 For more detailed examples and advanced usage, please see our [Sample Workflows Guide](docs/Sample_Workflows.md) and the [Full Usage Guide](docs/USAGE_GUIDE_FOR_AI.md).
 

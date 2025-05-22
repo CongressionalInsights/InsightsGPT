@@ -1,10 +1,1 @@
-# LOVS_PROJECT_STRUCTURE
-
-This directory contains files and documents related to the LSTM modeling project. 
-
-Suggested repository structure:
-
- - `data/': Datasets for training and validation.
-  - `notebooks/:`: Experimental notebooks with examples or explanations.
-  - `models/': Trained NETS, LSTM, and associated models.
-  - `scripts/l stm_implementation.on: Model deployment scripts.
+This directory is designated for storing machine learning models, related training scripts, model artifacts, or notebooks. It serves as a central place for any model development and deployment assets that are or will be part of the InsightsGPT project.

@@ -1,3 +1,7 @@
+### 1.0.4 – 2025-05-21
+* 🗑  Purged legacy files and stray artifacts
+* 🛠  Unified workflows; nightly Federal-Register cron; Python 3.9 & 3.12 matrix
+* 📄  Added Makefile quick-start; documentation synced; build badge
 
 # CHANGELOG
 
