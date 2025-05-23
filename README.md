@@ -65,6 +65,29 @@ For local development, API keys (if required by specific scripts in the future) 
 
 ---
 
+## Static Dashboard
+
+This project includes a static dashboard to provide a quick overview of project alerts and visualizations.
+The dashboard is automatically generated and updated using MkDocs and GitHub Pages.
+
+### Accessing the Dashboard
+
+The dashboard is hosted on GitHub Pages. You can typically access it at the following URL format:
+`https://<your-github-username-or-orgname>.github.io/<repository-name>/`
+
+(Please replace `<your-github-username-or-orgname>` and `<repository-name>` with the actual values for this repository.)
+
+For example, if your GitHub username is `octocat` and your repository is `my-project`, the URL would be:
+`https://octocat.github.io/my-project/`
+
+### How it Works
+
+- The dashboard content is written in Markdown and managed in the `/docs` directory.
+- PNG charts from the `/visualizations` directory and JSON alerts from the `/alerts` directory (produced by CI) are copied into the `/docs` directory.
+- A GitHub Actions workflow defined in `.github/workflows/publish-docs.yml` automatically builds the MkDocs site and deploys it to the `gh-pages` branch whenever changes are pushed to the `main` branch.
+
+---
+
 ## **Key Features**
 
 ### **GitHub Actions Workflows**

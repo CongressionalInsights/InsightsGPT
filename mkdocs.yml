@@ -1,0 +1,7 @@
+site_name: Project Dashboard
+theme:
+  name: material
+nav:
+  - Home: index.md
+  - Charts: charts.md
+  - Alerts: alerts.md

@@ -1,0 +1,44 @@
+name: Publish Dashboard to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main # Or your default branch
+  workflow_dispatch: # Allows manual triggering
+
+permissions:
+  contents: write # Needed to deploy to gh-pages
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt # This should include mkdocs and mkdocs-material
+
+      - name: Prepare site content
+        run: |
+          echo "Copying visualization files..."
+          mkdir -p docs/charts
+          # Attempt to copy PNGs, continue if none found (glob will not error)
+          cp -R visualizations/*.png docs/charts/ || echo "No PNG files found in visualizations/ to copy."
+          
+          echo "Copying alert files..."
+          mkdir -p docs/alerts
+          # Attempt to copy JSONs, continue if none found
+          cp -R alerts/*.json docs/alerts/ || echo "No JSON files found in alerts/ to copy."
+
+      - name: Deploy to GitHub Pages
+        run: |
+          mkdocs gh-deploy --force
+          # The --force flag is used to overwrite the existing gh-pages branch
+          # The --clean flag could also be useful: mkdocs gh-deploy --clean --force
