@@ -1,6 +1,11 @@
-
 # Local security scan output
 bandit_report.txt
 
 # Environment variables file
 .env
+
+# build / site artefacts
+dist/
+build/
+*.whl
+site/
