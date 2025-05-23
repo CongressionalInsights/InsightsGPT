@@ -1,0 +1,17 @@
+diff --git a/.github/workflows/code_quality.yml b/.github/workflows/code_quality.yml
+--- a/.github/workflows/code_quality.yml
++++ b/.github/workflows/code_quality.yml
+@@
+-      - name: Run Flake8 Linter
+-        run: flake8 .
++      - name: Run Flake8 Linter
++        run: flake8 --config=.flake8 ./
+
+diff --git a/.github/workflows/test_and_lint.yml b/.github/workflows/test_and_lint.yml
+--- a/.github/workflows/test_and_lint.yml
++++ b/.github/workflows/test_and_lint.yml
+@@
+-      - name: Lint scripts
+-        run: flake8 .
++      - name: Lint scripts
++        run: flake8 --config=.flake8 ./

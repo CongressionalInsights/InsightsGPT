@@ -1,3 +1,6 @@
+[![Documentation Status](https://img.shields.io/website?url=https%3A%2F%2Fcongressionalinsights.github.io%2FInsightsGPT%2F&label=Docs&style=for-the-badge)](https://congressionalinsights.github.io/InsightsGPT/)
+[![CI Build Status](https://img.shields.io/github/actions/workflow/status/CongressionalInsights/InsightsGPT/publish-package.yml?branch=main&label=CI&style=for-the-badge)](https://github.com/CongressionalInsights/InsightsGPT/actions/workflows/publish-package.yml)
+
 # InsightsGPT
 
 ## Making Government Data Accessible and Actionable
@@ -15,32 +18,116 @@
 
 ## Quick Start
 
-1.  **Clone the repository:**
-    ```bash
-    git clone https://github.com/CongressionalInsights/InsightsGPT.git
-    cd InsightsGPT
+**InsightsGPT** provides a command-line interface (CLI) to access its features. This allows you to fetch data, validate it, monitor keywords, and generate visualizations.
+
+1.  **Installation:**
+    First, please ensure `insightsgpt` is installed. Refer to the [Installation](#installation) section below for detailed instructions (e.g., via Docker or building from source).
+
+2.  **Basic Usage:**
+    Once installed, you can use the `insightsgpt` command:
+    ```sh
+    insightsgpt --help  # See available commands
+    insightsgpt --version # Check the installed version
     ```
-2.  **Install dependencies:**
-    ```bash
-    pip install -r requirements.txt
-    # For development (to run tests, linters, etc.), install additional development dependencies:
-    # pip install -r requirements-dev.txt 
+    For example, to get help for the `fetch` subcommand:
+    ```sh
+    insightsgpt fetch --help
     ```
 
-3.  **Run an example script:**
-    Fetch recent Federal Register documents related to "climate change":
-    ```bash
-    python scripts/fetch_fr.py documents-search --term "climate change" --per_page 5 --order newest
-    ```
+For more detailed command examples, see the [CLI Usage](#cli-usage) section. For advanced scenarios and understanding the data, consult our [Sample Workflows Guide](docs/Sample_Workflows.md) and the [Full Usage Guide](docs/USAGE_GUIDE_FOR_AI.md).
 
-    **Example Output (stdout):**
-    ```
-    INFO: GET https://www.federalregister.gov/api/v1/documents.json?per_page=5&order=newest&conditions%5Bterm%5D=climate+change
-    INFO: Saved JSON to data/documents_search_term_climate_change_per_page_5_order_newest.json
-    ```
-    (A new file `data/documents_search_term_climate_change_per_page_5_order_newest.json` will be created containing the search results).
+---
 
-For more detailed examples and advanced usage, please see our [Sample Workflows Guide](docs/Sample_Workflows.md) and the [Full Usage Guide](docs/USAGE_GUIDE_FOR_AI.md).
+## Installation
+
+### From Local Wheel (Development/Testing)
+You can build and install `insightsgpt` from the source code:
+1. Clone the repository:
+   ```sh
+   git clone https://github.com/CongressionalInsights/InsightsGPT.git
+   cd InsightsGPT
+   ```
+2. Build the wheel:
+   ```sh
+   python -m build
+   ```
+3. Install the built wheel (the exact filename in `dist/` may vary depending on the version):
+   ```sh
+   # Example for version 1.1.0
+   pip install dist/insightsgpt-1.1.0-py3-none-any.whl 
+   ```
+
+### Using Docker
+A Docker image is available on GitHub Container Registry (GHCR).
+1. Pull the latest image:
+   ```sh
+   docker pull ghcr.io/congressionalinsights/insightsgpt:latest
+   ```
+2. Run commands using the image. 
+   - To see the help menu:
+     ```sh
+     docker run --rm ghcr.io/congressionalinsights/insightsgpt:latest --help
+     ```
+   - To run commands that require access to local data (e.g., for validation or visualization input), mount your local data directory into the container. For example, to validate data in a local `./my_data` directory:
+     ```sh
+     # Assuming your data is in ./my_data relative to your current path
+     docker run --rm -v "$(pwd)/my_data":/app/data ghcr.io/congressionalinsights/insightsgpt:latest validate --input_folder /app/data
+     ```
+     Replace `$(pwd)/my_data` with the actual absolute path to your data directory. The scripts inside the Docker container expect input paths relative to `/app/` (e.g. `/app/data`, `/app/datasets`).
+
+### From PyPI (Python Package Index)
+*Future Goal:* We aim to publish `insightsgpt` to PyPI. Once available, you will be able to install it using:
+```sh
+pip install insightsgpt
+```
+
+---
+
+## CLI Usage
+
+Once installed, you can use the `insightsgpt` command:
+
+```sh
+insightsgpt --help
+insightsgpt --version
+```
+
+**Subcommands:**
+
+InsightsGPT uses subcommands to perform different actions. You can get help for any subcommand by running `insightsgpt <subcommand> --help`.
+
+-   **Fetch data:**
+    The `fetch` subcommand is used to retrieve data from various sources.
+    ```sh
+    insightsgpt fetch [options_for_fetch_script]
+    # Example: insightsgpt fetch documents-search --term "artificial intelligence" --days 7
+    ```
+    Refer to `insightsgpt fetch --help` for specific options for the fetch script.
+
+-   **Validate data:**
+    The `validate` subcommand checks the integrity and format of your data files.
+    ```sh
+    insightsgpt validate --input_folder path/to/your/data
+    # Example: insightsgpt validate --input_folder data/
+    ```
+    If using Docker, ensure the `path/to/your/data` is accessible inside the container (e.g., `/app/data` if volume mounted).
+    Refer to `insightsgpt validate --help` for specific options.
+
+-   **Monitor keywords:**
+    The `keywords` subcommand monitors documents or data for specific keywords.
+    ```sh
+    insightsgpt keywords [options_for_keywords_script]
+    # Example: insightsgpt keywords --keywords "climate,policy" --output_folder alerts/
+    ```
+    Refer to `insightsgpt keywords --help` for specific options.
+
+-   **Generate visualizations:**
+    The `visualize` subcommand creates charts and visual summaries from your datasets.
+    ```sh
+    insightsgpt visualize [options_for_visualize_script]
+    # Example: insightsgpt visualize --input_folder datasets/ --output_folder visualizations/
+    ```
+    Refer to `insightsgpt visualize --help` for specific options.
 
 ---
 
@@ -103,18 +190,19 @@ The workflows are triggered automatically on code pushes, pull requests, and now
 
 ### **Scripts**
 
+The core logic for the CLI subcommands is located in the `scripts/` directory. While you can still run these scripts directly (e.g., `python scripts/fetch_fr.py ...`), using the `insightsgpt` CLI tool is the recommended approach for most users as it provides a unified interface and handles pathing correctly.
+
 #### 1. `validate_data.py`
 - **Purpose**: Validates JSON data for structure and required fields.
-- **Usage**:
-  ```bash
-  python scripts/validate_data.py --input_folder data/ --output_file logs/validation_results.json
-  ```
+- **CLI Usage**: `insightsgpt validate --input_folder data/ --output_file logs/validation_results.json`
+- **Direct Script Usage (if needed)**: `python scripts/validate_data.py --input_folder data/ --output_file logs/validation_results.json`
 
   ---
 
 ### **Dependencies**
 
-The `requirements.txt` file includes the following tools to support the workflows:
+Project dependencies are managed via `pyproject.toml` and installed when you build the package or use the Docker image. For local development, you might still use `requirements.txt` or `requirements-dev.txt`:
+The `requirements.txt` file includes the following tools to support the workflows and core functionality:
 
 - `requests`
 - `flake8`
@@ -167,6 +255,25 @@ The embedded Python script fetches data using pre-configured parameters:
 - Replaced `fetch_fr.py` logic with embedded Python script in the Federal Register workflow.
 - Enabled `workflow_dispatch` for manual workflow triggering.
 - Updated README to reflect new workflows and triggers.
+
+#### Version 1.1.0 (Current)
+- **Packaging & Distribution**:
+  - Introduced `pyproject.toml` for PEP 517/518 packaging.
+  - `insightsgpt` is now installable as a Python package (wheel).
+  - Added `insightsgpt` command-line tool with subcommands (`fetch`, `validate`, `keywords`, `visualize`).
+  - Docker image published to `ghcr.io/congressionalinsights/insightsgpt`.
+  - CI/CD enhancements for automated build, test, and publishing of the Python package and Docker image.
+- **Documentation**:
+  - Updated `README.md` with installation instructions for package and Docker, CLI usage, and status badges.
+  - Updated `CHANGELOG.md` for v1.1.0.
+  - Added MkDocs static site for dashboard/documentation, deployable to GitHub Pages.
+- **Workflows**:
+  - Configured workflows (`publish-package`, `publish-docs`, `code_quality`, `data-validation`, `test_and_lint`, `visualization`) to trigger on pull requests to `main`.
+- **Code Structure**:
+  - Moved CLI application code to `src/insightsgpt_cli/`.
+  - Added `src/insightsgpt_cli/__init__.py` to ensure package recognition.
+- **`.gitignore`**:
+  - Standardized and enhanced `.gitignore` for common Python, build, and OS files.
 
 #### Version 1.0.1
 

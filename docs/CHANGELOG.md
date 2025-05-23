@@ -5,6 +5,24 @@ This document serves as a changelog, detailing recent updates, improvements, and
 
 ---
 
+## [1.1.0] - 2024-07-24
+
+### Added
+- Python packaging support (`pyproject.toml`), allowing the project to be installed as a wheel.
+- Command-Line Interface (CLI): `insightsgpt` tool with subcommands (`fetch`, `validate`, `keywords`, `visualize`) to run project scripts. Includes a `--version` flag.
+- Docker Image: Published to `ghcr.io/congressionalinsights/insightsgpt` for easy, containerized execution of CLI commands.
+- CI/CD Workflow for Publishing: Automated building and publishing of the Python package to GitHub Releases and the Docker image to GHCR when version tags (e.g., `v1.1.0`) are pushed.
+- CI/CD Workflow for Documentation: Automated deployment of the MkDocs site to GitHub Pages (Static Dashboard).
+- Enhanced CI Triggers: Workflows now run on Pull Requests to `main` to validate changes before merging.
+
+### Changed
+- Project structure: Migrated `insightsgpt_cli` to an `src/` layout for better packaging standards.
+- `README.md`: Overhauled with comprehensive installation instructions (wheel, Docker), CLI usage examples, status badges, and de-emphasis on direct script execution.
+- `.gitignore`: Updated to be more comprehensive, including patterns for build artifacts, cache files, coverage reports, virtual environments, and OS-specific files.
+
+### Removed
+- Deleted `patch.diff` (an accidentally committed file) from the repository.
+
 ## Recent Updates
 
 ## [1.0.4] - YYYY-MM-DD
