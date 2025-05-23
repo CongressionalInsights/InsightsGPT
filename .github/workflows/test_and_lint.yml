@@ -1,6 +1,12 @@
 name: Test and Lint
 
 on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
   workflow_dispatch
 
 jobs:

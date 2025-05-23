@@ -5,6 +5,11 @@ on:
   push:
     paths:
       - 'datasets/**'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'datasets/**' # Also only trigger on PR if dataset files change
 
 jobs:
   generate-visualizations:

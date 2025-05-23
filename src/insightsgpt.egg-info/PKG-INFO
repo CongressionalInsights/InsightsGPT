@@ -1,3 +1,24 @@
+Metadata-Version: 2.4
+Name: insightsgpt
+Version: 1.1.0
+Summary: A command-line tool for congressional insights.
+Author-email: Your Name / Org <your@email.com>
+License-Expression: MIT
+Project-URL: Homepage, https://github.com/CongressionalInsights/InsightsGPT
+Project-URL: Bug Tracker, https://github.com/CongressionalInsights/InsightsGPT/issues
+Classifier: Programming Language :: Python :: 3
+Classifier: Operating System :: OS Independent
+Classifier: Development Status :: 3 - Alpha
+Classifier: Environment :: Console
+Classifier: Intended Audience :: Developers
+Classifier: Topic :: Utilities
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: requests
+Requires-Dist: python-dotenv
+Dynamic: license-file
+
 # InsightsGPT
 
 ## Making Government Data Accessible and Actionable

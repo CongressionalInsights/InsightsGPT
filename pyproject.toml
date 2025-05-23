@@ -1,3 +1,40 @@
-[tool.black]
-target-version = ["py310"]
-line-length    = 88
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "insightsgpt"
+version = "1.1.0"
+authors = [
+  { name="Your Name / Org", email="your@email.com" }, # Placeholder, can be updated later
+]
+description = "A command-line tool for congressional insights."
+readme = "README.md"
+license = "MIT" # Using SPDX identifier as a simple string
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    # "License :: OSI Approved :: MIT License", # Replaced by license field above
+    "Operating System :: OS Independent",
+    "Development Status :: 3 - Alpha", # Or appropriate status
+    "Environment :: Console",
+    "Intended Audience :: Developers", # Or other relevant audience
+    "Topic :: Utilities",
+]
+dependencies = [
+    "requests",
+    "python-dotenv",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/CongressionalInsights/InsightsGPT"
+"Bug Tracker" = "https://github.com/CongressionalInsights/InsightsGPT/issues"
+
+[project.scripts]
+insightsgpt = "insightsgpt_cli.main:main" # This assumes the entry point function in insightsgpt_cli/main.py will be named 'main'
+
+[tool.setuptools.packages.find]
+where = ["src"]  # look in the src directory
+include = ["insightsgpt_cli*"]  # include the 'insightsgpt_cli' package and its submodules
+# exclude is not strictly necessary here as we are only looking in src
+namespaces = false

@@ -4,3 +4,17 @@ bandit_report.txt
 
 # Environment variables file
 .env
+
+# Built artifact directories
+site/
+dist/
+build/
+
+# Python wheel files
+*.whl
+
+# Python pycache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
