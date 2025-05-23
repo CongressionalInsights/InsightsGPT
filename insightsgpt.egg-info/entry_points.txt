@@ -1,2 +1,0 @@
-[console_scripts]
-insightsgpt = insightsgpt_cli.main:main

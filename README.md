@@ -44,56 +44,6 @@ For more detailed examples and advanced usage, please see our [Sample Workflows 
 
 ---
 
-## Installation
-
-### From PyPI (Python Package Index)
-*Future Goal:* We aim to publish `insightsgpt` to PyPI. Once available, you will be able to install it using pip:
-```sh
-pip install insightsgpt
-```
-For now, please use one of the methods below.
-
-### From Local Wheel (Development/Testing)
-You can build and install `insightsgpt` from the source code:
-1. Clone the repository:
-   ```sh
-   git clone https://github.com/CongressionalInsights/InsightsGPT.git
-   cd InsightsGPT
-   ```
-2. Build the wheel:
-   ```sh
-   python -m build
-   ```
-3. Install the built wheel (the exact filename in `dist/` may vary depending on the version):
-   ```sh
-   # Example for version 1.1.0
-   pip install dist/insightsgpt-1.1.0-py3-none-any.whl 
-   ```
-After installation, you can run the CLI tool:
-```sh
-insightsgpt --help
-```
-
-### Using Docker
-A Docker image is available on GitHub Container Registry (GHCR).
-1. Pull the latest image:
-   ```sh
-   docker pull ghcr.io/congressionalinsights/insightsgpt:latest
-   ```
-2. Run commands using the image. For example, to run the `validate` subcommand:
-   ```sh
-   docker run --rm -v /path/to/your/local/data:/app/data congressionalinsights/insightsgpt validate --input_folder data
-   ```
-   - Replace `/path/to/your/local/data` with the actual path to your data directory on your host machine.
-   - The `-v` flag mounts your local data directory into the `/app/data` directory inside the container, which the application might expect. Adjust the source and target paths as necessary based on how the scripts access data.
-   - `--rm` automatically removes the container when it exits.
-To see the help menu:
-   ```sh
-   docker run --rm congressionalinsights/insightsgpt --help
-   ```
-
----
-
 ## Configuration
 
 For local development, API keys (if required by specific scripts in the future) and other configurable parameters can be managed using a `.env` file in the project root.
@@ -112,29 +62,6 @@ For local development, API keys (if required by specific scripts in the future) 
     Currently, `scripts/fetch_fr.py` does not require an API key for the Federal Register API it uses. However, `python-dotenv` has been integrated to support environment-specific configurations easily if needed in the future.
 
 **Important:** The `.env` file should **not** be committed to version control and is listed in `.gitignore`. Ensure you keep any sensitive information like API keys in your local `.env` file only.
-
----
-
-## Static Dashboard
-
-This project includes a static dashboard to provide a quick overview of project alerts and visualizations.
-The dashboard is automatically generated and updated using MkDocs and GitHub Pages.
-
-### Accessing the Dashboard
-
-The dashboard is hosted on GitHub Pages. You can typically access it at the following URL format:
-`https://<your-github-username-or-orgname>.github.io/<repository-name>/`
-
-(Please replace `<your-github-username-or-orgname>` and `<repository-name>` with the actual values for this repository.)
-
-For example, if your GitHub username is `octocat` and your repository is `my-project`, the URL would be:
-`https://octocat.github.io/my-project/`
-
-### How it Works
-
-- The dashboard content is written in Markdown and managed in the `/docs` directory.
-- PNG charts from the `/visualizations` directory and JSON alerts from the `/alerts` directory (produced by CI) are copied into the `/docs` directory.
-- A GitHub Actions workflow defined in `.github/workflows/publish-docs.yml` automatically builds the MkDocs site and deploys it to the `gh-pages` branch whenever changes are pushed to the `main` branch.
 
 ---
 

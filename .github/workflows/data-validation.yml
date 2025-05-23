@@ -4,11 +4,6 @@ on:
   push:
     paths:
       - "data/**"
-  pull_request:
-    branches:
-      - main
-    paths:
-      - "data/**" # Also only trigger on PR if data files change
   workflow_dispatch:
 
 jobs:

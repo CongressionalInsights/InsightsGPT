@@ -1,20 +1,39 @@
+# Environment variables file
+.env
 
 # Local security scan output
 bandit_report.txt
 
-# Environment variables file
-.env
-
-# Built artifact directories
+# Python build artifacts and cache
 site/
 dist/
 build/
-
-# Python wheel files
 *.whl
-
-# Python pycache
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+
+# Coverage reports
+.coverage
+coverage.xml
+htmlcov/
+pytest-coverage.txt
+
+# Virtual environment directories
+.venv/
+venv/
+ENV/
+env/
+
+# IDE and editor specific files
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# macOS specific files
+.DS_Store
+
+# Windows specific files
+Thumbs.db

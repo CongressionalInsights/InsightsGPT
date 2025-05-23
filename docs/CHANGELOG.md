@@ -5,20 +5,6 @@ This document serves as a changelog, detailing recent updates, improvements, and
 
 ---
 
-## [1.1.0] - 2024-07-24
-
-### Added
-- Packaging support: `insightsgpt` is now installable as a Python package (wheel).
-- Console script: `insightsgpt` command-line tool with subcommands (`fetch`, `validate`, `keywords`, `visualize`).
-- Docker image: Published to `ghcr.io/congressionalinsights/insightsgpt` for containerized execution.
-- CI/CD: Automated build and publishing of Python package to GitHub Releases and Docker image to GHCR on version tags.
-- `--version` flag for the CLI.
-
-### Changed
-- Project structure to support packaging (`pyproject.toml`, `insightsgpt_cli/` module).
-
----
-
 ## Recent Updates
 
 ## [1.0.4] - YYYY-MM-DD
