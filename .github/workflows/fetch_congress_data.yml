@@ -34,9 +34,9 @@ jobs:
       run: |
         python scripts/fetch_congress.py bill --congress 117 --bill-type hr --bill-number 1
 
-    - name: Fetch Specific Member Data (B001288)
+    - name: Fetch Member Data (e.g., by state)
       run: |
-        python scripts/fetch_congress.py member --bioguide-id B001288
+        python scripts/fetch_congress.py member --congress 117 --state-code CA
 
     - name: Fetch list of Senate bills for 118th Congress
       run: |
@@ -53,6 +53,22 @@ jobs:
     - name: Fetch committee reports for 117th Congress
       run: |
         python scripts/fetch_congress.py committee-report --congress 117
+
+    - name: Fetch treaties for 116th Congress
+      run: |
+        python scripts/fetch_congress.py treaty --congress 116
+
+    - name: Fetch nominations for 117th Congress
+      run: |
+        python scripts/fetch_congress.py nomination --congress 117
+
+    - name: Fetch Congressional Record for 2023-10-26 (117th Congress)
+      run: |
+        python scripts/fetch_congress.py congressional-record --congress 117 --date 2023-10-26
+
+    - name: Fetch EC Senate Communications for 117th Congress
+      run: |
+        python scripts/fetch_congress.py senate-communication --congress 117 --type ec
 
     - name: Commit and Push Changes
       run: |

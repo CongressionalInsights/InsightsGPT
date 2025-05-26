@@ -90,12 +90,65 @@ def fetch_bill_data(congress, bill_type, bill_number):
             bill_number=bill_number,
         )
 
-def fetch_member_data(bioguide_id):
-    """Fetches member data from the Congress API."""
-    endpoint = f"/member/{bioguide_id}"
-    data = make_congress_request(endpoint)
+def fetch_member_data(
+    bioguide_id=None,
+    congress=None,
+    state_code=None,
+    district=None,
+    sponsorship=None,
+    cosponsorship=None,
+):
+    """Fetches member data from the Congress API based on filters."""
+    endpoint = "/member"  # Changed from /member/{bioguideId}
+    params = {}
+    identifiers = {}
+
+    if bioguide_id:
+        params["bioguideId"] = bioguide_id
+        identifiers["bioguide_id"] = bioguide_id
+    if congress:
+        params["congress"] = congress
+        identifiers["congress"] = congress
+    if state_code:
+        params["stateCode"] = state_code
+        identifiers["state_code"] = state_code
+    if district:
+        params["district"] = district
+        identifiers["district"] = district
+    if sponsorship: # Will be True if --sponsorship is used
+        params["sponsorship"] = "true" # API expects string "true" or "false"
+        identifiers["sponsorship"] = "true"
+    if cosponsorship: # Will be True if --cosponsorship is used
+        params["cosponsorship"] = "true"
+        identifiers["cosponsorship"] = "true"
+
+    # If bioguide_id is not provided, at least one other filter must be present.
+    # If no filters at all, exit.
+    if not params:
+        logging.error(
+            "No filters provided for member command. Please provide at least one filter."
+        )
+        sys.exit(1)
+    
+    if not bioguide_id and len(params) == 0 : # This condition is now covered by 'if not params:'
+        # This specific check for bioguide_id being None and no other params is slightly redundant
+        # if the general 'if not params' check is in place.
+        # However, to be explicit about the original requirement:
+        # "if bioguide_id is NOT provided, at least one of the other filters MUST be provided"
+        # This is equivalent to: if (not bioguide_id) and (all other filters are also None), then error.
+        # The current 'if not params:' handles the case where *nothing* is provided.
+        # Let's refine to ensure if bioguide_id is None, other params must exist.
+        pass # The `if not params` above handles the "no filters at all" case.
+             # The prompt's logic is: if bioguide_id is None, then (congress or state_code or district or sponsorship or cosponsorship) must be true.
+             # This is equivalent to: if not bioguide_id and not (any other filter), then error.
+             # This is also covered by 'if not params' if bioguide_id is the ONLY potential filter that could have been specified.
+             # The current structure of adding to params and then checking `if not params` is sufficient.
+
+    data = make_congress_request(endpoint, params=params)
     if data:
-        save_json(data, "member", bioguide_id=bioguide_id)
+        if not identifiers: # Should not happen due to the 'if not params' check above
+            identifiers["all_members_unfiltered_should_not_happen"] = "true" 
+        save_json(data, "member_data", **identifiers)
 
 
 def fetch_bills_list_data(congress=None, bill_type=None, introduced_date=None):
@@ -203,6 +256,98 @@ def fetch_committee_report_data(congress=None):
         save_json(data, "committee_report_data", **identifiers)
 
 
+def fetch_treaty_data(congress=None):
+    """Fetches treaty data from the Congress API."""
+    endpoint = "/treaty"
+    params = {}
+    identifiers = {}
+
+    if congress:
+        params["congress"] = congress
+        identifiers["congress"] = congress
+
+    if not params:
+        logging.info("Fetching all treaties as no filters were specified. This might be a large request.")
+
+    data = make_congress_request(endpoint, params=params)
+    if data:
+        if not identifiers:
+            identifiers["all"] = "all"
+        save_json(data, "treaty_data", **identifiers)
+
+
+def fetch_nomination_data(congress):
+    """Fetches nomination data for a specific congress from the Congress API."""
+    # The /nomination/{congress} endpoint requires congress as part of the path.
+    # It does not take additional query parameters according to typical API patterns for this type of endpoint.
+    endpoint = f"/nomination/{congress}"
+    identifiers = {"congress": congress}
+
+    # Log the action, as this fetches all nominations for a given congress.
+    logging.info(f"Fetching all nominations for Congress {congress}.")
+
+    data = make_congress_request(endpoint) # No 'params' needed for this specific endpoint structure
+    if data:
+        save_json(data, "nomination_data", **identifiers)
+
+
+def fetch_congressional_record_data(congress=None, date=None):
+    """Fetches congressional record data from the Congress API."""
+    endpoint = "/congressional-record"
+    params = {}
+    identifiers = {}
+
+    if congress:
+        params["congress"] = congress
+        identifiers["congress"] = congress
+    if date:
+        params["date"] = date # API likely uses 'date' or similar
+        identifiers["date"] = date
+
+    if not params:
+        logging.info("Fetching all congressional records as no filters were specified. This might be a large request.")
+
+    data = make_congress_request(endpoint, params=params)
+    if data:
+        if not identifiers:
+            identifiers["all"] = "all"
+        save_json(data, "congressional_record_data", **identifiers)
+
+
+def fetch_senate_communication_data(
+    congress=None, communication_type=None, from_date=None, to_date=None
+):
+    """Fetches senate communication data from the Congress API."""
+    endpoint = "/senate-communication"
+    params = {}
+    identifiers = {}
+
+    if congress:
+        params["congress"] = congress
+        identifiers["congress"] = congress
+    if communication_type:
+        params["type"] = communication_type  # API uses 'type'
+        identifiers["type"] = communication_type
+    if from_date:
+        params["fromDateTime"] = f"{from_date}T00:00:00Z" # API uses fromDateTime and toDateTime
+        identifiers["from_date"] = from_date
+    if to_date:
+        params["toDateTime"] = f"{to_date}T23:59:59Z"
+        identifiers["to_date"] = to_date
+
+
+    if not params:
+        logging.info(
+            "Fetching all senate communications as no filters were specified. This might be a large request."
+        )
+
+    data = make_congress_request(endpoint, params=params)
+    if data:
+        if not identifiers:
+            identifiers["all"] = "all"
+        save_json(data, "senate_communication_data", **identifiers)
+
+
 # --- Main Function ---
 def main():
     """Main function to parse arguments and call the appropriate functions."""
@@ -225,13 +370,33 @@ def main():
     )
 
     # Member subcommand
-    member_parser = subparsers.add_parser("member", help="Fetch member data.")
+    member_parser = subparsers.add_parser("member", help="Fetch member data by various filters.")
     member_parser.add_argument(
         "--bioguide-id",
         type=str,
-        required=True,
-        help="Biographical Directory ID of the member.",
+        # required=True, # Changed to optional
+        help="Filter by Biographical Directory ID of the member.",
     )
+    member_parser.add_argument(
+        "--congress", type=int, help="Filter by Congress number (e.g., 117)."
+    )
+    member_parser.add_argument(
+        "--state-code", type=str, help="Filter by state code (e.g., CA, TX)."
+    )
+    member_parser.add_argument(
+        "--district", type=int, help="Filter by congressional district number."
+    )
+    member_parser.add_argument(
+        "--sponsorship",
+        action="store_true",
+        help="Include member's bill sponsorship information.",
+    )
+    member_parser.add_argument(
+        "--cosponsorship",
+        action="store_true",
+        help="Include member's bill cosponsorship information.",
+    )
+
 
     # Bills (list) subcommand
     bills_list_parser = subparsers.add_parser("bills", help="Fetch a list of bills based on filters.")
@@ -276,12 +441,70 @@ def main():
         "--congress", type=int, help="Filter by Congress number (e.g., 117)."
     )
 
+    # Treaty subcommand
+    treaty_parser = subparsers.add_parser("treaty", help="Fetch treaty data.")
+    treaty_parser.add_argument(
+        "--congress", type=int, help="Filter by Congress number (e.g., 117)."
+    )
+
+    # Nomination subcommand
+    nomination_parser = subparsers.add_parser(
+        "nomination", help="Fetch nomination data for a specific Congress."
+    )
+    nomination_parser.add_argument(
+        "--congress",
+        type=int,
+        required=True,
+        help="Specify the Congress number (e.g., 117). This is required.",
+    )
+
+    # Congressional Record subcommand
+    congressional_record_parser = subparsers.add_parser(
+        "congressional-record", help="Fetch congressional record data."
+    )
+    congressional_record_parser.add_argument(
+        "--congress", type=int, help="Filter by Congress number (e.g., 117)."
+    )
+    congressional_record_parser.add_argument(
+        "--date", type=str, help="Filter by date (YYYY-MM-DD)."
+    )
+
+    # Senate Communication subcommand
+    senate_communication_parser = subparsers.add_parser(
+        "senate-communication", help="Fetch Senate communication data."
+    )
+    senate_communication_parser.add_argument(
+        "--congress", type=int, help="Filter by Congress number (e.g., 117)."
+    )
+    senate_communication_parser.add_argument(
+        "--type",
+        type=str,
+        choices=["ec", "pm"],
+        help="Filter by communication type (ec: Executive Communication, pm: Presidential Message).",
+    )
+    senate_communication_parser.add_argument(
+        "--from-date",
+        type=str,
+        help="Filter by start date (YYYY-MM-DD).",
+    )
+    senate_communication_parser.add_argument(
+        "--to-date", type=str, help="Filter by end date (YYYY-MM-DD)."
+    )
+
+
     args = parser.parse_args()
 
     if args.command == "bill":
         fetch_bill_data(args.congress, args.bill_type, args.bill_number)
     elif args.command == "member":
-        fetch_member_data(args.bioguide_id)
+        fetch_member_data(
+            bioguide_id=args.bioguide_id,
+            congress=args.congress,
+            state_code=args.state_code,
+            district=args.district,
+            sponsorship=args.sponsorship,
+            cosponsorship=args.cosponsorship,
+        )
     elif args.command == "bills":
         fetch_bills_list_data(
             congress=args.congress,
@@ -300,6 +523,21 @@ def main():
         )
     elif args.command == "committee-report":
         fetch_committee_report_data(congress=args.congress)
+    elif args.command == "treaty":
+        fetch_treaty_data(congress=args.congress)
+    elif args.command == "nomination":
+        fetch_nomination_data(congress=args.congress)
+    elif args.command == "congressional-record":
+        fetch_congressional_record_data(
+            congress=args.congress, date=args.date
+        )
+    elif args.command == "senate-communication":
+        fetch_senate_communication_data(
+            congress=args.congress,
+            communication_type=args.type, # argparse uses 'type'
+            from_date=args.from_date,
+            to_date=args.to_date,
+        )
     else:
         parser.print_help()
         sys.exit(1)

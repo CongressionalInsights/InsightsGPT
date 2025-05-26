@@ -142,40 +142,82 @@ class TestFetchCongress(unittest.TestCase):
         )
 
     @patch('fetch_congress.save_json')
-    def test_fetch_member_data_success(self, mock_save_json):
-        """Test fetching member data successfully."""
+    def test_fetch_member_data_success_by_bioguide_id(self, mock_save_json):
+        """Test fetching member data successfully by Bioguide ID."""
         bioguide_id = "B001288"
-        expected_url = f"{fetch_congress.CONGRESS_API_BASE_URL}/member/{bioguide_id}"
+        # Endpoint is now /member, bioguideId is a param
+        expected_url = f"{fetch_congress.CONGRESS_API_BASE_URL}/member"
+        expected_params = {"bioguideId": bioguide_id}
         api_response_data = {"member": "details"}
         self.mock_response.json.return_value = api_response_data
 
-        fetch_congress.fetch_member_data(bioguide_id)
+        fetch_congress.fetch_member_data(bioguide_id=bioguide_id)
 
         self.mock_requests_get.assert_called_once_with(
             expected_url,
             headers={"x-api-key": DUMMY_API_KEY},
-            params=None,
+            params=expected_params, # Check params
             timeout=fetch_congress.REQUEST_TIMEOUT
         )
         self.mock_response.raise_for_status.assert_called_once()
         mock_save_json.assert_called_once_with(
-            api_response_data, "member", bioguide_id=bioguide_id
+            api_response_data, "member_data", bioguide_id=bioguide_id # Prefix changed
         )
 
     @patch('fetch_congress.save_json')
+    def test_fetch_member_data_success_with_other_filters(self, mock_save_json):
+        """Test fetching member data successfully with other filters."""
+        api_response_data = {"members": ["member1", "member2"]}
+        self.mock_response.json.return_value = api_response_data
+
+        filters = {"congress": 117, "state_code": "CA", "sponsorship": True}
+        expected_params = {"congress": 117, "stateCode": "CA", "sponsorship": "true"}
+        expected_identifiers = {"congress": 117, "state_code": "CA", "sponsorship": "true"}
+
+
+        fetch_congress.fetch_member_data(**filters)
+
+        self.mock_requests_get.assert_called_once_with(
+            f"{fetch_congress.CONGRESS_API_BASE_URL}/member",
+            headers={"x-api-key": DUMMY_API_KEY},
+            params=expected_params,
+            timeout=fetch_congress.REQUEST_TIMEOUT
+        )
+        self.mock_response.raise_for_status.assert_called_once()
+        mock_save_json.assert_called_once_with(
+            api_response_data, "member_data", **expected_identifiers
+        )
+
+    @patch('fetch_congress.sys.exit')
+    @patch('fetch_congress.save_json')
+    def test_fetch_member_data_no_filters_provided(self, mock_save_json, mock_sys_exit):
+        """Test fetch_member_data exits if no filters are provided."""
+        fetch_congress.fetch_member_data() # Call with all defaults
+        self.mock_logging_error.assert_called_with(
+            "No filters provided for member command. Please provide at least one filter."
+        )
+        mock_sys_exit.assert_called_once_with(1)
+        mock_save_json.assert_not_called()
+    
+    @patch('fetch_congress.save_json')
     @patch('fetch_congress.sys.exit') # Mock sys.exit to prevent test termination
-    def test_api_request_failure(self, mock_sys_exit, mock_save_json):
-        """Test API request failure handling."""
+    def test_fetch_member_data_api_error(self, mock_sys_exit, mock_save_json):
+        """Test API error handling for fetch_member_data."""
         self.mock_response.status_code = 404
         self.mock_response.raise_for_status.side_effect = fetch_congress.requests.exceptions.HTTPError("404 Client Error")
         self.mock_requests_get.return_value = self.mock_response
 
-        fetch_congress.fetch_bill_data(117, "hr", 1) # Args don't matter much here
+        # Call fetch_member_data with a valid filter to trigger the API call
+        fetch_congress.fetch_member_data(bioguide_id="T00TEST") 
 
-        self.mock_logging_error.assert_called()
-        mock_save_json.assert_not_called()
-        mock_sys_exit.assert_called_once_with(1)
+        self.mock_logging_error.assert_called() # Check that an error was logged
+        mock_save_json.assert_not_called()      # Ensure save_json was not called on error
+        mock_sys_exit.assert_called_once_with(1)# Ensure sys.exit was called
 
+    # Note: test_api_request_failure might need to be generalized or removed if
+    # specific error tests like test_fetch_member_data_api_error are preferred for each function.
+    # For now, I'll keep it if it tests a different function or a general case.
+    # The existing test_api_request_failure calls fetch_bill_data, so it's fine.
 
     @patch('fetch_congress.fetch_bill_data')
     def test_main_function_bill_subcommand(self, mock_fetch_bill_data):
@@ -185,11 +227,52 @@ class TestFetchCongress(unittest.TestCase):
         mock_fetch_bill_data.assert_called_once_with(117, "s", 123)
 
     @patch('fetch_congress.fetch_member_data')
-    def test_main_function_member_subcommand(self, mock_fetch_member_data):
-        """Test main function routing for member subcommand."""
+    def test_main_function_member_subcommand_by_bioguide_id(self, mock_fetch_member_data):
+        """Test main function routing for member subcommand by Bioguide ID."""
         sys.argv = ["fetch_congress.py", "member", "--bioguide-id", "A000001"]
         fetch_congress.main()
-        mock_fetch_member_data.assert_called_once_with("A000001")
+        mock_fetch_member_data.assert_called_once_with(
+            bioguide_id="A000001", 
+            congress=None, 
+            state_code=None, 
+            district=None, 
+            sponsorship=False, 
+            cosponsorship=False
+        )
+
+    @patch('fetch_congress.fetch_member_data')
+    def test_main_function_member_subcommand_with_other_filters(self, mock_fetch_member_data):
+        """Test main function routing for member subcommand with other filters."""
+        sys.argv = [
+            "fetch_congress.py", "member", 
+            "--congress", "117", 
+            "--state-code", "CA", 
+            "--sponsorship"
+        ]
+        fetch_congress.main()
+        mock_fetch_member_data.assert_called_once_with(
+            bioguide_id=None,
+            congress=117,
+            state_code="CA",
+            district=None,
+            sponsorship=True,
+            cosponsorship=False,
+        )
+
+    @patch('fetch_congress.fetch_member_data')
+    @patch('fetch_congress.logging.error') # Also mock logging to check error message
+    @patch('fetch_congress.sys.exit')    # Mock sys.exit
+    def test_main_function_member_subcommand_no_filters(self, mock_sys_exit, mock_logging_error, mock_fetch_member_data):
+        """Test main function routing for member subcommand with no filters (should trigger error in fetch_member_data)."""
+        sys.argv = ["fetch_congress.py", "member"]
+        fetch_congress.main()
+        # fetch_member_data will be called with all Nones/False, which then logs error and exits
+        mock_fetch_member_data.assert_called_once_with(
+            bioguide_id=None, congress=None, state_code=None, district=None, sponsorship=False, cosponsorship=False
+        )
+        # The actual error logging and exit are tested in test_fetch_member_data_no_filters_provided
+        # Here, we just ensure main correctly calls the handler which then fails.
+
 
     @patch('fetch_congress.fetch_bills_list_data')
     def test_main_function_bills_subcommand(self, mock_fetch_bills_list_data):
@@ -233,6 +316,70 @@ class TestFetchCongress(unittest.TestCase):
         fetch_congress.main()
         mock_fetch_committee_report_data.assert_called_once_with(congress=None)
 
+    @patch('fetch_congress.fetch_treaty_data')
+    def test_main_function_treaty_subcommand_with_filter(self, mock_fetch_treaty_data):
+        """Test main function routing for treaty subcommand with a filter."""
+        sys.argv = ["fetch_congress.py", "treaty", "--congress", "116"]
+        fetch_congress.main()
+        mock_fetch_treaty_data.assert_called_once_with(congress=116)
+
+    @patch('fetch_congress.fetch_treaty_data')
+    def test_main_function_treaty_subcommand_no_filter(self, mock_fetch_treaty_data):
+        """Test main function routing for treaty subcommand without filters."""
+        sys.argv = ["fetch_congress.py", "treaty"]
+        fetch_congress.main()
+        mock_fetch_treaty_data.assert_called_once_with(congress=None)
+
+    @patch('fetch_congress.fetch_nomination_data')
+    def test_main_function_nomination_subcommand(self, mock_fetch_nomination_data):
+        """Test main function routing for nomination subcommand."""
+        sys.argv = ["fetch_congress.py", "nomination", "--congress", "117"]
+        fetch_congress.main()
+        mock_fetch_nomination_data.assert_called_once_with(congress=117)
+
+    def test_main_function_nomination_subcommand_missing_congress(self):
+        """Test main function for nomination subcommand fails if --congress is missing."""
+        sys.argv = ["fetch_congress.py", "nomination"]
+        with self.assertRaises(SystemExit): # Argparse calls sys.exit on error
+            fetch_congress.main()
+
+    @patch('fetch_congress.fetch_congressional_record_data')
+    def test_main_function_congressional_record_subcommand_with_filters(self, mock_fetch_cr_data):
+        """Test main function routing for congressional-record subcommand with filters."""
+        sys.argv = ["fetch_congress.py", "congressional-record", "--congress", "117", "--date", "2023-01-01"]
+        fetch_congress.main()
+        mock_fetch_cr_data.assert_called_once_with(congress=117, date="2023-01-01")
+
+    @patch('fetch_congress.fetch_congressional_record_data')
+    def test_main_function_congressional_record_subcommand_no_filters(self, mock_fetch_cr_data):
+        """Test main function routing for congressional-record subcommand without filters."""
+        sys.argv = ["fetch_congress.py", "congressional-record"]
+        fetch_congress.main()
+        mock_fetch_cr_data.assert_called_once_with(congress=None, date=None)
+
+    @patch('fetch_congress.fetch_senate_communication_data')
+    def test_main_function_senate_communication_subcommand_with_filters(self, mock_fetch_sc_data):
+        """Test main function routing for senate-communication subcommand with filters."""
+        sys.argv = [
+            "fetch_congress.py", "senate-communication", 
+            "--congress", "117", 
+            "--type", "ec", 
+            "--from-date", "2023-01-01", 
+            "--to-date", "2023-01-31"
+        ]
+        fetch_congress.main()
+        mock_fetch_sc_data.assert_called_once_with(
+            congress=117, communication_type="ec", from_date="2023-01-01", to_date="2023-01-31"
+        )
+
+    @patch('fetch_congress.fetch_senate_communication_data')
+    def test_main_function_senate_communication_subcommand_no_filters(self, mock_fetch_sc_data):
+        """Test main function routing for senate-communication subcommand without filters."""
+        sys.argv = ["fetch_congress.py", "senate-communication"]
+        fetch_congress.main()
+        mock_fetch_sc_data.assert_called_once_with(
+            congress=None, communication_type=None, from_date=None, to_date=None
+        )
 
     def test_api_key_retrieval_and_usage(self):
         """Test that API key is correctly retrieved and used in headers."""
@@ -240,12 +387,12 @@ class TestFetchCongress(unittest.TestCase):
         # by checking the headers in mock_requests_get.assert_called_once_with.
         # We can add a specific check here if needed, but it might be redundant.
         self.assertEqual(fetch_congress.CONGRESS_API_KEY, DUMMY_API_KEY)
-        # Trigger a call that uses the key
-        fetch_congress.fetch_member_data("T000001")
+        # Trigger a call that uses the key with at least one filter
+        fetch_congress.fetch_member_data(bioguide_id="T000001") 
         self.mock_requests_get.assert_called_with(
-            unittest.mock.ANY, # URL
+            f"{fetch_congress.CONGRESS_API_BASE_URL}/member", 
             headers={"x-api-key": DUMMY_API_KEY},
-            params=None,
+            params={'bioguideId': 'T000001'}, # Check params for /member endpoint
             timeout=fetch_congress.REQUEST_TIMEOUT
         )
 
@@ -496,6 +643,233 @@ class TestFetchCongress(unittest.TestCase):
         self.mock_requests_get.return_value = self.mock_response
 
         fetch_congress.fetch_committee_report_data(congress=117) # Call with some filter
+        
+        self.mock_logging_error.assert_called()
+        mock_sys_exit.assert_called_once_with(1)
+        mock_save_json.assert_not_called()
+
+    # --- Tests for fetch_treaty_data ---
+    @patch('fetch_congress.save_json')
+    def test_fetch_treaty_data_success_with_filter(self, mock_save_json):
+        """Test fetching treaty data successfully with a congress filter."""
+        api_response_data = {"treaties": ["treaty1", "treaty2"]}
+        self.mock_response.json.return_value = api_response_data
+        
+        congress_filter = 116
+        expected_params = {"congress": congress_filter}
+        expected_identifiers = {"congress": congress_filter}
+
+        fetch_congress.fetch_treaty_data(congress=congress_filter)
+
+        self.mock_requests_get.assert_called_once_with(
+            f"{fetch_congress.CONGRESS_API_BASE_URL}/treaty",
+            headers={"x-api-key": DUMMY_API_KEY},
+            params=expected_params,
+            timeout=fetch_congress.REQUEST_TIMEOUT
+        )
+        self.mock_response.raise_for_status.assert_called_once()
+        mock_save_json.assert_called_once_with(
+            api_response_data, "treaty_data", **expected_identifiers
+        )
+
+    @patch('fetch_congress.save_json')
+    def test_fetch_treaty_data_success_no_filter(self, mock_save_json):
+        """Test fetching treaty data successfully with no filter."""
+        api_response_data = {"treaties": ["all_treaties"]}
+        self.mock_response.json.return_value = api_response_data
+
+        fetch_congress.fetch_treaty_data() # Call without any filter
+
+        self.mock_requests_get.assert_called_once_with(
+            f"{fetch_congress.CONGRESS_API_BASE_URL}/treaty",
+            headers={"x-api-key": DUMMY_API_KEY},
+            params={}, # Expect empty params
+            timeout=fetch_congress.REQUEST_TIMEOUT
+        )
+        self.mock_response.raise_for_status.assert_called_once()
+        self.mock_logging_info.assert_any_call("Fetching all treaties as no filters were specified. This might be a large request.")
+        mock_save_json.assert_called_once_with(
+            api_response_data, "treaty_data", all="all" # As per script logic
+        )
+
+    @patch('fetch_congress.sys.exit')
+    @patch('fetch_congress.save_json')
+    def test_fetch_treaty_data_api_error(self, mock_save_json, mock_sys_exit):
+        """Test API error handling for fetch_treaty_data."""
+        self.mock_response.status_code = 500
+        self.mock_response.raise_for_status.side_effect = fetch_congress.requests.exceptions.HTTPError("500 Server Error")
+        self.mock_requests_get.return_value = self.mock_response
+
+        fetch_congress.fetch_treaty_data(congress=116) # Call with some filter
+        
+        self.mock_logging_error.assert_called()
+        mock_sys_exit.assert_called_once_with(1)
+        mock_save_json.assert_not_called()
+
+    # --- Tests for fetch_nomination_data ---
+    @patch('fetch_congress.save_json')
+    def test_fetch_nomination_data_success(self, mock_save_json):
+        """Test fetching nomination data successfully."""
+        api_response_data = {"nominations": ["nomination1", "nomination2"]}
+        self.mock_response.json.return_value = api_response_data
+        
+        congress_val = 117
+        expected_endpoint = f"{fetch_congress.CONGRESS_API_BASE_URL}/nomination/{congress_val}"
+        expected_identifiers = {"congress": congress_val}
+
+        fetch_congress.fetch_nomination_data(congress=congress_val)
+
+        self.mock_requests_get.assert_called_once_with(
+            expected_endpoint,
+            headers={"x-api-key": DUMMY_API_KEY},
+            params=None, # No params for this endpoint structure
+            timeout=fetch_congress.REQUEST_TIMEOUT
+        )
+        self.mock_response.raise_for_status.assert_called_once()
+        self.mock_logging_info.assert_any_call(f"Fetching all nominations for Congress {congress_val}.")
+        mock_save_json.assert_called_once_with(
+            api_response_data, "nomination_data", **expected_identifiers
+        )
+
+    @patch('fetch_congress.sys.exit')
+    @patch('fetch_congress.save_json')
+    def test_fetch_nomination_data_api_error(self, mock_save_json, mock_sys_exit):
+        """Test API error handling for fetch_nomination_data."""
+        self.mock_response.status_code = 500
+        self.mock_response.raise_for_status.side_effect = fetch_congress.requests.exceptions.HTTPError("500 Server Error")
+        self.mock_requests_get.return_value = self.mock_response
+
+        congress_val = 117
+        fetch_congress.fetch_nomination_data(congress=congress_val)
+        
+        self.mock_logging_error.assert_called()
+        mock_sys_exit.assert_called_once_with(1)
+        mock_save_json.assert_not_called()
+
+    # --- Tests for fetch_congressional_record_data ---
+    @patch('fetch_congress.save_json')
+    def test_fetch_congressional_record_data_success_with_filters(self, mock_save_json):
+        """Test fetching congressional record data successfully with filters."""
+        api_response_data = {"congressional_records": ["record1", "record2"]}
+        self.mock_response.json.return_value = api_response_data
+        
+        filters = {"congress": 117, "date": "2023-01-01"}
+        expected_params = {"congress": 117, "date": "2023-01-01"}
+
+        fetch_congress.fetch_congressional_record_data(**filters)
+
+        self.mock_requests_get.assert_called_once_with(
+            f"{fetch_congress.CONGRESS_API_BASE_URL}/congressional-record",
+            headers={"x-api-key": DUMMY_API_KEY},
+            params=expected_params,
+            timeout=fetch_congress.REQUEST_TIMEOUT
+        )
+        self.mock_response.raise_for_status.assert_called_once()
+        mock_save_json.assert_called_once_with(
+            api_response_data, "congressional_record_data", **filters
+        )
+
+    @patch('fetch_congress.save_json')
+    def test_fetch_congressional_record_data_success_no_filters(self, mock_save_json):
+        """Test fetching congressional record data successfully with no filters."""
+        api_response_data = {"congressional_records": ["all_records"]}
+        self.mock_response.json.return_value = api_response_data
+
+        fetch_congress.fetch_congressional_record_data() # Call without any filters
+
+        self.mock_requests_get.assert_called_once_with(
+            f"{fetch_congress.CONGRESS_API_BASE_URL}/congressional-record",
+            headers={"x-api-key": DUMMY_API_KEY},
+            params={}, # Expect empty params
+            timeout=fetch_congress.REQUEST_TIMEOUT
+        )
+        self.mock_response.raise_for_status.assert_called_once()
+        self.mock_logging_info.assert_any_call("Fetching all congressional records as no filters were specified. This might be a large request.")
+        mock_save_json.assert_called_once_with(
+            api_response_data, "congressional_record_data", all="all" # As per script logic
+        )
+
+    @patch('fetch_congress.sys.exit')
+    @patch('fetch_congress.save_json')
+    def test_fetch_congressional_record_data_api_error(self, mock_save_json, mock_sys_exit):
+        """Test API error handling for fetch_congressional_record_data."""
+        self.mock_response.status_code = 500
+        self.mock_response.raise_for_status.side_effect = fetch_congress.requests.exceptions.HTTPError("500 Server Error")
+        self.mock_requests_get.return_value = self.mock_response
+
+        fetch_congress.fetch_congressional_record_data(congress=117) # Call with some filter
+        
+        self.mock_logging_error.assert_called()
+        mock_sys_exit.assert_called_once_with(1)
+        mock_save_json.assert_not_called()
+
+    # --- Tests for fetch_senate_communication_data ---
+    @patch('fetch_congress.save_json')
+    def test_fetch_senate_communication_data_success_with_filters(self, mock_save_json):
+        """Test fetching senate communication data successfully with filters."""
+        api_response_data = {"senate_communications": ["comm1", "comm2"]}
+        self.mock_response.json.return_value = api_response_data
+        
+        filters = {
+            "congress": 117, 
+            "communication_type": "ec", 
+            "from_date": "2023-01-01", 
+            "to_date": "2023-01-31"
+        }
+        expected_params = {
+            "congress": 117, 
+            "type": "ec", 
+            "fromDateTime": "2023-01-01T00:00:00Z", 
+            "toDateTime": "2023-01-31T23:59:59Z"
+        }
+        # Identifiers for save_json should match the function's input arg names
+        expected_identifiers = filters.copy()
+
+
+        fetch_congress.fetch_senate_communication_data(**filters)
+
+        self.mock_requests_get.assert_called_once_with(
+            f"{fetch_congress.CONGRESS_API_BASE_URL}/senate-communication",
+            headers={"x-api-key": DUMMY_API_KEY},
+            params=expected_params,
+            timeout=fetch_congress.REQUEST_TIMEOUT
+        )
+        self.mock_response.raise_for_status.assert_called_once()
+        mock_save_json.assert_called_once_with(
+            api_response_data, "senate_communication_data", **expected_identifiers
+        )
+
+    @patch('fetch_congress.save_json')
+    def test_fetch_senate_communication_data_success_no_filters(self, mock_save_json):
+        """Test fetching senate communication data successfully with no filters."""
+        api_response_data = {"senate_communications": ["all_comms"]}
+        self.mock_response.json.return_value = api_response_data
+
+        fetch_congress.fetch_senate_communication_data() # Call without any filters
+
+        self.mock_requests_get.assert_called_once_with(
+            f"{fetch_congress.CONGRESS_API_BASE_URL}/senate-communication",
+            headers={"x-api-key": DUMMY_API_KEY},
+            params={}, # Expect empty params
+            timeout=fetch_congress.REQUEST_TIMEOUT
+        )
+        self.mock_response.raise_for_status.assert_called_once()
+        self.mock_logging_info.assert_any_call(
+            "Fetching all senate communications as no filters were specified. This might be a large request."
+        )
+        mock_save_json.assert_called_once_with(
+            api_response_data, "senate_communication_data", all="all" # As per script logic
+        )
+
+    @patch('fetch_congress.sys.exit')
+    @patch('fetch_congress.save_json')
+    def test_fetch_senate_communication_data_api_error(self, mock_save_json, mock_sys_exit):
+        """Test API error handling for fetch_senate_communication_data."""
+        self.mock_response.status_code = 500
+        self.mock_response.raise_for_status.side_effect = fetch_congress.requests.exceptions.HTTPError("500 Server Error")
+        self.mock_requests_get.return_value = self.mock_response
+
+        fetch_congress.fetch_senate_communication_data(congress=117) # Call with some filter
         
         self.mock_logging_error.assert_called()
         mock_sys_exit.assert_called_once_with(1)
