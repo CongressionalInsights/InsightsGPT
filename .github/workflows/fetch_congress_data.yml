@@ -1,0 +1,50 @@
+name: Fetch Congress Data
+
+on:
+  schedule:
+    - cron: "0 3 * * *" # Runs daily at 3 AM UTC
+  workflow_dispatch: # Allows manual triggering
+
+env:
+  CONGRESS_API_KEY: ${{ secrets.CONGRESS_API_KEY }}
+
+jobs:
+  fetch_data:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Required to push commits
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+        cache: 'pip' # Cache pip dependencies
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        pip install requests python-dotenv # Ensure requests and python-dotenv are installed for fetch_congress.py
+
+    - name: Fetch Congress Data
+      run: |
+        python scripts/fetch_congress.py bill --congress 117 --bill-type hr --bill-number 1
+        python scripts/fetch_congress.py member --bioguide-id B001288
+
+    - name: Commit and Push Changes
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        # Stage any changes in the data/congress directory
+        git add data/congress/*.json
+        # Check if there are staged changes
+        if ! git diff --cached --quiet; then
+          git commit -m "Automated update of Congress data"
+          git push
+        else
+          echo "No changes to Congress data files to commit."
+        fi

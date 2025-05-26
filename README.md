@@ -112,6 +112,12 @@ The workflows are triggered automatically on code pushes, pull requests, and now
 
   ---
 
+#### 2. `fetch_congress.py`
+- **Purpose**: Fetches data from the Congress.gov API for bills and members.
+- **Details**: See [Scripts Overview](scripts/scripts_overview.md#fetch_congresspy) for detailed usage.
+
+---
+
 ### **Dependencies**
 
 The `requirements.txt` file includes the following tools to support the workflows:
@@ -179,7 +185,7 @@ The embedded Python script fetches data using pre-configured parameters:
 
 ### **Repository Structure**
 
-- **`scripts/`**: Contains Python scripts for interacting with government APIs, including `validate_data.py` and `monitor_keywords.py`.
+- **`scripts/`**: Contains Python scripts for interacting with government APIs, including `validate_data.py`, `monitor_keywords.py`, and `fetch_congress.py`.
 - **`docs/`**: Reference files, guides, and structured metadata to help users and contributors.
 - **`.github/workflows/`**: Workflow files for testing, deploying, and data fetching.
 
