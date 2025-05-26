@@ -32,7 +32,7 @@ jobs:
           --output_folder visualizations/
 
     - name: Upload visualizations
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: visualizations
         path: visualizations/
