@@ -41,9 +41,44 @@ This document provides an overview of all scripts available in the repository, t
       ```bash
       python scripts/fetch_congress.py member --bioguide-id B001288
       ```
+  - `bills`: Fetches a list of bills based on specified filters. At least one filter argument is required.
+    - Arguments:
+      - `--congress` (int, optional): Filter by Congress number (e.g., 117).
+      - `--bill-type` (str, optional): Filter by type of bill (e.g., `hr`, `s`).
+      - `--introduced-date` (str, optional): Filter by introduced date (YYYY-MM-DD).
+    - Example Usage:
+      ```bash
+      python scripts/fetch_congress.py bills --congress 117 --bill-type s
+      ```
+  - `committee`: Fetches committee data based on specified filters. At least one filter argument is required.
+    - Arguments:
+      - `--chamber` (str, optional): Filter by chamber (e.g., `house`, `senate`).
+      - `--congress` (int, optional): Filter by Congress number (e.g., 117).
+      - `--committee-code` (str, optional): Filter by committee code (e.g., `HSAP`, `SSAF`).
+    - Example Usage:
+      ```bash
+      python scripts/fetch_congress.py committee --chamber house --congress 117 --committee-code HSAP
+      ```
+  - `amendment`: Fetches a list of amendments based on specified filters. Can be called without filters to fetch all amendments, though this may result in a large dataset.
+    - Arguments:
+      - `--congress` (int, optional): Filter by Congress number (e.g., 117).
+      - `--amendment-type` (str, optional): Filter by amendment type (e.g., `hamdt`, `samdt`).
+    - Example Usage:
+      ```bash
+      python scripts/fetch_congress.py amendment --congress 117 --amendment-type samdt
+      python scripts/fetch_congress.py amendment # Fetches all amendments
+      ```
+  - `committee-report`: Fetches a list of committee reports. Can be filtered by Congress. Calling without filters may result in a large dataset.
+    - Arguments:
+      - `--congress` (int, optional): Filter by Congress number (e.g., 117).
+    - Example Usage:
+      ```bash
+      python scripts/fetch_congress.py committee-report --congress 117
+      python scripts/fetch_congress.py committee-report # Fetches all committee reports
+      ```
 - **Outputs**:
   - Saves JSON files to the `data/congress/` directory.
-  - Filenames are structured based on the subcommand and input parameters (e.g., `data/congress/bill_117_hr_1.json`, `data/congress/member_B001288.json`).
+  - Filenames are structured based on the subcommand and input parameters (e.g., `data/congress/bill_117_hr_1.json`, `data/congress/member_B001288.json`, `data/congress/bills_list_congress_117_bill_type_s.json`, `data/congress/committee_data_chamber_house_congress_117_committee_code_HSAP.json`, `data/congress/amendment_data_congress_117_amendment_type_samdt.json`, `data/congress/amendment_data_all.json`, `data/congress/committee_report_data_congress_117.json`, `data/congress/committee_report_data_all.json`).
 - **Logging**:
   - Logs API requests, successful saves, and errors to standard output.
 

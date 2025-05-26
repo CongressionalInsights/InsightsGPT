@@ -30,10 +30,29 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         pip install requests python-dotenv # Ensure requests and python-dotenv are installed for fetch_congress.py
 
-    - name: Fetch Congress Data
+    - name: Fetch Specific Bill Data (117th HR 1)
       run: |
         python scripts/fetch_congress.py bill --congress 117 --bill-type hr --bill-number 1
+
+    - name: Fetch Specific Member Data (B001288)
+      run: |
         python scripts/fetch_congress.py member --bioguide-id B001288
+
+    - name: Fetch list of Senate bills for 118th Congress
+      run: |
+        python scripts/fetch_congress.py bills --congress 118 --bill-type s
+
+    - name: Fetch Senate committee data for 118th Congress
+      run: |
+        python scripts/fetch_congress.py committee --chamber senate --congress 118
+
+    - name: Fetch Senate amendments for 117th Congress
+      run: |
+        python scripts/fetch_congress.py amendment --congress 117 --amendment-type samdt
+
+    - name: Fetch committee reports for 117th Congress
+      run: |
+        python scripts/fetch_congress.py committee-report --congress 117
 
     - name: Commit and Push Changes
       run: |

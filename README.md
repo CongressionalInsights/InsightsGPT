@@ -113,7 +113,7 @@ The workflows are triggered automatically on code pushes, pull requests, and now
   ---
 
 #### 2. `fetch_congress.py`
-- **Purpose**: Fetches data from the Congress.gov API for bills and members.
+- **Purpose**: Fetches data from the Congress.gov API for individual bills, members, lists of bills, committee information, amendments, and committee reports.
 - **Details**: See [Scripts Overview](scripts/scripts_overview.md#fetch_congresspy) for detailed usage.
 
 ---
