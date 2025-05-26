@@ -118,6 +118,13 @@ The workflows are triggered automatically on code pushes, pull requests, and now
 
 ---
 
+#### 3. `fetch_govinfo.py`
+- **Purpose**: Fetches data from the GovInfo.gov API.
+- **Capabilities**: Can retrieve lists of collections, lists of packages (with filtering by collection, date, etc.), and detailed summaries for specific packages.
+- **Details**: See [Scripts Overview](scripts/scripts_overview.md#fetch_govinfopy) for detailed usage.
+
+---
+
 ### **Dependencies**
 
 The `requirements.txt` file includes the following tools to support the workflows:
@@ -185,7 +192,10 @@ The embedded Python script fetches data using pre-configured parameters:
 
 ### **Repository Structure**
 
-- **`scripts/`**: Contains Python scripts for interacting with government APIs, including `validate_data.py`, `monitor_keywords.py`, and `fetch_congress.py`.
+- **`scripts/`**: Contains Python scripts for interacting with government APIs, including `validate_data.py`, `monitor_keywords.py`, `fetch_congress.py`, and `fetch_govinfo.py`.
+- **`data/`**: Stores data fetched by scripts.
+  - **`data/congress/`**: Data from Congress.gov API via `fetch_congress.py`.
+  - **`data/govinfo/`**: Data from GovInfo.gov API via `fetch_govinfo.py`.
 - **`docs/`**: Reference files, guides, and structured metadata to help users and contributors.
 - **`.github/workflows/`**: Workflow files for testing, deploying, and data fetching.
 

@@ -143,6 +143,46 @@ This document provides an overview of all scripts available in the repository, t
 
 ---
 
+### **6. `fetch_govinfo.py`**
+- **Purpose**: Fetches data from the [GovInfo.gov API](https://api.govinfo.gov/).
+- **Environment Variables**:
+  - `GOVINFO_API_KEY`: **Required**. Your API key for the GovInfo.gov API. The script will exit if this is not set.
+- **Subcommands**:
+  - `collections`: Fetches the list of all available GovInfo collections.
+    - Arguments: None.
+    - Example Usage:
+      ```bash
+      python scripts/fetch_govinfo.py collections
+      ```
+  - `packages`: Fetches a list of packages, with optional filters.
+    - Arguments:
+      - `--collection` (str, optional): Filter by collection code(s), comma-separated for multiple (e.g., `BILLS`, `FR`).
+      - `--start-date` (str, optional): Filter by start date for `dateIssued` (YYYY-MM-DD).
+      - `--end-date` (str, optional): Filter by end date for `dateIssued` (YYYY-MM-DD).
+      - `--modified-since` (str, optional): Filter by modified date (ISO8601 format, e.g., `2023-01-01T00:00:00Z`).
+      - `--page-size` (int, optional, default: 100): Number of results per page.
+      - `--offset-mark` (str, optional, default: `*`): Offset mark for pagination.
+    - Example Usage:
+      ```bash
+      python scripts/fetch_govinfo.py packages --collection FR --start-date 2023-01-01 --end-date 2023-01-05
+      ```
+  - `package-summary`: Fetches the summary for a specific package.
+    - Arguments:
+      - `--package-id` (str, **required**): The ID of the package (e.g., `FR-2023-01-03-0001`).
+    - Example Usage:
+      ```bash
+      python scripts/fetch_govinfo.py package-summary --package-id FR-2023-01-03-0001
+      ```
+- **Outputs**:
+  - Saves JSON files to the `data/govinfo/` directory.
+  - `collections` data is saved as `data/govinfo/collections_list.json`.
+  - `packages` data is saved under `data/govinfo/packages/` with filenames reflecting the filters (e.g., `data/govinfo/packages/packages_list_collection_FR_start_date_2023-01-01.json`).
+  - `package-summary` data is saved in a subdirectory named after the package ID under `data/govinfo/summaries/` (e.g., `data/govinfo/summaries/FR-2023-01-03-0001/package_summary_FR_2023_01_03_0001.json`).
+- **Logging**:
+  - Logs API requests, successful saves, and errors to standard output.
+
+---
+
 ## **Workflows**
 
 ### **1. Data Validation Workflow**
