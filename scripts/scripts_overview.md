@@ -143,6 +143,72 @@ This document provides an overview of all scripts available in the repository, t
 
 ---
 
+### **7. `fetch_regulations.py`**
+- **Purpose**: Fetches data from the [Regulations.gov API](https://www.regulations.gov/developers).
+- **Environment Variables**:
+  - `REGULATIONS_API_KEY`: **Required**. Your API key for the Regulations.gov API. The script will exit if this is not set.
+- **Subcommands**:
+  - `documents`: Fetches a list of documents, with optional filters.
+    - Arguments:
+      - `--search-term` (str, optional): Search for documents containing this term.
+      - `--docket-id` (str, optional): Filter documents by a specific docket ID.
+      - `--title-filter` (str, optional): Filter documents by words in the title.
+      - `--page-size` (int, optional, default: 25): Number of results per page (1-100).
+      - `--page-number` (int, optional, default: 1): Page number to retrieve.
+    - Example Usage:
+      ```bash
+      python scripts/fetch_regulations.py documents --search-term "environmental justice" --page-size 10
+      ```
+  - `document`: Fetches a specific document by its ID, optionally including attachments.
+    - Arguments:
+      - `--document-id` (str, **required**): The ID of the document (e.g., `EPA-HQ-OAR-2021-0295-0001`).
+      - `--include-attachments` (flag, optional): Include attachment details in the response.
+    - Example Usage:
+      ```bash
+      python scripts/fetch_regulations.py document --document-id EPA-HQ-OAR-2021-0295-0001 --include-attachments
+      ```
+  - `dockets`: Fetches a list of dockets, with optional filters.
+    - Arguments:
+      - `--search-term` (str, optional): Search for dockets containing this term.
+      - `--page-size` (int, optional, default: 25): Number of results per page (1-250).
+      - `--page-number` (int, optional, default: 1): Page number to retrieve.
+    - Example Usage:
+      ```bash
+      python scripts/fetch_regulations.py dockets --search-term "renewable energy"
+      ```
+  - `docket`: Fetches a specific docket by its ID.
+    - Arguments:
+      - `--docket-id` (str, **required**): The ID of the docket (e.g., `EPA-HQ-OAR-2021-0295`).
+    - Example Usage:
+      ```bash
+      python scripts/fetch_regulations.py docket --docket-id EPA-HQ-OAR-2021-0295
+      ```
+  - `comments`: Fetches a list of comments, with optional filters.
+    - Arguments:
+      - `--search-term` (str, optional): Search for comments containing this term.
+      - `--page-size` (int, optional, default: 10): Number of results per page (1-100).
+      - `--page-after` (str, optional): Cursor for the next page of results.
+    - Example Usage:
+      ```bash
+      python scripts/fetch_regulations.py comments --search-term "public health" --page-size 15
+      ```
+  - `comment`: Fetches a specific comment by its ID, optionally including attachments.
+    - Arguments:
+      - `--comment-id` (str, **required**): The ID of the comment (e.g., `EPA-HQ-OAR-2021-0295-0002`).
+      - `--include-attachments` (flag, optional): Include attachment details in the response.
+    - Example Usage:
+      ```bash
+      python scripts/fetch_regulations.py comment --comment-id EPA-HQ-OAR-2021-0295-0002
+      ```
+- **Outputs**:
+  - Saves JSON files to the `data/regulations/` directory.
+  - List results are saved in subdirectories named after the entity type (e.g., `data/regulations/documents/documents_list_searchTerm_xyz.json`).
+  - Specific item details are saved in a subdirectory named after the item's ID (e.g., `data/regulations/documents/EPA-XYZ-123/document_details_documentId_EPA-XYZ-123.json`, `data/regulations/dockets/ABC-123/docket_details_docket_id_ABC-123.json`, `data/regulations/comments/DEF-456/comment_details_commentId_DEF-456.json`).
+- **Logging**:
+  - Logs API requests, successful saves, and errors to standard output.
+
+---
+
 ### **6. `fetch_govinfo.py`**
 - **Purpose**: Fetches data from the [GovInfo.gov API](https://api.govinfo.gov/).
 - **Environment Variables**:

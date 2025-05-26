@@ -125,6 +125,13 @@ The workflows are triggered automatically on code pushes, pull requests, and now
 
 ---
 
+#### 4. `fetch_regulations.py`
+- **Purpose**: Fetches data from the Regulations.gov API.
+- **Capabilities**: Can retrieve lists of documents, individual document details (optionally with attachments), lists of dockets, individual docket details, lists of comments, and individual comment details.
+- **Details**: See [Scripts Overview](scripts/scripts_overview.md#fetch_regulationspy) for detailed usage.
+
+---
+
 ### **Dependencies**
 
 The `requirements.txt` file includes the following tools to support the workflows:
@@ -192,10 +199,11 @@ The embedded Python script fetches data using pre-configured parameters:
 
 ### **Repository Structure**
 
-- **`scripts/`**: Contains Python scripts for interacting with government APIs, including `validate_data.py`, `monitor_keywords.py`, `fetch_congress.py`, and `fetch_govinfo.py`.
+- **`scripts/`**: Contains Python scripts for interacting with government APIs, including `validate_data.py`, `monitor_keywords.py`, `fetch_congress.py`, `fetch_govinfo.py`, and `fetch_regulations.py`.
 - **`data/`**: Stores data fetched by scripts.
   - **`data/congress/`**: Data from Congress.gov API via `fetch_congress.py`.
   - **`data/govinfo/`**: Data from GovInfo.gov API via `fetch_govinfo.py`.
+  - **`data/regulations/`**: Data from Regulations.gov API via `fetch_regulations.py`.
 - **`docs/`**: Reference files, guides, and structured metadata to help users and contributors.
 - **`.github/workflows/`**: Workflow files for testing, deploying, and data fetching.
 
