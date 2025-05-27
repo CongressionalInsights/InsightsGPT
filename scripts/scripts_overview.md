@@ -36,15 +36,24 @@ This document provides an overview of all scripts available in the repository, t
 - **Outputs**: Saves flagged results to `alerts/`.
 
 ### **5. `bill_similarity.py`**
-- **Purpose**: To detect overlaps, conflicts, or amendments between legislative bills using semantic text embeddings (SBERT). Highlights conflicting language, duplicate provisions, or reused templates by calculating document similarity.
-- **Inputs (Command-line arguments, to be defined/implemented if desired, but for now, describe general input):**
-    - Input bill texts or paths to bill files (currently handled via direct function calls within the script's example usage).
-    - (Optional) Output file path for the report (e.g., `--output_file report.json`) (currently a function parameter).
-    - (Optional) Similarity threshold (e.g., `--threshold 0.8`) (currently a function parameter).
-    - *(Note: The script currently implements these via function parameters in its example usage, not as direct command-line arguments. The documentation reflects general capability.)*
-- **Outputs**:
-    - Prints similarity findings to the console.
-    - (If output file path provided via function parameter) Saves a JSON report detailing pairs of similar bill segments, their text, and similarity scores.
+
+```bash
+Usage: python bill_similarity.py \
+  --bill1 path/to/first_bill.txt \
+  --bill2 path/to/second_bill.txt \
+  [--threshold 0.8] \
+  [--segment_size 100] \
+  [--overlap 20] \
+  [--output results.json]
+
+Arguments:
+	•	--bill1 – Path to the first bill text file.
+	•	--bill2 – Path to the second bill text file.
+	•	--threshold – Similarity cutoff between 0 and 1 (default: 0.8).
+	•	--segment_size – Number of words per segment (default: 100).
+	•	--overlap – Overlap in words between segments (default: 20).
+	•	--output – (Optional) JSON file to save the match results.
+```
 
 ---
 

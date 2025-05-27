@@ -1,382 +1,240 @@
 import pytest
 import os
 import json
-from unittest.mock import patch, MagicMock, call
+from unittest.mock import patch, MagicMock, mock_open, call
 import sys
 import io
 import contextlib
-import numpy as np
+import logging
+import argparse # For creating mock args
 
-# Add scripts directory to sys.path to allow importing bill_similarity
+# Add scripts directory to sys.path
 SCRIPTS_DIR = os.path.join(os.path.dirname(__file__), '..', 'scripts')
 if SCRIPTS_DIR not in sys.path:
     sys.path.insert(0, SCRIPTS_DIR)
 
 try:
     from bill_similarity import (
-        load_bills,
+        main,
         preprocess_text,
         segment_bill,
-        get_sbert_model,
-        generate_embeddings,
-        SBERT_MODEL_NAME,
-        calculate_similarity_scores,
         find_similar_segments,
-        report_similarities
+        BOILERPLATE_PATTERNS # Import for use in tests
     )
 except ImportError as e:
     print(f"Error importing from bill_similarity: {e}")
     print(f"sys.path: {sys.path}")
     pytest.fail(f"Failed to import bill_similarity: {e}")
 
-@pytest.fixture(autouse=True)
-def reset_sbert_model_cache():
-    try:
-        import bill_similarity
-        bill_similarity._sbert_model = None
-    except NameError:
-        pass
-    yield
-    try:
-        import bill_similarity
-        bill_similarity._sbert_model = None
-    except NameError:
-        pass
+# --- Fixtures ---
 
 @pytest.fixture
-def dummy_bill_content():
-    return "This is a dummy bill. It has several sentences for testing purposes."
+def sample_bill_text_with_boilerplate():
+    return """
+IN THE SENATE OF THE UNITED STATES, January 1, 2023;
+A BILL To do something important.
+Be it enacted by the Senate and House of Representatives of the United States of America in Congress assembled:
+Section 1. This is the first section.
+It has some text.
+
+Section 2. This is another section.
+With more text for testing.
+"""
 
 @pytest.fixture
-def temp_file(tmp_path, dummy_bill_content):
-    p = tmp_path / "dummy_bill.txt"
-    p.write_text(dummy_bill_content)
-    return str(p)
+def sample_bill_text_clean():
+    return "this is the first section. it has some text. this is another section. with more text for testing."
 
 @pytest.fixture
-def sample_segments_data():
-    return ["This is segment one.", "Segment two is here.", "And the third segment."]
+def sample_segments1():
+    return ["this is segment one from bill one", "common segment for testing similarity"]
 
 @pytest.fixture
-def sample_embeddings_set1_np(): # Keep as numpy for direct use in cosine_similarity
-    return np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.707, 0.707, 0.0]])
+def sample_segments2():
+    return ["this is segment one from bill two", "common segment for testing similarity", "another segment here"]
 
 @pytest.fixture
-def sample_embeddings_set1_list(sample_embeddings_set1_np): # For function inputs
-    return sample_embeddings_set1_np.tolist()
-
+def mock_sbert_model():
+    mock_model = MagicMock()
+    # Mock encode to return simple embeddings (list of lists)
+    # The actual values don't matter as much as the structure if cos_sim is also mocked
+    mock_model.encode.side_effect = lambda segments, convert_to_tensor: [[float(i+1), float(i+2)] for i, _ in enumerate(segments)]
+    return mock_model
 
 @pytest.fixture
-def sample_embeddings_set2_np():
-    return np.array([[1.0, 0.0, 0.0], [0.0, 0.0, 1.0], [0.5, 0.5, 0.5]])
-
-@pytest.fixture
-def sample_embeddings_set2_list(sample_embeddings_set2_np):
-    return sample_embeddings_set2_np.tolist()
-
+def mock_sbert_util():
+    mock_util = MagicMock()
+    # Mock cos_sim to return a predefined similarity matrix
+    # For sample_segments1 (2 segs) and sample_segments2 (3 segs), matrix should be 2x3
+    # Let's make seg1[1] and seg2[1] similar
+    similarity_matrix = [
+        [0.5, 0.2, 0.1],  # Similarities of segs1[0] with segs2
+        [0.3, 0.95, 0.4]  # Similarities of segs1[1] with segs2
+    ]
+    mock_util.cos_sim.return_value = similarity_matrix
+    return mock_util
 
 # --- Test Functions ---
 
-def test_load_bills_from_file(temp_file, dummy_bill_content):
-    """Test loading bill content from a file."""
-    loaded_content = load_bills([temp_file])
-    assert len(loaded_content) == 1
-    assert loaded_content[0] == dummy_bill_content
+def test_preprocess_text_boilerplate_and_case(sample_bill_text_with_boilerplate, sample_bill_text_clean):
+    """Test boilerplate removal and lowercasing."""
+    processed = preprocess_text(sample_bill_text_with_boilerplate)
+    # Exact match might be tricky due to subtle space differences from regex.
+    # Check for key phrases' absence and presence.
+    assert "in the senate of the united states" not in processed
+    assert "be it enacted" not in processed
+    assert "section 1" not in processed # The "Section \d+" pattern is removed
+    assert "this is the first section" in processed # Content remains
+    assert processed == sample_bill_text_clean
 
-def test_load_bills_direct_text(dummy_bill_content):
-    """Test loading bill content directly as text."""
-    direct_text = "This is a direct bill text."
-    loaded_content = load_bills([direct_text])
-    assert len(loaded_content) == 1
-    assert loaded_content[0] == direct_text
+def test_preprocess_text_whitespace():
+    """Test whitespace normalization."""
+    text = "  Extra   spaces  and\nnewlines\t tabs.  "
+    expected = "extra spaces and newlines tabs."
+    assert preprocess_text(text) == expected
 
-def test_load_bills_file_not_found():
-    """Test FileNotFoundError handling in load_bills."""
-    # No pytest.raises here, function prints warning and skips
-    # We can capture stdout to check for the warning if necessary
-    non_existent_file = "non_existent_file.txt"
-    with io.StringIO() as buf, contextlib.redirect_stdout(buf):
-        loaded_content = load_bills([non_existent_file])
-        output = buf.getvalue()
-    assert len(loaded_content) == 0
-    assert f"Warning: File not found at {non_existent_file}" in output
+def test_segment_bill_paragraph_based():
+    """Test segmentation primarily by paragraphs."""
+    text = "First paragraph.\n\nSecond paragraph, quite short.\n\nThird paragraph which is a bit longer and might exceed the segment size if not careful."
+    segments = segment_bill(text, segment_size=10, overlap=3) # segment_size in words
+    assert len(segments) >= 3 # Expect at least 3 segments, third might be split
+    assert "first paragraph." in segments[0]
+    assert "second paragraph, quite short." in segments[1]
+    assert "third paragraph which is a bit longer" in segments[2] # Start of third paragraph
 
-def test_load_bills_mixed_sources(temp_file, dummy_bill_content):
-    """Test loading from a mix of file and direct text."""
-    direct_text = "Another bill as direct text."
-    sources = [temp_file, direct_text]
-    loaded_content = load_bills(sources)
-    assert len(loaded_content) == 2
-    assert loaded_content[0] == dummy_bill_content
-    assert loaded_content[1] == direct_text
-
-
-def test_preprocess_text():
-    """Test text preprocessing for whitespace."""
-    text_with_issues = "   This  is   a test.  "
-    expected_text = "This is a test."
-    assert preprocess_text(text_with_issues) == expected_text
-    assert preprocess_text("Clean text.") == "Clean text."
-    assert preprocess_text("") == ""
-
-
-def test_segment_bill_basic():
-    """Test basic bill segmentation."""
-    text = "one two three four five six seven eight nine ten"
-    segments = segment_bill(text, segment_size=5, overlap=2)
-    assert len(segments) == 3
+def test_segment_bill_sliding_window_fallback():
+    """Test sliding window fallback for a long paragraph."""
+    long_paragraph = "one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen"
+    segments = segment_bill(long_paragraph, segment_size=5, overlap=2)
+    # Expected: "one two three four five", "four five six seven eight", "seven eight nine ten eleven", "ten eleven twelve thirteen fourteen", "thirteen fourteen fifteen"
+    assert len(segments) == 5
     assert segments[0] == "one two three four five"
-    assert segments[1] == "four five six seven eight" # overlap of 'four five' (2 words)
-    assert segments[2] == "seven eight nine ten" # remaining words
-
-def test_segment_bill_shorter_than_segment_size():
-    """Test segmentation when text is shorter than segment size."""
-    text = "one two three"
-    segments = segment_bill(text, segment_size=5, overlap=1)
-    assert len(segments) == 1
-    assert segments[0] == "one two three"
-
-def test_segment_bill_no_overlap():
-    """Test segmentation with no overlap."""
-    text = "one two three four five six"
-    segments = segment_bill(text, segment_size=3, overlap=0)
-    assert len(segments) == 2
-    assert segments[0] == "one two three"
-    assert segments[1] == "four five six"
+    assert segments[1] == "four five six seven eight"
+    assert segments[4] == "thirteen fourteen fifteen"
 
 def test_segment_bill_empty_text():
-    """Test segmentation with empty text."""
-    text = ""
-    segments = segment_bill(text, segment_size=5, overlap=1)
-    assert len(segments) == 0
+    assert segment_bill("") == []
 
-def test_segment_bill_exact_multiple():
-    """Test segmentation when text length is an exact multiple of segment_size - overlap."""
-    text = "word1 word2 word3 word4 word5 word6 word7 word8 word9" # 9 words
-    # (size - overlap) = 3. 9/3 = 3 segments.
-    segments = segment_bill(text, segment_size=5, overlap=2) 
-    assert len(segments) == 3
-    assert segments[0] == "word1 word2 word3 word4 word5"
-    assert segments[1] == "word4 word5 word6 word7 word8"
-    assert segments[2] == "word7 word8 word9"
-
-
+@patch('scripts.bill_similarity.difflib.unified_diff')
+@patch('scripts.bill_similarity.util')
 @patch('scripts.bill_similarity.SentenceTransformer')
-def test_get_sbert_model_loads_and_caches(MockSentenceTransformer):
-    """Test SBERT model loading and caching."""
-    mock_model_instance = MagicMock()
-    MockSentenceTransformer.return_value = mock_model_instance
-
-    # First call: should load the model
-    model1 = get_sbert_model()
-    MockSentenceTransformer.assert_called_once_with(SBERT_MODEL_NAME)
-    assert model1 == mock_model_instance
-
-    # Second call: should return cached model, not call constructor again
-    model2 = get_sbert_model()
-    MockSentenceTransformer.assert_called_once_with(SBERT_MODEL_NAME) # Still called only once
-    assert model2 == mock_model_instance
-    assert model2 == model1 # Ensure it's the same instance
-
-@patch('scripts.bill_similarity.SentenceTransformer')
-def test_get_sbert_model_load_failure(MockSentenceTransformer):
-    """Test SBERT model loading failure."""
-    MockSentenceTransformer.side_effect = Exception("Failed to load")
-    with pytest.raises(RuntimeError, match="Failed to load SBERT model: Failed to load"):
-        get_sbert_model()
-
-
-@patch('scripts.bill_similarity.get_sbert_model') # Mock get_sbert_model to control the model instance
-def test_generate_embeddings(mock_get_sbert_model, sample_segments_data):
-    """Test embedding generation."""
-    mock_model_instance = MagicMock()
-    mock_get_sbert_model.return_value = mock_model_instance
+def test_find_similar_segments_with_sbert(MockSentenceTransformer, mock_util_in_script, mock_unified_diff,
+                                         sample_segments1, sample_segments2, mock_sbert_model):
+    """Test find_similar_segments when sentence-transformers is available."""
+    MockSentenceTransformer.return_value = mock_sbert_model # Our own mock_sbert_model
+    scripts.bill_similarity.util = mock_util_in_script # Replace the util in the script's context
     
-    dummy_embeddings_np = np.array([[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]])
-    dummy_embeddings_list = dummy_embeddings_np.tolist()
-    mock_model_instance.encode.return_value = dummy_embeddings_np
-
-    embeddings = generate_embeddings(sample_segments_data)
-
-    mock_get_sbert_model.assert_called_once() # Ensure model loader was called
-    mock_model_instance.encode.assert_called_once_with(sample_segments_data, show_progress_bar=True)
-    assert embeddings == dummy_embeddings_list
-
-def test_generate_embeddings_empty_input():
-    """Test generate_embeddings with empty input list."""
-    assert generate_embeddings([]) == []
-
-@patch('scripts.bill_similarity.get_sbert_model')
-def test_generate_embeddings_model_load_failure(mock_get_sbert_model):
-    """Test generate_embeddings when SBERT model fails to load."""
-    mock_get_sbert_model.side_effect = RuntimeError("Model loading failed")
-    # Capture stdout to check for the error message from generate_embeddings
-    with io.StringIO() as buf, contextlib.redirect_stdout(buf):
-        result = generate_embeddings(["test segment"])
-        output = buf.getvalue()
+    # Define a mock similarity matrix that util.cos_sim would return
+    # segs1 has 2 items, segs2 has 3 items. Matrix is 2x3
+    # Make segs1[1] ("common segment...") and segs2[1] ("common segment...") highly similar
+    mock_similarity_matrix = [[0.1, 0.2, 0.3], [0.4, 0.95, 0.5]]
+    mock_util_in_script.cos_sim.return_value = mock_similarity_matrix
     
-    assert result == [] # Should return empty list on failure
-    assert "Error obtaining SBERT model for embedding generation: Model loading failed" in output
+    mock_unified_diff.return_value = ["- line1", "+ line2"] # Dummy diff output
+
+    threshold = 0.9
+    results = find_similar_segments(sample_segments1, sample_segments2, threshold=threshold)
+
+    MockSentenceTransformer.assert_called_once_with('all-MiniLM-L6-v2')
+    mock_sbert_model.encode.assert_any_call(sample_segments1, convert_to_tensor=True)
+    mock_sbert_model.encode.assert_any_call(sample_segments2, convert_to_tensor=True)
+    mock_util_in_script.cos_sim.assert_called_once()
+
+    assert len(results) == 1
+    result = results[0]
+    assert result['segment1_index'] == 1
+    assert result['segment2_index'] == 1
+    assert result['score'] == 0.95
+    assert result['text1'] == sample_segments1[1]
+    assert result['text2'] == sample_segments2[1]
+    assert result['diff'] == "- line1\n+ line2"
+    mock_unified_diff.assert_called_once_with(sample_segments1[1].split(), sample_segments2[1].split(), lineterm='')
 
 
-def test_calculate_similarity_scores_intra_list(sample_embeddings_set1_list, sample_embeddings_set1_np):
-    """Test intra-list similarity calculation."""
-    # Expected: (0,1), (0,2), (1,2)
-    # cos(e0,e1) = 0, cos(e0,e2) = 0.707, cos(e1,e2) = 0.707
-    scores = calculate_similarity_scores(sample_embeddings_set1_list)
+@patch('scripts.bill_similarity.SentenceTransformer', None)
+@patch('scripts.bill_similarity.util', None)
+def test_find_similar_segments_no_sbert(caplog, sample_segments1, sample_segments2):
+    """Test find_similar_segments when sentence-transformers is not available."""
+    with caplog.at_level(logging.WARNING):
+        results = find_similar_segments(sample_segments1, sample_segments2, threshold=0.8)
     
-    # Convert to dict for easier lookup, ignoring order of pairs
-    scores_dict = {(min(s[0], s[1]), max(s[0], s[1])): s[2] for s in scores}
-
-    assert len(scores) == 3 # 3 unique pairs for 3 items
-    np.testing.assert_almost_equal(scores_dict[(0,1)], np.dot(sample_embeddings_set1_np[0], sample_embeddings_set1_np[1]))
-    np.testing.assert_almost_equal(scores_dict[(0,2)], np.dot(sample_embeddings_set1_np[0], sample_embeddings_set1_np[2]))
-    np.testing.assert_almost_equal(scores_dict[(1,2)], np.dot(sample_embeddings_set1_np[1], sample_embeddings_set1_np[2]))
+    assert len(results) == 0
+    assert "sentence-transformers not installed; TF-IDF fallback not implemented." in caplog.text
 
 
-def test_calculate_similarity_scores_inter_list(sample_embeddings_set1_list, sample_embeddings_set2_list, sample_embeddings_set1_np, sample_embeddings_set2_np):
-    """Test inter-list similarity calculation."""
-    scores = calculate_similarity_scores(sample_embeddings_set1_list, sample_embeddings_set2_list)
-    assert len(scores) == 9 # 3x3 pairs
+# --- Tests for main() function ---
 
-    # Check a few specific scores
-    # (e1_0, e2_0) should be 1.0
-    # (e1_1, e2_1) should be 0.0
-    score_map = {(s[0], s[1]): s[2] for s in scores}
-    np.testing.assert_almost_equal(score_map[(0,0)], np.dot(sample_embeddings_set1_np[0], sample_embeddings_set2_np[0])) # (1,0,0) . (1,0,0) = 1
-    np.testing.assert_almost_equal(score_map[(1,1)], np.dot(sample_embeddings_set1_np[1], sample_embeddings_set2_np[1])) # (0,1,0) . (0,0,1) = 0
-    np.testing.assert_almost_equal(score_map[(2,2)], np.dot(sample_embeddings_set1_np[2], sample_embeddings_set2_np[2])) # (0.707,0.707,0) . (0.5,0.5,0.5) = 0.707
-
-
-def test_calculate_similarity_scores_empty():
-    assert calculate_similarity_scores([]) == []
-    assert calculate_similarity_scores([[]]) == [] #Technically valid if inner list is an embedding
-    assert calculate_similarity_scores([], [[]]) == []
-    assert calculate_similarity_scores([[]], []) == []
-
-
-def test_find_similar_segments_intra_bill(sample_segments_data, sample_embeddings_set1_list):
-    """Test finding similar segments within a single bill."""
-    # e0 vs e2 score is 0.707, e1 vs e2 score is 0.707
-    # e0 vs e1 is 0.0
-    similar_pairs = find_similar_segments(
-        bill_id1="bill1",
-        segments1=sample_segments_data,
-        embeddings1=sample_embeddings_set1_list,
-        similarity_threshold=0.7
+@patch('argparse.ArgumentParser.parse_args')
+@patch('builtins.open', new_callable=mock_open, read_data="Sample bill text content.")
+@patch('scripts.bill_similarity.preprocess_text')
+@patch('scripts.bill_similarity.segment_bill')
+@patch('scripts.bill_similarity.find_similar_segments')
+@patch('json.dump') # To check if it's called for file output
+@patch('logging.info') # To check logging messages
+def test_main_file_output(mock_logging_info, mock_json_dump, mock_find_similar, mock_segment, mock_preprocess, mock_file_open, mock_parse_args, tmp_path):
+    """Test main function with file output."""
+    output_filename = tmp_path / "output.json"
+    mock_parse_args.return_value = argparse.Namespace(
+        bill1="bill1.txt", bill2="bill2.txt", threshold=0.75,
+        segment_size=150, overlap=30, output=str(output_filename)
     )
-    assert len(similar_pairs) == 2
-    # Check one pair (order might vary, so check for presence or sort)
-    found_0_2 = any(p['segment1_index'] == 0 and p['segment2_index'] == 2 for p in similar_pairs) or \
-                any(p['segment1_index'] == 2 and p['segment2_index'] == 0 for p in similar_pairs)
-    found_1_2 = any(p['segment1_index'] == 1 and p['segment2_index'] == 2 for p in similar_pairs) or \
-                any(p['segment1_index'] == 2 and p['segment2_index'] == 1 for p in similar_pairs)
-    assert found_0_2
-    assert found_1_2
-    for pair in similar_pairs:
-        assert pair['similarity_score'] >= 0.7
-        assert pair['bill1_id'] == "bill1"
-        assert pair['bill2_id'] == "bill1" # Intra-bill comparison
-
-def test_find_similar_segments_inter_bill(sample_segments_data, sample_embeddings_set1_list, sample_embeddings_set2_list):
-    """Test finding similar segments between two bills."""
-    # e1_0 vs e2_0 score is 1.0
-    # e1_2 vs e2_2 score is 0.707
-    similar_pairs = find_similar_segments(
-        bill_id1="billA",
-        segments1=sample_segments_data,
-        embeddings1=sample_embeddings_set1_list,
-        bill_id2="billB",
-        segments2=sample_segments_data, # Using same segments for simplicity, different embeddings matter
-        embeddings2=sample_embeddings_set2_list,
-        similarity_threshold=0.7
-    )
-    assert len(similar_pairs) == 2
     
-    pair_scores = sorted([p['similarity_score'] for p in similar_pairs], reverse=True)
-    np.testing.assert_almost_equal(pair_scores[0], 1.0) # (e1_0, e2_0)
-    np.testing.assert_almost_equal(pair_scores[1], 0.707, decimal=3) # (e1_2, e2_2)
+    mock_preprocess.side_effect = lambda x: f"processed {x}"
+    mock_segment.side_effect = lambda text, size, overlap: [f"segment of {text[:10]}"]
+    mock_find_similar.return_value = [{"similarity": "high"}]
 
-    for pair in similar_pairs:
-        assert pair['bill1_id'] == "billA"
-        assert pair['bill2_id'] == "billB"
-
-def test_find_similar_segments_no_similarity(sample_segments_data, sample_embeddings_set1_list):
-    """Test find_similar_segments when no segments meet the threshold."""
-    similar_pairs = find_similar_segments(
-        bill_id1="bill1",
-        segments1=sample_segments_data,
-        embeddings1=sample_embeddings_set1_list,
-        similarity_threshold=0.99 # High threshold
-    )
-    assert len(similar_pairs) == 0
-
-
-def test_report_similarities_console_output(capsys):
-    """Test reporting similarities to console."""
-    similarities_data = [{
-        'bill1_id': 'A', 'segment1_index': 0, 'segment1_text': 'Text A1',
-        'bill2_id': 'B', 'segment2_index': 1, 'segment2_text': 'Text B2',
-        'similarity_score': 0.85678
-    }]
-    report_similarities(similarities_data)
-    captured = capsys.readouterr()
-    assert "Found potential similarity:" in captured.out
-    assert "Bill 1 ID: A, Segment Index: 0" in captured.out
-    assert "Segment 1 Text: Text A1" in captured.out
-    assert "Bill 2 ID: B, Segment Index: 1" in captured.out
-    assert "Segment 2 Text: Text B2" in captured.out
-    assert "Similarity Score: 0.8568" in captured.out # Check formatting
-
-def test_report_similarities_console_output_no_similarities(capsys):
-    """Test console output when no similarities are found."""
-    report_similarities([])
-    captured = capsys.readouterr()
-    assert "No similarities to report." in captured.out
-
-def test_report_similarities_file_output(tmp_path):
-    """Test reporting similarities to a JSON file."""
-    similarities_data = [{
-        'bill1_id': 'C', 'segment1_index': 2, 'segment1_text': 'Text C3',
-        'bill2_id': 'D', 'segment2_index': 3, 'segment2_text': 'Text D4',
-        'similarity_score': 0.92345
-    }]
-    output_file_path = tmp_path / "report.json"
-    
-    # Capture stdout to check the confirmation message
+    # Capture stdout to check console output (if any, though should be logging)
     with io.StringIO() as buf, contextlib.redirect_stdout(buf):
-        report_similarities(similarities_data, output_file=str(output_file_path))
-        output_confirmation = buf.getvalue()
+        main() # Execute the main function
 
-    assert f"Similarity report saved to {output_file_path}" in output_confirmation
-    assert output_file_path.exists()
+    # Check file reading calls
+    mock_file_open.assert_any_call("bill1.txt", 'r', encoding='utf-8')
+    mock_file_open.assert_any_call("bill2.txt", 'r', encoding='utf-8')
+
+    # Check preprocessing calls
+    mock_preprocess.assert_any_call("Sample bill text content.") # Called twice with same mock read_data
     
-    with open(output_file_path, 'r') as f:
-        loaded_data = json.load(f)
-    assert loaded_data == similarities_data
+    # Check segmentation calls
+    mock_segment.assert_any_call("processed Sample bill text content.", 150, 30)
 
-def test_report_similarities_file_output_no_similarities(tmp_path, capsys):
-    """Test file output when no similarities are found (should not create file)."""
-    output_file_path = tmp_path / "empty_report.json"
-    report_similarities([], output_file=str(output_file_path))
+    # Check find_similar_segments call
+    mock_find_similar.assert_called_once_with(
+        ["segment of processed S"], ["segment of processed S"], 0.75
+    ) # Based on mock_segment output
+
+    # Check file writing for output
+    mock_file_open.assert_any_call(str(output_filename), 'w', encoding='utf-8')
+    mock_json_dump.assert_called_once_with([{"similarity": "high"}], mock_file_open(), indent=2)
     
-    # The function prints "No similarities to report." to console.
-    captured = capsys.readouterr()
-    assert "No similarities to report." in captured.out
-    assert not output_file_path.exists() # File should not be created for empty list.
+    # Check logging info
+    mock_logging_info.assert_any_call(f"Results written to {output_filename}")
 
-@patch('builtins.open', side_effect=IOError("Disk full"))
-def test_report_similarities_file_io_error(mock_open, capsys):
-    """Test IOError handling when writing to file."""
-    similarities_data = [{"test": "data"}]
+
+@patch('argparse.ArgumentParser.parse_args')
+@patch('builtins.open', new_callable=mock_open, read_data="Sample bill text.")
+@patch('scripts.bill_similarity.preprocess_text', return_value="processed text")
+@patch('scripts.bill_similarity.segment_bill', return_value=["segment1", "segment2"])
+@patch('scripts.bill_similarity.find_similar_segments', return_value=[{"match": "found"}])
+def test_main_console_output(mock_find_similar, mock_segment_bill, mock_preprocess_text, mock_file_open, mock_parse_args):
+    """Test main function with console output."""
+    mock_parse_args.return_value = argparse.Namespace(
+        bill1="b1.txt", bill2="b2.txt", threshold=0.8,
+        segment_size=100, overlap=20, output=None # No output file
+    )
+
     with io.StringIO() as buf, contextlib.redirect_stdout(buf):
-        report_similarities(similarities_data, output_file="dummy_path.json")
-        output = buf.getvalue()
+        main()
+        console_output = buf.getvalue()
 
-    assert "Error saving report to dummy_path.json: Disk full" in output
+    expected_json_output = json.dumps([{"match": "found"}], indent=2)
+    assert console_output.strip() == expected_json_output.strip()
 
-# --- Main execution for running tests (optional, pytest handles this) ---
+    # Verify other calls as in the file output test if necessary
+    mock_file_open.assert_any_call("b1.txt", 'r', encoding='utf-8')
+    mock_preprocess_text.assert_called()
+    mock_segment_bill.assert_called()
+    mock_find_similar.assert_called()
+
+
 if __name__ == "__main__":
-    # This allows running the tests with `python test_bill_similarity.py`
-    # but it's better to use `pytest` command in the terminal.
     pytest.main()
