@@ -55,6 +55,28 @@ Arguments:
 	•	--output – (Optional) JSON file to save the match results.
 ```
 
+### **6. `Submit_Regulation_Comment.py`**
+- **Purpose**: Submits a public comment to Regulations.gov for a specified docket.
+- **Usage Example**:
+  ```bash
+  python scripts/Submit_Regulation_Comment.py \
+    --docket-id DOCKET_ID \
+    [--comment "Your comment text"] \
+    [--comment-file path/to/comment.txt] \
+    [--api-key YOUR_API_KEY] \
+    [--dry-run] \
+    [--output response.json]
+  ```
+- **Key Arguments/Options**:
+    - `--docket-id`: (Required) The ID of the docket to comment on (e.g., `NOAA-NMFS-2024-0001`).
+    - `--comment`: Text of the comment. (Mutually exclusive with `--comment-file`)
+    - `--comment-file`: Path to a text file containing the comment. (Mutually exclusive with `--comment`)
+    - `--api-key`: Regulations.gov API key. If not provided, the script attempts to use the `REGGOV_API_KEY` environment variable.
+    - `--dry-run`: If included, the script will print the request details (endpoint, headers, payload) and exit without actually sending the comment.
+    - `--output`: (Optional) Path to a JSON file where the API response will be saved. If not provided, the response is printed to the console.
+- **Environment Variables**:
+    - `REGGOV_API_KEY`: Can be used to provide the Regulations.gov API key.
+
 ---
 
 ## **Workflows**
