@@ -16,7 +16,7 @@ try:
         get_api_key,
         create_sync_session,
         create_async_client,
-        validate_with_schema,
+        validate_schema, # Renamed from validate_with_schema
         API_BASE,  # Though not directly tested, good to ensure it's importable
         DEFAULT_TIMEOUT,
         requests_cache # To check its mocked state or presence
@@ -72,7 +72,7 @@ def test_create_sync_session_with_cache_available(MockCachedSession, caplog):
     # Mock requests_cache itself to be not None to simulate it being imported
     with patch('scripts.fr_client.requests_cache', MagicMock(spec=True)) as mock_rc_module:
         mock_rc_module.CachedSession = MockCachedSession # Assign our specific mock to it
-        
+
         session = create_sync_session(use_cache=True)
         MockCachedSession.assert_called_once_with(
             cache_name='fr_cache',
@@ -111,7 +111,7 @@ def test_create_sync_session_retry_strategy():
     session = create_sync_session(use_cache=False) # Cache not relevant here
     adapter = session.adapters.get("https://") # Check for https
     retry_strategy = adapter.max_retries
-    
+
     from scripts.fr_client import RETRIES, BACKOFF_FACTOR, STATUS_FORCELIST
     assert retry_strategy.total == RETRIES
     assert retry_strategy.read == RETRIES
@@ -134,20 +134,20 @@ def test_create_async_client_instance_and_timeout():
     assert client.timeout.pool is None # Default pool timeout
 
 
-# --- Tests for validate_with_schema ---
+# --- Tests for validate_schema --- # Renamed test section
 
 @patch('builtins.open', new_callable=mock_open, read_data='{"type": "object"}')
 @patch('json.load')
 @patch('scripts.fr_client.jsonschema.validate') # Mock the validate function itself
-def test_validate_with_schema_successful(mock_js_validate, mock_json_load, mock_file_open, caplog):
+def test_validate_schema_successful(mock_js_validate, mock_json_load, mock_file_open, caplog): # Renamed test
     """Test successful validation."""
     mock_json_load.return_value = {"type": "object"} # Schema content
     instance_data = {"key": "value"}
     schema_file_path = "dummy_schema.json"
-    
+
     with caplog.at_level(logging.INFO):
-        result = validate_with_schema(instance_data, schema_file_path)
-    
+        result = validate_schema(instance_data, schema_file_path) # Use new name
+
     assert result is True
     mock_file_open.assert_called_once_with(schema_file_path, 'r', encoding='utf-8')
     mock_json_load.assert_called_once()
@@ -155,62 +155,62 @@ def test_validate_with_schema_successful(mock_js_validate, mock_json_load, mock_
     assert f"Instance successfully validated against schema: {schema_file_path}" in caplog.text
 
 
-def test_validate_with_schema_path_none():
+def test_validate_schema_path_none(): # Renamed test
     """Test with schema_path=None (should return True and not attempt to open/validate)."""
-    assert validate_with_schema({"key": "value"}, None) is True
+    assert validate_schema({"key": "value"}, None) is True # Use new name
 
 
 @patch('logging.Logger.warning')
-def test_validate_with_schema_jsonschema_unavailable(mock_logger_warning):
+def test_validate_schema_jsonschema_unavailable(mock_logger_warning): # Renamed test
     """Test with jsonschema library mocked as unavailable."""
     with patch('scripts.fr_client.jsonschema', None):
-        result = validate_with_schema({"key": "value"}, "some_schema.json")
+        result = validate_schema({"key": "value"}, "some_schema.json") # Use new name
         assert result is True
         mock_logger_warning.assert_called_once_with(
             "JSON schema validation requested but 'jsonschema' library not installed."
         )
 
 @patch('builtins.open', side_effect=FileNotFoundError("Schema not found"))
-def test_validate_with_schema_file_not_found(mock_file_open, caplog):
+def test_validate_schema_file_not_found(mock_file_open, caplog): # Renamed test
     """Test FileNotFoundError for schema file."""
     schema_file_path = "non_existent_schema.json"
     with caplog.at_level(logging.ERROR):
-        result = validate_with_schema({"key": "value"}, schema_file_path)
+        result = validate_schema({"key": "value"}, schema_file_path) # Use new name
     assert result is False
     mock_file_open.assert_called_once_with(schema_file_path, 'r', encoding='utf-8')
     assert f"Schema file not found: {schema_file_path}" in caplog.text
 
 @patch('builtins.open', new_callable=mock_open, read_data='invalid json')
 @patch('json.load', side_effect=json.JSONDecodeError("Decode error", "doc", 0))
-def test_validate_with_schema_json_decode_error(mock_json_load, mock_file_open, caplog):
+def test_validate_schema_json_decode_error(mock_json_load, mock_file_open, caplog): # Renamed test
     """Test json.JSONDecodeError for schema file."""
     schema_file_path = "bad_schema.json"
     with caplog.at_level(logging.ERROR):
-        result = validate_with_schema({"key": "value"}, schema_file_path)
+        result = validate_schema({"key": "value"}, schema_file_path) # Use new name
     assert result is False
     assert f"Error decoding schema file {schema_file_path}" in caplog.text
 
 @patch('builtins.open', new_callable=mock_open, read_data='{"type": "object"}')
 @patch('json.load')
 @patch('scripts.fr_client.jsonschema.validate')
-def test_validate_with_schema_validation_error(mock_js_validate, mock_json_load, mock_file_open, caplog):
+def test_validate_schema_validation_error(mock_js_validate, mock_json_load, mock_file_open, caplog): # Renamed test
     """Test jsonschema.ValidationError during validation."""
     # Ensure jsonschema_ValidationError is not None for this test
-    if not jsonschema_ValidationError:
+    if not jsonschema_ValidationError: # Check if jsonschema was imported
         pytest.skip("jsonschema library not available, skipping ValidationError test")
 
     mock_json_load.return_value = {"type": "object"}
     # Create a mock error object similar to what jsonschema.ValidationError would be
-    validation_error_instance = jsonschema_ValidationError("Instance is not valid")
+    validation_error_instance = jsonschema_ValidationError("Instance is not valid") # Use the imported (or None) name
     mock_js_validate.side_effect = validation_error_instance
-    
+
     schema_file_path = "schema.json"
     with caplog.at_level(logging.ERROR):
-        result = validate_with_schema({"key": "value"}, schema_file_path)
-    
+        result = validate_schema({"key": "value"}, schema_file_path) # Use new name
+
     assert result is False
     assert f"Schema validation error against {schema_file_path}: Instance is not valid" in caplog.text
 
 
-if __name__ == "__main__":
+if __name__ == "__main__": # pragma: no cover
     pytest.main()

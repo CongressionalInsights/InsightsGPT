@@ -75,7 +75,7 @@ def create_sync_session(use_cache: bool = True) -> requests.Session:
     adapter = HTTPAdapter(max_retries=retry_strategy)
     session.mount("https://", adapter)
     session.mount("http://", adapter)
-    
+
     logger.info(f"Created synchronous session with retries (total={RETRIES}) for statuses {STATUS_FORCELIST}.")
     return session
 
@@ -90,7 +90,7 @@ def create_async_client() -> httpx.AsyncClient:
     logger.info(f"Created asynchronous httpx client with default timeout {DEFAULT_TIMEOUT}s.")
     return httpx.AsyncClient(timeout=DEFAULT_TIMEOUT)
 
-def validate_with_schema(instance: dict, schema_path: str) -> bool:
+def validate_schema(instance: dict, schema_path: str) -> bool: # Renamed function
     """
     Validates a JSON instance against a schema file.
     Returns True if valid or if jsonschema is not available/schema_path is None.

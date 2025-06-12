@@ -123,13 +123,13 @@ def test_find_similar_segments_with_sbert(MockSentenceTransformer, mock_util_in_
     """Test find_similar_segments when sentence-transformers is available."""
     MockSentenceTransformer.return_value = mock_sbert_model # Our own mock_sbert_model
     scripts.bill_similarity.util = mock_util_in_script # Replace the util in the script's context
-    
+
     # Define a mock similarity matrix that util.cos_sim would return
     # segs1 has 2 items, segs2 has 3 items. Matrix is 2x3
     # Make segs1[1] ("common segment...") and segs2[1] ("common segment...") highly similar
     mock_similarity_matrix = [[0.1, 0.2, 0.3], [0.4, 0.95, 0.5]]
     mock_util_in_script.cos_sim.return_value = mock_similarity_matrix
-    
+
     mock_unified_diff.return_value = ["- line1", "+ line2"] # Dummy diff output
 
     threshold = 0.9
@@ -157,7 +157,7 @@ def test_find_similar_segments_no_sbert(caplog, sample_segments1, sample_segment
     """Test find_similar_segments when sentence-transformers is not available."""
     with caplog.at_level(logging.WARNING):
         results = find_similar_segments(sample_segments1, sample_segments2, threshold=0.8)
-    
+
     assert len(results) == 0
     assert "sentence-transformers not installed; TF-IDF fallback not implemented." in caplog.text
 
@@ -178,7 +178,7 @@ def test_main_file_output(mock_logging_info, mock_json_dump, mock_find_similar, 
         bill1="bill1.txt", bill2="bill2.txt", threshold=0.75,
         segment_size=150, overlap=30, output=str(output_filename)
     )
-    
+
     mock_preprocess.side_effect = lambda x: f"processed {x}"
     mock_segment.side_effect = lambda text, size, overlap: [f"segment of {text[:10]}"]
     mock_find_similar.return_value = [{"similarity": "high"}]
@@ -193,7 +193,7 @@ def test_main_file_output(mock_logging_info, mock_json_dump, mock_find_similar, 
 
     # Check preprocessing calls
     mock_preprocess.assert_any_call("Sample bill text content.") # Called twice with same mock read_data
-    
+
     # Check segmentation calls
     mock_segment.assert_any_call("processed Sample bill text content.", 150, 30)
 
@@ -205,7 +205,7 @@ def test_main_file_output(mock_logging_info, mock_json_dump, mock_find_similar, 
     # Check file writing for output
     mock_file_open.assert_any_call(str(output_filename), 'w', encoding='utf-8')
     mock_json_dump.assert_called_once_with([{"similarity": "high"}], mock_file_open(), indent=2)
-    
+
     # Check logging info
     mock_logging_info.assert_any_call(f"Results written to {output_filename}")
 

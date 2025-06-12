@@ -85,10 +85,10 @@ def test_create_session_retry_adapter_mounted():
     session = create_session()
     adapter_https = session.get_adapter("https://")
     adapter_http = session.get_adapter("http://")
-    
+
     assert isinstance(adapter_https, requests.adapters.HTTPAdapter)
     assert isinstance(adapter_https.max_retries, requests.packages.urllib3.util.retry.Retry)
-    
+
     assert isinstance(adapter_http, requests.adapters.HTTPAdapter)
     assert isinstance(adapter_http.max_retries, requests.packages.urllib3.util.retry.Retry)
 
@@ -98,11 +98,11 @@ def test_create_session_retry_parameters():
     retries_val = 5
     backoff_factor_val = 0.5
     status_forcelist_val = (500, 503) # Tuple
-    
+
     session = create_session(retries=retries_val, backoff_factor=backoff_factor_val, status_forcelist=status_forcelist_val)
     adapter = session.get_adapter("https://") # Check one, as both http/https use same adapter instance
     retry_strategy = adapter.max_retries
-    
+
     assert retry_strategy.total == retries_val
     assert retry_strategy.backoff_factor == backoff_factor_val
     assert retry_strategy.status_forcelist == status_forcelist_val
@@ -123,22 +123,22 @@ class TestMainFunctionScenarios:
 
         with caplog.at_level(logging.ERROR): # Ensure logging is captured
             main()
-        
+
         mock_script_get_api_key.assert_called_once_with(None) # Called with None as cli_key
         assert "No API key provided" in caplog.text
         mock_sys_exit.assert_called_once_with(1)
 
     @patch('argparse.ArgumentParser.parse_args')
     @patch('Submit_Regulation_Comment.get_api_key', return_value="DUMMY_API_KEY_FROM_GET")
-    @patch('Submit_Regulation_Comment.create_session') 
-    @patch('sys.exit') 
+    @patch('Submit_Regulation_Comment.create_session')
+    @patch('sys.exit')
     def test_main_comment_from_text_dry_run(self, mock_sys_exit, mock_create_session, mock_get_api_key, mock_parse_args, mock_args_base, caplog):
         """Test main() with comment from text in dry-run mode."""
         mock_args_base.comment = "Direct comment text for dry run"
         mock_args_base.comment_file = None
         mock_args_base.dry_run = True
         mock_parse_args.return_value = mock_args_base
-        
+
         mock_session_instance = MagicMock(spec=requests.Session) # Use spec for stricter mocking
         mock_create_session.return_value = mock_session_instance
 
@@ -153,8 +153,8 @@ class TestMainFunctionScenarios:
         assert "'X-API-Key': 'DUMMY_API_KEY_FROM_GET'" in dry_run_output
         assert f'"docketId": "{mock_args_base.docket_id}"' in dry_run_output
         assert f'"body": "{mock_args_base.comment}"' in dry_run_output
-        
-        mock_session_instance.post.assert_not_called() 
+
+        mock_session_instance.post.assert_not_called()
         mock_sys_exit.assert_called_once_with(0)
         assert f"Prepared comment for docket {mock_args_base.docket_id}" in caplog.text
 
@@ -178,7 +178,7 @@ class TestMainFunctionScenarios:
         with io.StringIO() as buf, contextlib.redirect_stdout(buf):
             main()
             dry_run_output = buf.getvalue()
-        
+
         mock_file_open.assert_called_once_with(comment_file_path, "r", encoding="utf-8")
         assert '"body": "Comment from file for dry run."' in dry_run_output
         mock_session_instance.post.assert_not_called()
@@ -213,26 +213,26 @@ class TestMainFunctionScenarios:
 
         mock_session_instance = MagicMock(spec=requests.Session)
         mock_create_session.return_value = mock_session_instance
-        
+
         mock_api_response = MagicMock(spec=requests.Response)
-        mock_api_response.status_code = 201 
+        mock_api_response.status_code = 201
         mock_response_content_json = {"data": {"id": "COMMENT-ID-CONSOLE-123"}}
         mock_api_response.json.return_value = mock_response_content_json
         mock_session_instance.post.return_value = mock_api_response
 
-        with io.StringIO() as buf_stdout, contextlib.redirect_stdout(buf_stdout): 
+        with io.StringIO() as buf_stdout, contextlib.redirect_stdout(buf_stdout):
             with caplog.at_level(logging.INFO):
                 main()
             captured_stdout = buf_stdout.getvalue()
-        
+
         mock_session_instance.post.assert_called_once()
         _, kwargs_post = mock_session_instance.post.call_args
         assert kwargs_post['json']['data']['attributes']['body'] == "Successful console comment"
         assert kwargs_post['headers']['X-API-Key'] == "DUMMY_API_KEY_SUCCESS"
         assert kwargs_post['timeout'] == DEFAULT_TIMEOUT
-        
+
         mock_api_response.raise_for_status.assert_called_once()
-        
+
         assert f"Prepared comment for docket {mock_args_base.docket_id}" in caplog.text
         assert "Comment submitted successfully. ID: COMMENT-ID-CONSOLE-123" in caplog.text
         assert json.dumps(mock_response_content_json, indent=2) in captured_stdout
@@ -250,7 +250,7 @@ class TestMainFunctionScenarios:
 
         mock_session_instance = MagicMock(spec=requests.Session)
         mock_create_session.return_value = mock_session_instance
-        
+
         mock_api_response = MagicMock(spec=requests.Response)
         mock_api_response.status_code = 201
         mock_response_content_json_file = {"data": {"id": "COMMENT-ID-FILE-456"}}
@@ -259,11 +259,11 @@ class TestMainFunctionScenarios:
 
         with caplog.at_level(logging.INFO):
             main()
-            
+
         mock_session_instance.post.assert_called_once()
         # Check that open was called for the output file
         mock_output_file_open.assert_called_once_with(output_json_file_path, "w", encoding="utf-8")
-        
+
         # Check that json.dump was called correctly (via the write method of the mock_open handle)
         # json.dump writes in chunks. We can check the content written.
         # The handle is mock_output_file_open()
@@ -271,7 +271,7 @@ class TestMainFunctionScenarios:
         # Concatenate all arguments from all .write calls
         written_data_str = "".join(c_args[0] for c_args, _ in handle.write.call_args_list)
         assert json.loads(written_data_str) == mock_response_content_json_file
-        
+
         assert f"Response saved to {output_json_file_path}" in caplog.text
 
     @patch('argparse.ArgumentParser.parse_args')
@@ -281,14 +281,14 @@ class TestMainFunctionScenarios:
     def test_main_api_request_exception(self, mock_sys_exit, mock_create_session, mock_get_api_key, mock_parse_args, mock_args_base, caplog):
         """Test main() when API request raises RequestException."""
         mock_parse_args.return_value = mock_args_base
-        
+
         mock_session_instance = MagicMock(spec=requests.Session)
         mock_create_session.return_value = mock_session_instance
         mock_session_instance.post.side_effect = requests.exceptions.RequestException("Mocked Network Error")
 
         with caplog.at_level(logging.ERROR):
             main()
-            
+
         mock_session_instance.post.assert_called_once()
         assert "Submission failed: Mocked Network Error" in caplog.text
         mock_sys_exit.assert_called_once_with(1)
@@ -300,16 +300,16 @@ class TestMainFunctionScenarios:
     def test_main_api_http_error(self, mock_sys_exit, mock_create_session, mock_get_api_key, mock_parse_args, mock_args_base, caplog):
         """Test main() when API returns an HTTP error status that raise_for_status handles."""
         mock_parse_args.return_value = mock_args_base
-        
+
         mock_session_instance = MagicMock(spec=requests.Session)
         mock_create_session.return_value = mock_session_instance
-        
+
         mock_api_response_http_error = MagicMock(spec=requests.Response)
         mock_api_response_http_error.status_code = 403 # Forbidden
         # Configure raise_for_status to throw an HTTPError
         mock_api_response_http_error.raise_for_status.side_effect = requests.exceptions.HTTPError("Client Error: Forbidden for url")
         mock_session_instance.post.return_value = mock_api_response_http_error
-        
+
         with caplog.at_level(logging.ERROR):
             main()
 
